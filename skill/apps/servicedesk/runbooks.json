@@ -1,0 +1,6 @@
+{
+ "account":  {"locked": ["send-reset-link", "unlock-account"], "expired": ["send-reset-link"], "mfa": ["reset-mfa"], "generic": ["send-reset-link", "unlock-account"]},
+ "vpn":      {"connect": ["push-vpn-profile", "renew-device-cert", "add-vpn-group"], "generic": ["push-vpn-profile", "renew-device-cert"]},
+ "email":    {"full": ["apply-archive-policy", "raise-mailbox-quota"], "stuck": ["send-outlook-steps"], "generic": ["send-outlook-steps"]},
+ "software": {"install": ["assign-license", "push-app-install", "buy-license"], "broken": ["repair-app-install"], "generic": ["push-app-install"]}
+}

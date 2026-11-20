@@ -25,6 +25,8 @@ import harvest as hv
 import orchestrator as orch
 import watch as wt
 import chatops
+sys.path.insert(0, os.path.join(HERE, "..", "apps", "servicedesk"))
+import desk  # app 2: service desk L1 triage
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "demo", "data", "sim.js")
@@ -125,7 +127,8 @@ TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_kn
         "self_healed", "recheck_held", "regressed", "kill_switch", "notified",
         "meeting_ready", "meeting_saved", "meeting_at_risk", "room_moved", "kb_drafted",
         "chat_status", "chat_denied", "chat_approved", "chat_resume",
-        "drive_harvested", "ticket_tracked", "eta_found"]
+        "drive_harvested", "ticket_tracked", "eta_found",
+        "hd_resolved", "hd_linked", "hd_approval", "hd_routed", "hd_rejected", "hd_linked_closed"]
 
 
 def detect_tags(cyc, library, prev_ts):
@@ -216,6 +219,11 @@ def detect_tags(cyc, library, prev_ts):
         lib = {e["id"]: e for e in library.get("entries", [])}
         if any(s["type"] == "ticket" for i in h["new"] for s in lib.get(i, {}).get("sources", [])):
             tags.add("engineer_learned")
+    d = cyc.get("desk") or {}
+    for r in d.get("requests", []):
+        tags.add({"resolved": "hd_resolved", "linked": "hd_linked", "on_hold": "hd_approval", "escalated": "hd_routed", "rejected": "hd_rejected"}[r["outcome"]])
+    if d.get("closed"):
+        tags.add("hd_linked_closed")
     tags.discard("")
     return [t for t in TAGS if t in tags]
 
@@ -262,6 +270,7 @@ def main():
     data_dir = tempfile.mkdtemp(prefix="incident-sim-")
     clock = {"t": START}
     ctx = rm.Ctx(data_dir, "en", live=False, clock=lambda: clock["t"].timestamp(), ticket_prefix="INC", ticket_start=10000)
+    dctx = desk.ctx_for(os.path.join(data_dir, "servicedesk"), "en", clock=lambda: clock["t"].timestamp())  # app 2, same clock
     cycles, seen = [], {}
     for i, spec in enumerate(CYCLES):
         clock["t"] = START + STEP * i
@@ -302,25 +311,28 @@ def main():
         for who, text in spec.get("chat", []):
             r = chatops.handle(ctx, who, text)
             cyc["chat"].append(dict(r, sender=who, text=text, ts=ctx.ts()))
+        cyc["desk"] = desk.run(dctx, ctx, cycles[-1]["ts"] if cycles else "")
         cyc["tags"] = detect_tags(cyc, library, cycles[-1]["ts"] if cycles else "")
         for t in cyc["tags"]:
             seen.setdefault(t, i + 1)
         cycles.append(cyc)
 
-    tickets = sorted(rm.tickets_load(ctx)["tickets"].values(), key=lambda t: t["number"])
+    tickets = sorted(list(rm.tickets_load(ctx)["tickets"].values()) + list(rm.tickets_load(dctx)["tickets"].values()), key=lambda t: t["number"])
     tickets = master_tickets(ctx, tickets) + tickets
     library = rm.load_json(ctx.library_path, {})
     pol = ctx.policy
     sim = {"meta": {"generated": datetime.now().isoformat(timespec="seconds"), "start": START.isoformat(), "step_minutes": 10,
                     "note": "Scripted world, real engine, dry run. Nothing was sent to any device or to ServiceNow.",
                     "brain": brain.label()},
-           "devices": DEVICES, "windows": WINDOWS, "catalogue": ctx.actions, "tags": TAGS, "coverage": seen,
+           "devices": DEVICES, "windows": WINDOWS, "catalogue": dict(ctx.actions, **dctx.actions), "tags": TAGS, "coverage": seen,
            "policy": {"autonomy": pol.get("autonomy"), "allow": pol.get("allow"), "cooldown_minutes": pol.get("cooldown_minutes"),
                       "reopen_hours": pol.get("reopen_hours"), "blast_min": pol.get("blast_radius", {}).get("min_devices"),
                       "need": pol.get("patrol", {}).get("need"), "rounds": pol.get("patrol", {}).get("rounds"),
                       "groups": pol.get("escalation", {}).get("groups"), "evolution": pol.get("evolution")},
            "cycles": cycles, "tickets": tickets, "library": library,
            "calendar": rm.load_json(os.path.join(HERE, "sources", "calendar.json"), []),
+           "desk": {"crews": desk.CFG["crews"], "catalogue": dctx.actions, "requests": rm.load_json(os.path.join(desk.APP, "data", "requests.json"), []),
+                    "directory": rm.load_json(os.path.join(desk.APP, "data", "directory.json"), {})},
            "kb_drafts": sorted(rm.load_json(os.path.join(data_dir, "kb_drafts.json"), {}).values(), key=lambda d: d["number"])}
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as f:

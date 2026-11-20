@@ -1,4 +1,4 @@
-# 💀 Incident Skeleton: one skeleton, four crews
+# 💀 Incident Skeleton: one skeleton, two apps, eight crews
 
 > Kiroween 2026 · **Skeleton Crew** · built with Kiro (spec, skill, MCP, hook) · English / 中文
 
@@ -6,6 +6,12 @@ One incident-response **skeleton** (a six-state state machine) powers four devic
 **crews**: 🖨️ printer, 📺 digital signage, 🎥 meeting-room AV, 📶 wireless AP.
 A *skeleton crew* is the minimum staff that keeps things running: the skeleton is the
 shared state machine, the crews are the device-specific logic that plugs into it.
+
+A second app runs on the same skeleton: **service desk L1 triage** (`skill/apps/servicedesk/`).
+People report problems in Teams, email or the portal; four more crews (🔑 account, 🌐 VPN, ✉️ email,
+💿 software) check the directory, fix what they may, and pass the rest to L2 with the checks attached.
+A report about something app 1 already knows (“no Wi-Fi on floor 4”) is linked to that incident
+instead of starting a second repair, and closes with it. Requests for admin rights are never automated.
 
 ```
 RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
@@ -23,7 +29,17 @@ For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page ha
 | Plug-ins: patrol, repair loop, harvest, outage watch, tracker, meetings, KB drafts, chat, notify, AI | `skill/remediation/*.py` | around the skeleton, never inside it |
 | Policy: every permission | `skill/remediation/policy.json` | people edit it |
 
-A fifth device type is one function, one runbook and a few catalogue entries. See [SPEC.md](SPEC.md).
+A fifth device type is one function, one runbook and a few catalogue entries. A whole new app is a
+folder of config plus one intake file: `skill/apps/servicedesk/` reuses the engine unchanged. See [SPEC.md](SPEC.md).
+
+| | App 1: office devices | App 2: service desk L1 |
+|---|---|---|
+| Input | patrol probes | a person's message |
+| Crews | printer, signage, meeting-room AV, wireless AP | account, VPN, email, software |
+| INVESTIGATE | ping, SNMP, HTTP, controller API | directory lookups (declarative checks in `app.json`) |
+| MITIGATE | restart, reboot, PoE cycle… | reset link, renew cert, archive policy, Intune push… |
+| Shared | six states, repair loop, policy, learning, tickets, harvest, AI, notify | same code |
+| Special | blast radius, outage board, meetings | rejects admin/injection; links to app 1's incidents |
 
 ## What it does
 
@@ -108,7 +124,7 @@ Sources are sample files; the live ServiceNow and mailbox connectors are not wir
 
 Open `demo/console.html`. It plays one simulated morning, 14 patrols from 09:00 to 11:10, by itself and loops.
 Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 41 scenarios as they happen. EN / 中文 switch top right;
+harvest, learning, ServiceNow tickets, and a checklist of the 47 scenarios as they happen. EN / 中文 switch top right;
 `?at=5` jumps to a patrol, `?speed=2` speeds it up.
 
 `demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
@@ -139,13 +155,15 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/sources/shared_drive/` | sample shared-drive runbooks; point `INCIDENT_SHARED_DRIVE` at a mounted folder to read a real one |
 | `skill/tests/test_tracker_drive_mcp.py` | tracker, shared drive, MCP read-only |
 | `skill/remediation/notify.py` | pushes the right news to Teams / Slack once (dry run by default) |
+| `skill/apps/servicedesk/` | **app 2**: `app.json` (crews, keywords, checks), its own actions / runbooks / policy, sample requests and directory, `desk.py` intake |
+| `skill/tests/test_servicedesk.py` | app 2: reject admin/injection, link known incidents and close with them, L1 fix, approval |
 | `skill/tests/test_safety.py` | kill switch, daily limit, re-check, self-heal, notifications |
 | `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
 | `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
 | `skill/mcp/incident_kb_server.py` | MCP server on the crew's own data: crew_status, list_open_tickets, recall_fix, lookup_support_group, record_case; read-only for approvals |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, meetings, chat, 41 scenarios |
+| `demo/console.html` | autoplay ops console: 14 patrols, faults listed separately, outage board, notifications, meetings, chat, the service desk card (app 2), 47 scenarios |
 | `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
 | `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |
@@ -168,6 +186,9 @@ python3 skill/scripts/patrol.py --remediate --simulate-fix none --lang en
 # the scripted repair demo: see the crew learn, then fail and open a ticket
 python3 skill/remediation/remediate.py --demo --lang en
 
+# app 2: one request through the service desk (dry run)
+python3 skill/apps/servicedesk/desk.py --from amy --say "I'm locked out, my password doesn't work" --lang en
+
 # what the crew has learned so far
 python3 skill/remediation/remediate.py --report --lang en
 ```
@@ -186,5 +207,6 @@ Open `demo/index.html` (double-click). Pick a crew and fire an alert, patrol all
 ## Why Skeleton Crew
 
 The category asks for a clean, flexible skeleton that proves its versatility with distinct
-applications. The skeleton is the state machine; the applications are four device crews. A fifth crew
-is one `investigate_<type>()` function, one runbook and a few catalogue entries.
+applications. The skeleton is the state machine. Two distinct applications run on it: office-device
+patrol (machines report) and service desk triage (people report). The two are linked: a person's report
+about a known device fault joins that incident instead of starting a second one.

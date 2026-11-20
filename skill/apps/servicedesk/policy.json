@@ -1,0 +1,24 @@
+{
+ "_comment": "Permissions for the service-desk app. Same rules as the office-devices app; different actions.",
+ "mode": "dry-run",
+ "autonomy": {"low": "auto", "medium": "notify_then_act", "high": "approval"},
+ "allow": {
+  "account": ["send-reset-link", "unlock-account", "reset-mfa"],
+  "vpn": ["push-vpn-profile", "renew-device-cert", "add-vpn-group"],
+  "email": ["send-outlook-steps", "apply-archive-policy", "raise-mailbox-quota"],
+  "software": ["push-app-install", "repair-app-install", "assign-license"]
+ },
+ "max_attempts_per_incident": 3,
+ "cooldown_minutes": 30,
+ "max_repairs_per_device_per_day": 6,
+ "recheck_minutes": 10,
+ "kill_switch": false,
+ "notify_wait_seconds": 0,
+ "reopen_hours": 72,
+ "evolution": {"promote_min_successes": 2, "promote_min_rate": 0.67, "demote_min_attempts": 3, "demote_max_rate": 0.2},
+ "escalation": {"enabled": true, "dry_run": true, "groups": {
+   "account": "Identity & Access", "vpn": "Network / Remote Access", "email": "Messaging", "software": "End-user Computing", "security": "Security Operations"}},
+ "notify": {"dry_run": true, "channels": [
+   {"name": "Teams · requester (DM)", "platform": "teams", "webhook_env": "TEAMS_DM_WEBHOOK_URL", "kinds": ["hd_reply", "hd_resolved", "hd_escalated", "hd_linked_closed"]},
+   {"name": "Teams · IT on-call", "platform": "teams", "webhook_env": "TEAMS_WEBHOOK_URL", "kinds": ["hd_escalated", "hd_rejected"]}]}
+}

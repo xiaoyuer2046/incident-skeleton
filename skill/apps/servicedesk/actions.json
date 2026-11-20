@@ -1,0 +1,15 @@
+{
+ "send-reset-link":      {"device": "account",  "risk": "low",    "zh": "发送自助重置密码链接", "en": "Send a self-service password reset link", "command": null},
+ "unlock-account":       {"device": "account",  "risk": "medium", "zh": "解锁账号", "en": "Unlock the account", "command": null},
+ "reset-mfa":            {"device": "account",  "risk": "high",   "zh": "重置 MFA 设备", "en": "Reset the MFA device", "command": null},
+ "push-vpn-profile":     {"device": "vpn",      "risk": "low",    "zh": "重新推送 VPN 配置并升级客户端", "en": "Re-push the VPN profile and update the client", "command": null},
+ "renew-device-cert":    {"device": "vpn",      "risk": "medium", "zh": "续期设备证书", "en": "Renew the device certificate", "command": null},
+ "add-vpn-group":        {"device": "vpn",      "risk": "high",   "zh": "加入 VPN 权限组", "en": "Add the user to the VPN group", "command": null},
+ "send-outlook-steps":   {"device": "email",    "risk": "low",    "zh": "发送 Outlook 重建缓存步骤", "en": "Send the Outlook cache-rebuild steps", "command": null},
+ "apply-archive-policy": {"device": "email",    "risk": "medium", "zh": "开启邮箱归档策略", "en": "Turn on the mailbox archive policy", "command": null},
+ "raise-mailbox-quota":  {"device": "email",    "risk": "high",   "zh": "提高邮箱配额", "en": "Raise the mailbox quota", "command": null},
+ "push-app-install":     {"device": "software", "risk": "low",    "zh": "通过 Intune 推送安装", "en": "Push the install through Intune", "command": null},
+ "repair-app-install":   {"device": "software", "risk": "medium", "zh": "修复安装", "en": "Repair the installation", "command": null},
+ "assign-license":       {"device": "software", "risk": "medium", "zh": "分配许可证", "en": "Assign a license", "command": null},
+ "buy-license":          {"device": "software", "risk": "high",   "physical": true, "zh": "采购新许可证", "en": "Buy a new license", "command": null}
+}

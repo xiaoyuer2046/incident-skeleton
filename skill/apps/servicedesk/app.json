@@ -1,0 +1,47 @@
+{
+ "_comment": "App 2 on the same skeleton. A crew here is pure config: keywords to recognise it, symptoms, and declarative INVESTIGATE checks against the directory. MITIGATE comes from runbooks.json + actions.json; permissions from policy.json.",
+ "name": {"en": "Service desk · L1 triage", "zh": "服务台 · 一线分诊"},
+ "intake_group": "Service Desk L1",
+ "crews": {
+  "account": {
+   "label": {"en": "Account & password", "zh": "账号与密码"},
+   "keywords": ["locked", "password", "sign in", "log in", "login", "mfa", "authenticator", "new phone", "密码", "锁", "登录", "验证器", "换手机"],
+   "symptoms": [["mfa", ["mfa", "authenticator", "new phone", "验证器", "换手机"]], ["locked", ["locked", "lock", "锁"]], ["expired", ["expired", "过期"]]],
+   "checks": [
+    {"path": "account.locked", "eq": true, "label": {"en": "account", "zh": "账号"}, "ok": {"en": "active", "zh": "正常"}, "err": {"en": "locked after {account.failed} failed sign-ins", "zh": "连续 {account.failed} 次登录失败后被锁"}},
+    {"path": "account.password_expired", "eq": true, "label": {"en": "password", "zh": "密码"}, "ok": {"en": "valid", "zh": "有效"}, "err": {"en": "expired {account.expired_days} days ago", "zh": "{account.expired_days} 天前过期"}},
+    {"path": "account.mfa_device", "eq": "lost", "label": {"en": "MFA device", "zh": "MFA 设备"}, "ok": {"en": "registered", "zh": "已注册"}, "err": {"en": "old phone no longer in use", "zh": "旧手机已不用"}}
+   ]
+  },
+  "vpn": {
+   "label": {"en": "VPN & remote access", "zh": "VPN 与远程访问"},
+   "keywords": ["vpn", "remote", "from home", "远程", "在家"],
+   "symptoms": [["connect", ["connect", "drop", "连不上", "断"]]],
+   "checks": [
+    {"path": "vpn.client_ok", "eq": false, "label": {"en": "VPN client", "zh": "VPN 客户端"}, "ok": {"en": "current version", "zh": "版本最新"}, "err": {"en": "version {vpn.client} is out of support", "zh": "版本 {vpn.client} 已不支持"}},
+    {"path": "vpn.cert_days", "lte": 0, "label": {"en": "device certificate", "zh": "设备证书"}, "ok": {"en": "valid for {vpn.cert_days} days", "zh": "还有 {vpn.cert_days} 天有效"}, "err": {"en": "expired", "zh": "已过期"}},
+    {"path": "vpn.in_group", "eq": false, "label": {"en": "VPN group", "zh": "VPN 权限组"}, "ok": {"en": "member", "zh": "已在组内"}, "err": {"en": "not a member", "zh": "不在组内"}}
+   ]
+  },
+  "email": {
+   "label": {"en": "Email & Outlook", "zh": "邮件与 Outlook"},
+   "keywords": ["outlook", "email", "mail", "mailbox", "邮件", "邮箱"],
+   "symptoms": [["full", ["full", "quota", "满"]], ["stuck", ["stuck", "sync", "卡", "不同步"]]],
+   "checks": [
+    {"path": "mailbox.percent", "gte": 95, "label": {"en": "mailbox", "zh": "邮箱"}, "ok": {"en": "{mailbox.percent}% used", "zh": "已用 {mailbox.percent}%"}, "err": {"en": "{mailbox.percent}% full", "zh": "已满 {mailbox.percent}%"}},
+    {"path": "mailbox.archive_on", "eq": false, "label": {"en": "archive policy", "zh": "归档策略"}, "ok": {"en": "on", "zh": "已开启"}, "err": {"en": "off", "zh": "未开启"}}
+   ]
+  },
+  "software": {
+   "label": {"en": "Software", "zh": "软件"},
+   "keywords": ["install", "software", "app", "visio", "license", "安装", "软件", "许可"],
+   "symptoms": [["install", ["install", "need", "安装", "需要"]], ["broken", ["crash", "broken", "won't open", "崩", "打不开"]]],
+   "checks": [
+    {"path": "software.in_catalog", "eq": false, "label": {"en": "company portal", "zh": "公司软件目录"}, "ok": {"en": "{software.app} is in the catalogue", "zh": "{software.app} 在目录里"}, "err": {"en": "{software.app} is not in the catalogue", "zh": "{software.app} 不在目录里"}},
+    {"path": "software.licenses_free", "lte": 0, "label": {"en": "licenses", "zh": "许可证"}, "ok": {"en": "{software.licenses_free} free", "zh": "还剩 {software.licenses_free} 个"}, "err": {"en": "none free", "zh": "没有空余"}},
+    {"path": "device.compliant", "eq": false, "label": {"en": "laptop", "zh": "笔记本"}, "ok": {"en": "compliant ({device.name})", "zh": "合规（{device.name}）"}, "err": {"en": "not compliant", "zh": "不合规"}}
+   ]
+  }
+ },
+ "never_automate": ["domain admin", "global admin", "local admin", "admin rights", "admin access", "administrator", "sudo", "privileged", "管理员权限", "域管理员", "本地管理员", "提权"]
+}

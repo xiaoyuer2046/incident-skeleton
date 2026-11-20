@@ -39,6 +39,26 @@ Every alert walks the same six states:
 | 🎥 Meeting-room AV | curl the room / controller API, ping the controller | restart room app, reboot codec, reboot controller, reset controller profile · *on site:* reseat USB, dispatch tech |
 | 📶 Wireless AP | ping, SNMP port status, controller API | controller reboot, PoE port power-cycle, radio tuning · *on site:* add / replace AP |
 
+## 2a. App 2 on the same skeleton: service desk L1 triage
+
+The skeleton is not tied to devices. App 2 (`skill/apps/servicedesk/`) takes requests from people
+(Teams, email, portal) and walks each one through the same six states. Its crews are config, not code:
+`app.json` lists each crew's keywords, symptoms and read-only checks; `actions.json`, `runbooks.json` and
+`policy.json` are its own. The repair loop, permissions, learning, tickets, harvest, AI and notify are the
+engine from app 1, unchanged (`Ctx(app_dir=...)` loads an app folder).
+
+| Crew | INVESTIGATE (read-only, directory lookups) | MITIGATE |
+|---|---|---|
+| 🔑 Account & password | locked? password expired? MFA device | send reset link, unlock · *approval:* reset MFA |
+| 🌐 VPN | device certificate, VPN profile, compliance | renew device certificate, push VPN profile |
+| ✉️ Email & Outlook | mailbox quota, archive policy | turn on archive policy, raise quota |
+| 💿 Software | in the catalogue? free license? | Intune push, assign free license · *person:* buy a license |
+
+TRIAGE for app 2 adds two rules before a crew is picked:
+
+1. A request that gives orders (`harvest.injection_reason`) or asks for admin rights (`never_automate`) is rejected, sent to Security, and nothing runs.
+2. A request about a device or outage that app 1 already has open is **linked** to that incident: the person gets its live status, nobody is dispatched twice, and the request closes and the person is told when the parent closes.
+
 ## 3. The plug-ins (what runs around the skeleton)
 
 One patrol (`orchestrator.run_cycle`) runs these in order:
@@ -76,17 +96,19 @@ Between patrols:
 10. An AI may only name actions from `actions.json`; it never changes a decision the policy makes; any AI failure falls back to the rules.
 11. Dry run by default, separately for devices, ServiceNow and notifications.
 12. Every action, decision, approval, re-check and AI call is audited.
+13. App 2: requests for admin rights or that give orders are never automated; a report about a known incident never starts a second repair.
 
 ## 5. Acceptance
 
 `python3 skill/remediation/simulate.py` plays 14 patrols through the real engine. It must detect every
-scenario tag in `TAGS` (currently 41), and these must pass:
+scenario tag in `TAGS` (currently 47: 41 for app 1, 6 for app 2), and these must pass:
 
 ```
 python3 skill/tests/test_safety.py              # kill switch, limits, re-check, self-heal, notifications
 python3 skill/tests/test_brain_guardrails.py    # a bad AI cannot change what the engine does
 python3 skill/tests/test_meetings_kb_chat.py    # pre-meeting, KB drafts, chat approvals
 python3 skill/tests/test_tracker_drive_mcp.py   # ticket tracker, shared drive, MCP read-only
+python3 skill/tests/test_servicedesk.py          # app 2: reject admin/injection, link known incidents, L1 fixes, approval
 ```
 
 ## 6. Out of scope today (honest)

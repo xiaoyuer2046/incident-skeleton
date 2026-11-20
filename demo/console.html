@@ -74,7 +74,10 @@ button{font:inherit;color:inherit}
 .c-trace{grid-column:span 7}.c-harvest{grid-column:span 5}
 .c-learn{grid-column:span 3}.c-tickets{grid-column:span 3}.c-cover{grid-column:span 3}.c-notify{grid-column:span 3}
 .c-history{grid-column:span 12}
-.c-meet{grid-column:span 5}.c-chat{grid-column:span 7}
+.c-meet{grid-column:span 5}.c-chat{grid-column:span 7}.c-desk{grid-column:span 12}
+.dq{display:grid;grid-template-columns:150px 1fr auto;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.dq:first-child{border-top:0}.dq.fresh{background:linear-gradient(90deg,rgba(255,122,26,.10),transparent)}
+.dq .st{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.dq .st span{font-size:11px;padding:2px 7px;border-radius:9px;background:var(--chip,rgba(127,127,127,.12))}.dq .st span b{font-weight:600;margin-right:4px}
+.dq>.chip{align-self:start;white-space:nowrap}.dq .rp{margin-top:5px;font-size:12px;color:var(--dim)}.dq .rp::before{content:"🤖 "}
 .mt{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
 .mt .tm{font:700 13px var(--mono)}.mt .sub{color:var(--dim);font-size:11.5px}.mt.done{opacity:.5}
 .chat{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto}
@@ -231,6 +234,8 @@ td.mono,.mono{font-family:var(--mono);font-size:12px}
     <div class="body" id="meet"></div></section>
   <section class="card c-chat"><h2><span data-i18n="h_chat"></span><span class="r" data-i18n="chat_hint"></span></h2>
     <div class="body"><div class="chat" id="chat"></div></div></section>
+  <section class="card c-desk"><h2><span data-i18n="h_desk"></span><span class="r" data-i18n="desk_hint"></span></h2>
+    <div class="body" id="desk"></div></section>
   <section class="card c-learn"><h2><span data-i18n="h_learn"></span><span class="r" data-i18n="learn_hint"></span></h2>
     <div class="body" id="learn"></div></section>
   <section class="card c-tickets"><h2><span data-i18n="h_tickets"></span><span class="r" data-i18n="sim_tag"></span></h2>
@@ -268,7 +273,7 @@ const I = {
   s_builtin:'内置手册', s_ai:'AI', s_kb:'ServiceNow KB', s_drive:'公盘', s_shared_drive:'公盘', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信',
   st_builtin:'内置', st_candidate:'候选', st_promoted:'已晋升', st_demoted:'已降级',
   evidence:'证据', esc_title:'告警：自动修复失败', esc_tried:'已做', esc_left:'还没做 / 需人工', esc_wait:'等待批准', esc_kb:'给工程师的参考', none:'无',
-  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限', h_meet:'会议 · 会前体检', meet_hint:'会前 30 分钟检查房间', h_chat:'和值班员对话 · Teams', chat_hint:'提问 · 批准 · 暂停', no_chat:'还没有对话。',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限', h_meet:'会议 · 会前体检', meet_hint:'会前 30 分钟检查房间', h_chat:'和值班员对话 · Teams', chat_hint:'提问 · 批准 · 暂停', no_chat:'还没有对话。', h_desk:'应用 2 · 服务台一线分诊', desk_hint:'同一副骨架：员工报修 → 6 步', no_desk:'还没有员工报修。', o_resolved:'一线解决', o_linked:'挂到已知故障', o_on_hold:'等批准', o_escalated:'转二线', o_rejected:'拒绝 · 转安全', o_closed:'随主单关闭',
   m_upcoming:'未到检查时间', m_ready:'房间正常', m_fixed:'已提前修好', m_at_risk:'房间故障', m_move:'建议换到 %r', m_planb:'备选 %r', m_done:'已结束', m_people:'%n 人', bot:'Incident Skeleton',
   kb_title:'📝 KB 草稿（待审核）', kb_steps:'步骤', kb_dont:'不用试', kb_ev:'依据', why_killed:'紧急开关', why_rate_limited:'今日次数已满', d_killed:'紧急开关：暂停', d_rate_limited:'今日次数已满',
   killed_by:'%a 按下了紧急开关：自动修复已暂停', h_stop:'⛔ %a 按下紧急开关：全部自动修复暂停。', self_healed:'自己恢复', v_self_healed:'自己恢复了，不修', o_self:'不修，也不算功劳',
@@ -294,7 +299,7 @@ const I = {
    master_linked:'主动找到总单，挂成子单', comms_detected:'主动发现故障邮件，更新面板', master_hint:'用总单给的修法在权限内修好', progress_posted:'把我们的进度写回总单', board_closed:'总单关闭且巡检确认后，面板关闭',
    self_healed:'探测时自己恢复：不修，不算功劳', recheck_held:'修完 10 分钟后复查：稳住了', regressed:'复查发现又坏了：这次修复记为失败', kill_switch:'紧急开关：一键暂停全部自动修复', notified:'主动推送到 Teams / Slack',
    meeting_ready:'会前体检：房间正常', meeting_saved:'会前发现故障，开会前修好', meeting_at_risk:'会议有风险：提高优先级，通知组织者并给备选房间', room_moved:'快开会还修不好：建议换房间', kb_drafted:'修好两次以上：自动起草 KB',
-   chat_status:'在 Teams 里问进展，直接回答', chat_denied:'没权限的人批准：被拒绝', chat_approved:'在 Teams 里批准，下一轮执行', chat_resume:'在 Teams 里恢复自动修复', drive_harvested:'从公盘收集运维手册', ticket_tracked:'抓取群聊和邮件，总结未关单进展', eta_found:'从邮件里找到预计恢复时间'}},
+   chat_status:'在 Teams 里问进展，直接回答', chat_denied:'没权限的人批准：被拒绝', chat_approved:'在 Teams 里批准，下一轮执行', chat_resume:'在 Teams 里恢复自动修复', drive_harvested:'从公盘收集运维手册', ticket_tracked:'抓取群聊和邮件，总结未关单进展', eta_found:'从邮件里找到预计恢复时间', hd_resolved:'服务台：一线自动解决', hd_linked:'服务台：报修挂到已知故障，不重复派人', hd_approval:'服务台：高风险操作等批准', hd_routed:'服务台：带着排查结果转二线', hd_rejected:'服务台：要管理员权限/指令注入，拒绝', hd_linked_closed:'服务台：主故障修好，报修自动关闭并通知'}},
  en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
   banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow. 🧠 AI advice here comes from a mock stand-in, not a model; see brain.py to plug in a real one.',
   h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
@@ -311,7 +316,7 @@ const I = {
   s_builtin:'runbook', s_ai:'AI', s_kb:'ServiceNow KB', s_drive:'shared drive', s_shared_drive:'shared drive', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work',
   st_builtin:'builtin', st_candidate:'candidate', st_promoted:'promoted', st_demoted:'demoted',
   evidence:'evidence', esc_title:'ALERT: automatic repair failed', esc_tried:'What was done', esc_left:'Not done / needs a human', esc_wait:'Waiting for approval', esc_kb:'For the engineer', none:'none',
-  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', h_meet:'Meetings · pre-check', meet_hint:'rooms checked 30 min ahead', h_chat:'Chat with the crew · Teams', chat_hint:'ask · approve · pause', no_chat:'No messages yet.',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', h_meet:'Meetings · pre-check', meet_hint:'rooms checked 30 min ahead', h_chat:'Chat with the crew · Teams', chat_hint:'ask · approve · pause', no_chat:'No messages yet.', h_desk:'App 2 · Service desk L1 triage', desk_hint:'same skeleton: a person reports → 6 steps', no_desk:'No requests yet.', o_resolved:'solved at L1', o_linked:'linked to known incident', o_on_hold:'awaiting approval', o_escalated:'sent to L2', o_rejected:'rejected · Security', o_closed:'closed with parent',
   m_upcoming:'not checked yet', m_ready:'room ready', m_fixed:'fixed in time', m_at_risk:'room down', m_move:'move to %r', m_planb:'plan B %r', m_done:'finished', m_people:'%n people', bot:'Incident Skeleton',
   kb_title:'📝 KB draft (awaiting review)', kb_steps:'Steps', kb_dont:'Do not bother', kb_ev:'Evidence', why_killed:'kill switch', why_rate_limited:'daily limit', d_killed:'kill switch: paused', d_rate_limited:'daily limit reached',
   killed_by:'%a pressed the kill switch: automatic repairs are paused', h_stop:'⛔ %a pressed the kill switch: all automatic repairs paused.', self_healed:'self-healed', v_self_healed:'came back on its own, no repair', o_self:'no repair, no credit',
@@ -337,7 +342,7 @@ const I = {
    master_linked:'Found the master incident, linked ours as child', comms_detected:'Picked up outage email, updated the board', master_hint:"Fixed within permissions using the master's guidance", progress_posted:'Posted our progress back to the master', board_closed:'Board closed once the master resolved and patrol confirmed',
    self_healed:'Came back on its own: no repair, no credit', recheck_held:'Re-checked 10 min after the fix: it held', regressed:'Re-check found the fault back: fix counted as failed', kill_switch:'Kill switch pauses every automatic repair', notified:'Pushed to Teams / Slack',
    meeting_ready:'Pre-meeting check: room ready', meeting_saved:'Fault found before a meeting, fixed in time', meeting_at_risk:'Meeting at risk: priority raised, organizer told, plan B given', room_moved:'Too close to start: move rooms', kb_drafted:'Fix proven twice: KB article drafted',
-   chat_status:'Asked in Teams, answered from live data', chat_denied:'Approval from a non-approver refused', chat_approved:'Approved in Teams, run next patrol', chat_resume:'Automation resumed from Teams', drive_harvested:'Runbooks harvested from the shared drive', ticket_tracked:'Chat and email gathered into a ticket status summary', eta_found:'ETA picked up from a vendor email'}}
+   chat_status:'Asked in Teams, answered from live data', chat_denied:'Approval from a non-approver refused', chat_approved:'Approved in Teams, run next patrol', chat_resume:'Automation resumed from Teams', drive_harvested:'Runbooks harvested from the shared drive', ticket_tracked:'Chat and email gathered into a ticket status summary', eta_found:'ETA picked up from a vendor email', hd_resolved:'Desk: solved at L1 by automation', hd_linked:'Desk: report linked to a known incident, no double dispatch', hd_approval:'Desk: risky step waits for approval', hd_routed:'Desk: sent to L2 with checks attached', hd_rejected:'Desk: admin-rights / injected request rejected', hd_linked_closed:'Desk: parent fixed, linked reports closed and told'}}
 };
 let lang = 'en';
 try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
@@ -602,6 +607,23 @@ function renderChat(c){
     <div class="bub bot${x.ok ? '' : ' no'}${f ? ' fresh' : ''}"><div class="who">🤖 ${esc(t('bot'))}${x.by ? ' · 🧠 ' + esc(brainLabel(x.by)) : ''}</div>${esc(L(x.reply))}</div>`).join('');
   $('#chat').scrollTop = 1e6;
 }
+function renderDesk(c){
+  const rows = [];
+  D.cycles.slice(0, c+1).forEach((cy, i) => {
+    const d = cy.desk || {};
+    (d.requests || []).forEach(r => rows.push({r, fresh: i === c, ts: r.ts}));
+    (d.closed || []).forEach(x => rows.push({x, fresh: i === c, ts: x.ts}));
+  });
+  if (!rows.length){ $('#desk').innerHTML = `<div class="empty">${esc(t('no_desk'))}</div>`; return; }
+  const cls = {resolved:'k-ok', linked:'k-mute', on_hold:'k-warn', escalated:'k-warn', rejected:'k-bad'};
+  $('#desk').innerHTML = rows.slice().reverse().map(({r, x, fresh}) => {
+    if (x) return `<div class="dq${fresh ? ' fresh' : ''}"><div class="mono">${esc(hhmm(x.ts))} · ${esc(x.ticket)}</div><div class="rp" style="margin:0">${esc(L(x.reply))}</div><span class="chip k-ok">${esc(t('o_closed'))}</span></div>`;
+    const who = L(r.name);
+    return `<div class="dq${fresh ? ' fresh' : ''}"><div><div class="mono">${esc(hhmm(r.ts))} · ${esc(r.id)}</div><div class="sub">${esc(who)} · ${esc(r.channel)}</div><div class="sub mono">${esc(r.ticket || '')}</div></div>
+      <div><q>${esc(r.text)}</q><div class="st">${r.states.map(s => `<span><b>${esc(s.name)}</b>${esc(L(s))}</span>`).join('')}</div>${L(r.reply) ? `<div class="rp">${esc(L(r.reply))}</div>` : ''}</div>
+      <span class="chip ${cls[r.outcome] || 'k-mute'}">${esc(t('o_' + r.outcome))}</span></div>`;
+  }).join('');
+}
 function kbHTML(c){
   const ts = D.cycles[c].ts;
   return (D.kb_drafts || []).filter(d => d.ts <= ts).map(d => `<div class="kbd"><b>${esc(t('kb_title'))} ${esc(d.number)}</b><div style="margin:4px 0"><b>${esc(L(d.title))}</b></div>
@@ -690,7 +712,7 @@ function renderStatic(c){
   const cyc = D.cycles[c];
   $('#humans').innerHTML = cyc.human.map(humanHTML).join('');
   $('#rechecks').innerHTML = (cyc.rechecks || []).map(rcHTML).join('');
-  renderNotify(c); renderMeet(c); renderChat(c);
+  renderNotify(c); renderMeet(c); renderChat(c); renderDesk(c);
   const bad = cyc.rows.filter(r => r.status !== 'healthy');
   $('#faultsum').textContent = t('faults_n', {n: bad.length});
   $('#faults').innerHTML = bad.length ? faultHead() : `<div class="empty">${esc(t('no_fault'))}</div>`;
@@ -732,7 +754,7 @@ async function animate(c, tk){
     box.insertAdjacentHTML('beforeend', res.resolved ? okHTML(res) : escalHTML(res)); await wait(700, tk);
   }
   await animateBoard(c, tk, 2);
-  renderNotify(c); renderMeet(c); renderChat(c);
+  renderNotify(c); renderMeet(c); renderChat(c); renderDesk(c);
   renderLearn(c, true); renderTickets(c); renderCover(c, true); renderHistory(c); renderCaption(c);
 }
 

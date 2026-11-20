@@ -119,14 +119,19 @@ def txt(x, lang):
 
 
 class Ctx:
-    def __init__(self, data_dir, lang="en", live=None, clock=None, ticket_prefix="DRYRUN-INC", ticket_start=0):
+    def __init__(self, data_dir, lang="en", live=None, clock=None, ticket_prefix="DRYRUN-INC", ticket_start=0, app_dir=None):
+        """app_dir: a folder with its own actions.json, runbooks.json, policy.json and sources/.
+        None = the office-devices app that lives in this folder."""
         self.dir = data_dir
         os.makedirs(self.dir, exist_ok=True)
         self.lang = lang if lang in S else "en"
         self.t = S[self.lang]
-        self.actions = load_json(os.path.join(HERE, "actions.json"), {})
-        self.runbooks = load_json(os.path.join(HERE, "runbooks.json"), {})
-        self.policy = load_json(os.path.join(HERE, "policy.json"), {})
+        base = app_dir or HERE
+        self.app_dir = base
+        self.sources_dir = os.path.join(base, "sources")
+        self.actions = load_json(os.path.join(base, "actions.json"), {})
+        self.runbooks = load_json(os.path.join(base, "runbooks.json"), {})
+        self.policy = load_json(os.path.join(base, "policy.json"), {})
         self.live = bool(live) if live is not None else self.policy.get("mode") == "live"
         self.clock = clock or time.time
         self.ticket_prefix, self.ticket_start = ticket_prefix, ticket_start

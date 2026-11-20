@@ -188,6 +188,7 @@ function snap(tk){
 const stPill = s => `<span class="pill ${{'New':'p-new','In Progress':'p-prog','On Hold':'p-hold','Resolved':'p-res'}[s] || 'p-mute'}">${esc(t('st_' + s.replace(' ','_')))}</span>`;
 function shortDesc(tk){
   if (tk.kind === 'master') return L({en: tk.message, zh: tk.message_zh});
+  if (tk.kind === 'request') return (lang === 'zh' ? '[服务台] ' : '[Service desk] ') + tk.caller + ' - ' + tk.message;
   if (tk.kind === 'upstream') return (lang === 'zh' ? '[自动] ' : '[Auto] ') + L({en: tk.message, zh: tk.message_zh}) + (lang === 'zh' ? ' - 疑似上游故障' : ' - suspected upstream fault');
   return (lang === 'zh' ? `[自动] ${tk.cmdb_ci}：自动修复失败 - ` : `[Auto] ${tk.cmdb_ci}: automatic repair failed - `) + L({en: tk.message, zh: tk.message_zh || tk.message});
 }
@@ -255,6 +256,12 @@ function noteBody(n, tk){
   if (n.kind === 'child_progress') return `<b>${esc(t('progress'))}</b><div>${esc(L(d.text))}</div>`;
   if (n.kind === 'auto_fixed') return `<b>${esc(t('k_resolved'))}</b><div>${esc(t('fixed_by', act(d.action)))}</div>${d.approved_by ? `<div>${esc(t('appr', d.approved_by))}</div>` : ''}`;
   if (n.kind === 'engineer_ack') return esc(L(d.text));
+  const Z = (en, zh) => lang === 'zh' ? zh : en;
+  if (n.kind === 'request_received') return esc(Z('Request received from the employee' + (d.crew ? ' · crew: ' + d.crew : ''), '收到员工请求' + (d.crew ? ' · 班底：' + d.crew : '')));
+  if (n.kind === 'request_rejected') return `<b>⛔ ${esc(Z('Rejected, never automated', '拒绝，永不自动处理'))}</b><div>${esc(Z('Reason', '原因'))}: ${esc(d.reason)}</div><q>${esc(d.text)}</q>`;
+  if (n.kind === 'linked_known') return d.answer ? `<b>${esc(Z('Told the employee', '已告知员工'))}</b><div>${esc(L(d.answer))}</div>` : esc(Z('Linked to known incident ', '挂到已知故障 ') + d.parent);
+  if (n.kind === 'routed_l2') return esc(Z('Routed to ', '转给 ') + d.group);
+  if (n.kind === 'linked_closed') return `<b>${esc(t('k_resolved'))}</b><div>${esc(Z('Closed with ', '随主单关闭：') + d.parent)}</div>`;
   if (n.kind === 'engineer_resolved') return `<b>${esc(t('k_resolved'))}</b><div>${esc(d.close_notes)}</div>`;
   return esc(JSON.stringify(d));
 }

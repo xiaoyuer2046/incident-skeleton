@@ -1,0 +1,11 @@
+[
+ {"number": "KB0020114", "device": "vpn", "workflow_state": "published", "helpful": 9, "author": "Network / Remote Access", "updated": "2026-10-08T10:00:00",
+  "short_description": "VPN fails to connect, device certificate expired",
+  "text": "If the VPN client reports an authentication error and the device certificate has expired, renew the device certificate. Updating the VPN profile alone does not help."},
+ {"number": "KB0020157", "device": "email", "workflow_state": "published", "helpful": 6, "author": "Messaging", "updated": "2026-09-21T09:00:00",
+  "short_description": "Mailbox full, cannot send",
+  "text": "Turn on the archive policy for the mailbox; it moves mail older than two years and frees space within minutes."},
+ {"number": "KB0020190", "device": "account", "workflow_state": "published", "helpful": 12, "author": "Identity & Access", "updated": "2026-08-30T09:00:00",
+  "short_description": "Locked out after leave",
+  "text": "Send the self-service reset link; the reset also unlocks the account. Do not unlock manually if the password has expired."}
+]

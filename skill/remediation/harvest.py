@@ -43,6 +43,8 @@ KEYWORDS = [
     ("reboot the room controller", "reboot-controller"), ("重启控制器", "reboot-controller"),
     ("controller profile", "reset-room-profile"), ("重置房间", "reset-room-profile"),
     ("power-cycle the printer", "power-cycle-printer"), ("bounce the poe", "poe-cycle"),
+    ("renew the device certificate", "renew-device-cert"), ("archive policy", "apply-archive-policy"),
+    ("reset link", "send-reset-link"), ("vpn profile", "push-vpn-profile"), ("assign a license", "assign-license"),
     ("reboot the ap", "controller-reboot-ap"), ("through the controller", "controller-reboot-ap"),
     ("power-cycle the poe", "poe-cycle"), ("bounce the poe", "poe-cycle"),
 ]
@@ -95,7 +97,7 @@ def norm(text):
     return re.sub(r"[^0-9a-z\u4e00-\u9fff]", "", (text or "").lower())[:50]
 
 
-def fetch_kb(ctx):
+def fetch_kb(ctx, SRC=SRC):
     """Live ServiceNow KB when SN_INSTANCE/SN_USER/SN_PASSWORD are set and live mode is on (untested), else the sample."""
     inst, user, pw = os.environ.get("SN_INSTANCE"), os.environ.get("SN_USER"), os.environ.get("SN_PASSWORD")
     if inst and user and pw and ctx.live:
@@ -114,6 +116,7 @@ def fetch_kb(ctx):
 
 
 def harvest(ctx):
+    SRC = getattr(ctx, "sources_dir", None) or globals()["SRC"]
     now = ctx.clock()
     vis = lambda ts: rm.to_epoch(ts) <= now
     found, rejected, stats = [], [], {}
@@ -133,7 +136,7 @@ def harvest(ctx):
         st(kind)["rejected"] += 1
 
     # 1. ServiceNow KB
-    kb, origin = fetch_kb(ctx)
+    kb, origin = fetch_kb(ctx, SRC)
     for a in kb:
         if not vis(a.get("updated", "1970-01-01T00:00:00")):
             continue

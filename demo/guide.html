@@ -189,6 +189,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
   <span class="logo">Incident <b>Skeleton</b></span>
   <div class="links">
     <a href="#skeleton"><span class="en">Skeleton</span><span class="zh">骨架</span></a>
+    <a href="#apps"><span class="en">Two apps</span><span class="zh">两个应用</span></a>
     <a href="#patrol"><span class="en">Patrol</span><span class="zh">巡检</span></a>
     <a href="#safety"><span class="en">Permissions</span><span class="zh">权限</span></a>
     <a href="#library"><span class="en">Case library</span><span class="zh">病例库</span></a>
@@ -242,7 +243,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
     <div class="stats">
       <div class="stat rv"><b class="g">4</b><span><span class="en">device crews on one skeleton</span><span class="zh">套设备班底，共用一副骨架</span></span></div>
       <div class="stat rv"><b>6</b><span><span class="en">steps, 4 shared and 2 per crew</span><span class="zh">步流程：4 步共享，2 步各自不同</span></span></div>
-      <div class="stat rv"><b>41</b><span><span class="en">scenarios played by the real engine</span><span class="zh">种场景，由真实引擎跑出</span></span></div>
+      <div class="stat rv"><b>47</b><span><span class="en">scenarios played by the real engine</span><span class="zh">种场景，由真实引擎跑出</span></span></div>
       <div class="stat rv"><b>24</b><span><span class="en">guardrail and safety tests, all passing</span><span class="zh">项保护与安全测试，全部通过</span></span></div>
     </div>
   </div>
@@ -297,8 +298,31 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
   </div>
 </section>
 
+<!-- ================= TWO APPS ================= -->
+<section class="alt" id="apps">
+  <div class="wrap">
+    <div class="eyebrow rv"><span class="en">Two apps, one skeleton</span><span class="zh">一副骨架，两个应用</span></div>
+    <h2 class="rv"><span class="en">Machines report. People report.</span><span class="zh">机器报修，人也报修。</span></h2>
+    <p class="lead rv"><span class="en">App 2 is service desk L1 triage. An employee writes in Teams, email or the portal. The same six steps run, with four more crews. The engine is the same code; the app is a folder of config plus one intake file.</span><span class="zh">应用 2 是服务台一线分诊。员工在 Teams、邮件或门户里报修，走同样的 6 步，换成另外 4 套班底。引擎是同一份代码；应用只是一个配置文件夹加一个接入文件。</span></p>
+    <div class="tbl rv"><table>
+      <thead><tr><th></th><th><span class="en">App 1 · office devices</span><span class="zh">应用 1 · 办公设备</span></th><th><span class="en">App 2 · service desk L1</span><span class="zh">应用 2 · 服务台一线</span></th></tr></thead>
+      <tbody>
+        <tr><td><b><span class="en">Input</span><span class="zh">输入</span></b></td><td><span class="en">patrol probes</span><span class="zh">巡检探测</span></td><td><span class="en">a person's message</span><span class="zh">员工的一句话</span></td></tr>
+        <tr><td><b><span class="en">Crews</span><span class="zh">班底</span></b></td><td><span class="en">printer · signage · room AV · Wi-Fi AP</span><span class="zh">打印机 · 标牌 · 会议室 · 无线 AP</span></td><td><span class="en">account · VPN · email · software</span><span class="zh">账号 · VPN · 邮箱 · 软件</span></td></tr>
+        <tr><td><b><span class="en">Investigate</span><span class="zh">排查</span></b></td><td><span class="en">ping, SNMP, HTTP, controller API</span><span class="zh">ping、SNMP、HTTP、控制器 API</span></td><td><span class="en">directory lookups, declared in app.json</span><span class="zh">查目录（Entra / Intune / Exchange），写在 app.json 里</span></td></tr>
+        <tr><td><b><span class="en">Fix</span><span class="zh">处理</span></b></td><td><span class="en">restart, reboot, PoE cycle</span><span class="zh">重启、断电再上电</span></td><td><span class="en">reset link, renew VPN cert, archive policy, Intune push</span><span class="zh">发重置链接、续 VPN 证书、开归档、Intune 推送</span></td></tr>
+        <tr><td><b><span class="en">Shared</span><span class="zh">共用</span></b></td><td colspan="2"><span class="en">six steps, repair loop, policy, learning, tickets, harvest, AI, notify: same code</span><span class="zh">6 步、修复闭环、权限、学习、工单、收集、AI、通知：同一份代码</span></td></tr>
+      </tbody></table></div>
+    <div class="grid g3">
+      <div class="card rv"><h3><span class="en">Linked, not doubled</span><span class="zh">挂单，不重复派人</span></h3><p><span class="en">“No Wi-Fi on floor 4” joins the outage app 1 already tracks. The person gets its live status and is told when it closes.</span><span class="zh">“四楼没网”直接挂到应用 1 正在处理的故障上。员工马上拿到进展，修好时自动通知。</span></p></div>
+      <div class="card rv"><h3><span class="en">Admin rights: never</span><span class="zh">管理员权限：永不自动</span></h3><p><span class="en">Requests that ask for admin rights or try to give orders go to Security. Nothing runs.</span><span class="zh">要管理员权限、或试图下指令的请求，直接转安全组，什么都不执行。</span></p></div>
+      <div class="card rv"><h3><span class="en">L2 gets the checks</span><span class="zh">转二线带着排查结果</span></h3><p><span class="en">What it can't do (MFA reset needs approval, buying a license needs a person) goes to the right group with everything checked.</span><span class="zh">做不了的（重置 MFA 要批准、买许可证要人）转到对的组，查过的都附上，员工不用再说一遍。</span></p></div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= PATROL ================= -->
-<section class="alt" id="patrol">
+<section id="patrol">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Every ten minutes</span><span class="zh">每 10 分钟</span></div>
     <h2 class="rv"><span class="en">It looks for trouble.<br>It does not wait for a ticket.</span><span class="zh">它主动去找问题，<br>不等人报单。</span></h2>
@@ -322,7 +346,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= SAFETY ================= -->
-<section id="safety">
+<section class="alt" id="safety">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Permissions</span><span class="zh">权限</span></div>
     <h2 class="rv"><span class="en">Bold where it is safe.<br>Humble where it is not.</span><span class="zh">该大胆处大胆，<br>该收手处收手。</span></h2>
@@ -342,7 +366,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= LIBRARY ================= -->
-<section class="alt" id="library">
+<section id="library">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Case library</span><span class="zh">病例库</span></div>
     <h2 class="rv"><span class="en">It learns from what<br>your team already knows.</span><span class="zh">它向团队已有的经验学习。</span></h2>
@@ -362,7 +386,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= OUTAGE ================= -->
-<section id="outage">
+<section class="alt" id="outage">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Mass outages</span><span class="zh">大面积故障</span></div>
     <h2 class="rv"><span class="en">One board. Everyone reads<br>the same news.</span><span class="zh">一块面板，<br>大家看同一份进展。</span></h2>
@@ -380,7 +404,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= PEOPLE ================= -->
-<section id="people">
+<section class="alt" id="people">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Before the meeting, after the fix, in the chat</span><span class="zh">会前、修后、聊天里</span></div>
     <h2 class="rv"><span class="en">It works where people are.</span><span class="zh">它在人在的地方干活。</span></h2>
@@ -402,7 +426,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= BRAIN ================= -->
-<section class="alt" id="brain">
+<section id="brain">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">The AI brain</span><span class="zh">AI 大脑</span></div>
     <h2 class="rv"><span class="en">The AI advises.<br>The rules decide.</span><span class="zh">AI 出主意，<br>规则来拍板。</span></h2>
@@ -421,7 +445,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= ARCHITECTURE ================= -->
-<section id="arch">
+<section class="alt" id="arch">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Architecture</span><span class="zh">架构</span></div>
     <h2 class="rv"><span class="en">Small modules.<br>One source of truth.</span><span class="zh">小模块，<br>一个权威来源。</span></h2>
@@ -435,7 +459,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= KIRO ================= -->
-<section class="alt" id="kiro">
+<section id="kiro">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Built with Kiro</span><span class="zh">用 Kiro 构建</span></div>
     <h2 class="rv"><span class="en">Spec first. Then a crew<br>of Kiro features.</span><span class="zh">先写规格，<br>再用上 Kiro 的一整套能力。</span></h2>
@@ -451,7 +475,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= STATUS ================= -->
-<section id="status">
+<section class="alt" id="status">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Honest status</span><span class="zh">如实现状</span></div>
     <h2 class="rv"><span class="en">What is real today.</span><span class="zh">今天哪些是真的。</span></h2>
@@ -472,7 +496,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
 </section>
 
 <!-- ================= TRY ================= -->
-<section class="alt" id="try">
+<section id="try">
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Try it</span><span class="zh">动手试试</span></div>
     <h2 class="rv"><span class="en">Two minutes, no install.</span><span class="zh">两分钟，不用安装。</span></h2>
