@@ -1,0 +1,23 @@
+{
+  "clear-jam":            {"device":"printer","risk":"low",   "physical":true, "zh":"现场清除卡纸","en":"Clear the paper jam on site","command":null},
+  "restart-spooler":      {"device":"printer","risk":"low",   "zh":"重启打印后台 (cups)","en":"Restart the print spooler (cups)","command":null},
+  "clear-queue":          {"device":"printer","risk":"low",   "zh":"清空卡住的打印任务","en":"Clear stuck print jobs","command":["cancel","-a","-h","{target}"]},
+  "readd-queue":          {"device":"printer","risk":"medium","zh":"删除并重新添加打印队列","en":"Remove and re-add the print queue","command":null},
+  "power-cycle-printer":  {"device":"printer","risk":"high",  "physical":true, "zh":"断电重启打印机","en":"Power-cycle the printer","command":null},
+
+  "repush-content":       {"device":"signage","risk":"low",   "zh":"CMS 重新推送内容和排期","en":"Re-push content and schedule from the CMS","command":null},
+  "reboot-player":        {"device":"signage","risk":"medium","zh":"远程重启播放器","en":"Reboot the player remotely","command":null},
+  "reseat-hdmi":          {"device":"signage","risk":"low",   "physical":true, "zh":"现场重新插拔 HDMI","en":"Reseat the HDMI cable on site","command":null},
+  "swap-player":          {"device":"signage","risk":"high",  "physical":true, "zh":"换备用播放器","en":"Swap in a spare player","command":null},
+
+  "restart-room-app":     {"device":"av","risk":"low",   "zh":"重启房间应用 (Zoom/Teams Rooms)","en":"Restart the room app (Zoom/Teams Rooms)","command":null},
+  "reboot-codec":         {"device":"av","risk":"medium","zh":"重启编解码器","en":"Reboot the codec","command":null},
+  "reboot-controller":    {"device":"av","risk":"medium","zh":"重启房间控制器","en":"Reboot the room controller","command":null},
+  "reseat-usb":           {"device":"av","risk":"low",   "physical":true, "zh":"现场重新插拔 USB 麦/摄","en":"Reseat the USB mic/camera on site","command":null},
+  "dispatch-tech":        {"device":"av","risk":"high",  "physical":true, "zh":"派 AV 工程师到场","en":"Dispatch an AV technician","command":null},
+
+  "controller-reboot-ap": {"device":"wifiap","risk":"medium","zh":"控制器 API 重启 AP","en":"Reboot the AP through the controller API","command":null},
+  "poe-cycle":            {"device":"wifiap","risk":"medium","zh":"PoE 端口断电再上电","en":"Power-cycle the PoE switch port","command":null},
+  "rf-tune":              {"device":"wifiap","risk":"medium","zh":"射频调优（换信道/调功率）","en":"Tune the radio (channel/power)","command":null},
+  "add-ap":               {"device":"wifiap","risk":"high",  "physical":true, "zh":"补 AP / 换设备","en":"Add or replace an AP","command":null}
+}

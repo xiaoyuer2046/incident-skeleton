@@ -65,6 +65,24 @@ Each handler implements `investigate()` and `mitigate()` for its device type:
 - mitigate: controller-API reboot AP → PoE port power-cycle → RF tune
   (channel/power) → add or replace AP
 
+## The repair loop (on top of the skeleton)
+
+MITIGATE is where the crew acts. The loop that decides *whether and how* it acts:
+
+1. **Candidates**: builtin runbook for (device, symptom), ServiceNow KB articles, an optional AI advisor,
+   and the learned history. Duplicates merge; each action remembers its sources.
+2. **Order**: physical steps last; otherwise lower risk first, then higher success rate.
+3. **Permission** (`policy.json`): risk `low` acts alone, `medium` notifies then acts, `high` needs approval;
+   an action must also be on the device's allow-list; physical steps never run automatically; a candidate
+   learned from KB/AI that has not proven itself may act alone only at low risk.
+4. **Act and verify**: dry run by default; success is judged by re-probing, not by the command's exit code.
+5. **Record**: each attempt goes to `attempts.jsonl`; success rates drive promotion (`>= 2` successes and
+   `>= 0.67`) and demotion (`>= 3` attempts and `<= 0.2`).
+6. **Escalate** when nothing recovered it: an alert with what was done, what is left and the likely cause, and
+   a ServiceNow incident to the device type's group (an open ticket for the same device and symptom gets a note).
+
+Languages: every script takes `--lang zh|en`; the demo has a switch and follows the browser.
+
 ## The demo
 
 A single self-contained HTML page (no build, no server — open in a browser).

@@ -1,0 +1,34 @@
+{
+  "_comment": "The permission model. Change this file to give the crew more or less authority. Nothing here is hidden in code.",
+  "mode": "dry-run",
+  "autonomy": {
+    "low": "auto",
+    "medium": "notify_then_act",
+    "high": "approval"
+  },
+  "allow": {
+    "printer": ["restart-spooler","clear-queue","readd-queue"],
+    "signage": ["repush-content","reboot-player"],
+    "av":      ["restart-room-app","reboot-codec","reboot-controller"],
+    "wifiap":  ["controller-reboot-ap","poe-cycle","rf-tune"]
+  },
+  "max_attempts_per_incident": 4,
+  "cooldown_minutes": 30,
+  "notify_wait_seconds": 0,
+  "evolution": {
+    "promote_min_successes": 2,
+    "promote_min_rate": 0.67,
+    "demote_min_attempts": 3,
+    "demote_max_rate": 0.2
+  },
+  "escalation": {
+    "enabled": true,
+    "dry_run": true,
+    "groups": {
+      "printer": "Print Services",
+      "signage": "AV / Digital Signage",
+      "av": "Meeting Rooms / AV",
+      "wifiap": "Network / Wireless"
+    }
+  }
+}

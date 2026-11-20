@@ -1,0 +1,19 @@
+{
+  "printer": {
+    "jam":     ["clear-jam","restart-spooler","clear-queue","readd-queue","power-cycle-printer"],
+    "offline": ["restart-spooler","readd-queue","power-cycle-printer"],
+    "generic": ["restart-spooler","clear-queue","readd-queue","power-cycle-printer"]
+  },
+  "signage": {
+    "down":    ["repush-content","reboot-player","reseat-hdmi","swap-player"],
+    "generic": ["repush-content","reboot-player","reseat-hdmi","swap-player"]
+  },
+  "av": {
+    "hung":    ["restart-room-app","reboot-codec","reboot-controller","reseat-usb","dispatch-tech"],
+    "generic": ["restart-room-app","reboot-codec","reboot-controller","reseat-usb","dispatch-tech"]
+  },
+  "wifiap": {
+    "offline": ["controller-reboot-ap","poe-cycle","rf-tune","add-ap"],
+    "generic": ["controller-reboot-ap","poe-cycle","rf-tune","add-ap"]
+  }
+}

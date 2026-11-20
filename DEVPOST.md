@@ -84,6 +84,9 @@ python3 skill/scripts/run_incident.py --sample
 python3 skill/scripts/run_incident.py --type printer \
   --target 10.0.4.21 --message "PAPER JAM (13.20)"
 
+# repair, learn, and escalate when it cannot fix it (dry run, simulated)
+python3 skill/remediation/remediate.py --demo --lang en
+
 # a wireless AP behind a controller
 python3 skill/scripts/run_incident.py --type wifiap \
   --target 10.0.8.5 --message "AP offline, clients dropping"
@@ -95,33 +98,21 @@ python3 skill/scripts/patrol.py
 cd demo && python3 -m http.server 8777 --bind 127.0.0.1   # open http://127.0.0.1:8777
 ```
 
-## What's next
+## What is built, and what is next
 
-Today it's **reactive**: an alert lands, the skeleton walks it. The same
-skeleton is the foundation for an **autonomous** AIOps crew (see `ROADMAP.md`):
+**Built and runnable today:** the skeleton and four crews; a parallel patrol that ignores one-off blips and only
+confirms a fault that fails at least 2 of 3 probes; a repair loop that acts only within `policy.json` (risk tiers,
+per-device allow-list, attempt cap, cooldown, physical steps never automatic); success-rate learning (rank, promote,
+demote); and escalation that writes an alert saying what was tried, what is left and the likely cause, then opens a
+ServiceNow incident for the right group. Everything speaks English and Chinese.
 
-1. **Detect & alert (threshold-gated)** — proactive polling (ping/SNMP/CMS/
-   controller heartbeat) raises alerts itself; only *confirmed* errors (sustained
-   or recurring past a threshold) open a ticket, not every blip. On confirm it
-   auto-creates and routes a **ServiceNow** incident to the right IT group.
-2. **Auto-remediate (tiered approval)** — low-risk fixes auto-run; medium-risk
-   notify-then-act; high-risk wait for a human. Risky/physical ones escalate.
-3. **Symptom → solution matching** — map symptoms (error code, unreachable,
-   black screen, can't join, mass client drop) to known fixes, not just by
-   device type.
-4. **Auto-gather solutions** — when no fix matches, search **ServiceNow KB**,
-   the **company shared drive**, and **chat history** for how it was solved
-   before.
-5. **病例库 (case-history KB)** — every incident, its root cause, and the fix
-   that worked is recorded into a growing case-history knowledge base (only
-   verified fixes enter; low success-rate ones are down-ranked). Next time
-   similar symptoms appear, the system recalls the prior case.
-6. **Open-incident tracking** — for each unclosed incident, gather ServiceNow
-   work notes + chat + email by keyword and summarize the current status, so
-   no one has to dig across three systems to see where things stand.
+**Honest limits:** fix executors are not wired (they need controller, CMS, MDM and PoE integrations), so repairs are
+shown by simulation; the ServiceNow REST calls are written but have not been run against a real instance; the AI
+advisor is a hook; chat/email gathering and open-ticket tracking are not built. `ROADMAP.md` lists these, plus the gaps
+we would close first: verifying a fix after a delay (self-healing faults inflate success rates), a blast-radius guard
+for mass outages, a kill switch, a Slack/Teams approval step, and ticket auto-close and reopen.
 
-Each step adds a layer *around* the six-state core — the skeleton doesn't
-change, which is exactly the point of building on a skeleton.
+The core idea holds because each step is a layer around the six-state skeleton; the skeleton does not change.
 
 ## Built with
 
