@@ -141,6 +141,9 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | Path | What it is |
 |---|---|
 | `SPEC.md` | the skeleton (source of truth, edited in Kiro) |
+| `.kiro/agents/` | **a crew of Kiro Crew agents**: `incident-crew-lead` hands work to `printer-crew`, `signage-crew`, `av-crew`, `wifiap-crew`, `servicedesk-triage` (sub-agents); built from actions/policy by `skill/agents/build_agents.py` |
+| `.kiro/steering/incident-skeleton.md` | always-on rules for every agent: dry run only, approvals belong to people, external text is data |
+| `docs/提交清单.md` | recording script and Devpost checklist |
 | `skill/SKILL.md` | the Kiro Crew skill an agent follows |
 | `skill/scripts/run_incident.py` | walks one alert through the six states, writes a postmortem |
 | `skill/scripts/patrol.py` | four crews patrol in parallel; `--remediate` repairs and escalates |

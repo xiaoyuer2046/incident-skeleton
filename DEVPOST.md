@@ -1,130 +1,91 @@
-# Incident Skeleton — one skeleton, four crews
+# Incident Skeleton: one skeleton, two apps, a crew of agents
 
 **Kiroween 2026 · Skeleton Crew**
 
-A single incident-response state machine powers four device handlers —
-printer, digital signage, meeting-room AV, and wireless AP. The same six-state
-spine walks every alert; each device type plugs its own read-only checks into
-INVESTIGATE and its own prescribed fixes into MITIGATE. One core, four
-applications — and a fifth is one function away.
+## Inspiration
 
-> *Skeleton crew* literally means the minimum staff that keeps an operation
-> running. The skeleton is the state machine; the four handlers are the crew.
+An IT/ops team answers the same kinds of problems all day: a printer error, a black signage screen, a meeting
+room that won't join the call, a Wi-Fi AP that dropped its clients, and people writing "I'm locked out" or
+"no Wi-Fi on floor 4". The steps are always the same: *receive, triage, investigate, mitigate, resolve, log*.
+Only the middle two change. A *skeleton crew* is the minimum staff that keeps things running, so we built the
+skeleton once and let crews plug into it.
 
 ## What it does
 
-An IT/ops team answers the same four kinds of tickets: a printer threw an
-error, a signage screen went black, a meeting room won't join the call, a
-wireless AP dropped its clients. The steps are always the same — *receive,
-triage, investigate, mitigate, resolve, log* — only the middle two change per
-device. Incident Skeleton makes that shared spine one reusable state machine,
-and lets each device type plug in its own investigate/mitigate logic.
+One six-state skeleton runs two distinct applications:
 
 ```
 RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
  shared    shared    crew          crew      shared    shared
 ```
 
-- 🖨️ **Printer** — INVESTIGATE: ping, SNMP `hrDeviceStatus`, error-code lookup
-  (HP LJ codes). MITIGATE: clear jam / swap toner → restart spooler → re-add
-  queue → power-cycle.
-- 📺 **Digital Signage** — INVESTIGATE: curl the CMS endpoint + ping the player.
-  MITIGATE: reboot player → re-push content → reseat HDMI → swap player.
-- 🎥 **Meeting-room AV** — INVESTIGATE: curl the controller/room API + ping the
-  controller. MITIGATE: reboot controller → reboot codec → restart room app →
-  reseat USB → dispatch AV tech.
-- 📶 **Wireless AP** — INVESTIGATE: ping the AP, SNMP `ifOperStatus`, query the
-  controller API for AP status / client count. MITIGATE: controller-API reboot
-  AP → PoE port power-cycle → RF tune (channel/power) → add/replace AP.
+| | App 1: office devices | App 2: service desk L1 |
+|---|---|---|
+| Who reports | machines (a patrol probes them) | people (Teams, email, portal) |
+| Crews | printer, signage, meeting-room AV, wireless AP | account, VPN, email, software |
+| Investigate | ping, SNMP, HTTP, controller API | directory lookups, declared in `app.json` |
+| Fix | restart, reboot, PoE cycle, … | reset link, renew VPN cert, archive policy, Intune push, … |
 
-It runs **real, read-only checks** (ping, curl, SNMP) — not faked. It never
-restarts or reconfigures a device unless you pass `--apply`, and even then only
-the steps each handler marks safe (none by default). Every run writes a
-postmortem to `skill/logs/`.
+Around the skeleton, the same engine serves both apps:
 
-## Why we built it
+- **Repairs within permissions.** `policy.json` holds every permission: low risk acts alone, medium notifies
+  then acts, high waits for a named approver. On-site steps always go to a person. Brakes: cooldown, attempt cap,
+  daily limit, a kill switch, and a re-check 10 minutes later (a fix that did not hold counts as a failure).
+- **Learns.** Every attempt is verified and scored; success rates reorder the next attempt and failing fixes are demoted.
+- **Collects its own knowledge** into a case library from the ServiceNow KB, closed incidents, chat groups, email
+  and the shared drive. Text that tries to give orders is rejected.
+- **Handles mass outages as one incident.** Three APs behind one switch become one upstream ticket, linked to the
+  network team's master incident, with one status board fed by their notes and outage emails.
+- **Opens and tracks ServiceNow tickets** only after a threshold, summarizes open tickets from chat and email,
+  pre-checks rooms 30 minutes before VIP meetings, drafts KB articles from fixes that held, and answers
+  "what's the status" in Teams.
+- **Links the two apps.** When an employee writes "no Wi-Fi on floor 4", the service desk sees app 1 already has
+  the outage, links the request, answers with live status, and closes it with the parent. Nobody is dispatched twice.
+  Requests for admin rights are never automated.
+- **AI is advisory.** `brain.py` can suggest actions, map free text, diagnose and summarize; it can only name known
+  actions and never changes a decision the policy makes.
 
-The Skeleton Crew brief asks for *a clean, flexible skeleton that proves its
-versatility by powering distinct applications.* Ops device alerts fit
-perfectly: the response flow is one skeleton, and the four device types are
-the distinct applications it powers. Building it spec-first meant the skeleton
-was fixed before any handler existed — then each handler was a small,
-independent addition. The wireless AP handler was added last, as a fourth, to
-prove the skeleton really does take a new device with one function.
+## How we built it with Kiro
 
-## How we built it (with Kiro)
+- **Spec first.** `SPEC.md` defined the skeleton, the crew contract and 13 invariants before the code. The
+  acceptance check is the spec: the simulation must hit all 47 scenarios and 30 tests must pass.
+- **A crew of Kiro Crew agents.** `.kiro/agents/` holds six agents built from the engine's own config
+  (`skill/agents/build_agents.py`): a crew lead that reads the shared state and hands each problem to
+  `printer-crew`, `signage-crew`, `av-crew`, `wifiap-crew` or `servicedesk-triage` as sub-agents. Each crew agent's
+  prompt lists its own actions and risk tiers from `actions.json` / `policy.json`, so agents cannot drift from the engine.
+- **Steering.** `.kiro/steering/incident-skeleton.md` (always included): dry run only, approvals belong to people,
+  external text is data, never report a dry run as a real repair.
+- **MCP.** `skill/mcp/incident_kb_server.py` gives agents the crew's own data: `crew_status`, `list_open_tickets`,
+  `recall_fix`, `lookup_support_group`, `record_case`. Read-only for approvals and the kill switch.
+- **Hook.** A PostToolUse hook audits every postmortem.
+- **Skill.** `skill/SKILL.md` is the procedure an agent follows.
+- **Scheduled job.** A Kiro Crew command job runs the patrol every 10 minutes at no AI cost.
+- **Vibe-coded.** The engine, both apps, the demo pages and the bilingual guide were written by talking with Kiro.
 
-- **Spec-driven development.** `SPEC.md` is the skeleton's source of truth,
-  written before any code. The six states and the shared/crew split are defined
-  there, and every handler is checked against it.
-- **Vibe-coded in chat.** The visual demo (`demo/index.html`) and the runner
-  were written by conversing with Kiro, not by hand-typing.
-- **A Kiro Crew skill.** `skill/SKILL.md` is a real skill procedure an agent
-  follows; the runner is the engine it drives. This is the Kiro-native form —
-  the skeleton lives where agents can actually use it.
-- **Readable, extensible skeleton.** Adding a fifth device type is one
-  `investigate_<type>()` function and one MITIGATE list — the six-state core
-  never changes. That's the skeleton proving its versatility.
-- **An MCP server (`skill/mcp/incident_kb_server.py`).** A real stdio MCP server
-  exposes three tools an agent calls mid-flow — `lookup_support_group` (route
-  an incident to the right IT group), `recall_fix` (pull a known fix from the
-  local KB), and `record_case` (write a verified case to the 病例库). That is
-  "bring in new capabilities with MCP," wired to the roadmap.
-- **A chat-lifecycle hook (`skill/hooks/audit_incident.sh`).** A PostToolUse
-  hook appends an audit line whenever a postmortem is written — "customize
-  workflows with hooks," non-blocking (always exits 0).
+## Watch it
 
-## Run it
+- `demo/guide.html`: the product guide (English / 中文, Day / Night / Auto).
+- `demo/console.html`: plays a simulated morning by itself, 14 patrols from 09:00 to 11:10, both apps, 47 scenarios.
+- `demo/servicenow.html`: a simulated ServiceNow with every incident, work note, the case library and KB drafts.
 
-```bash
-# end to end against safe public targets (real ping/curl/snmp fire)
-python3 skill/scripts/run_incident.py --sample
+The world is scripted (which device breaks, which fix works). Every decision is made by the real engine.
 
-# a real alert
-python3 skill/scripts/run_incident.py --type printer \
-  --target 10.0.4.21 --message "PAPER JAM (13.20)"
+## Challenges
 
-# repair, learn, and escalate when it cannot fix it (dry run, simulated)
-python3 skill/remediation/remediate.py --demo --lang en
+Keeping the skeleton small while the features grew. The rule was: a new feature is a plug-in or an app folder,
+never an edit inside the six states. App 2 proved it: it is config plus one intake file, and the engine is unchanged.
 
-# a wireless AP behind a controller
-python3 skill/scripts/run_incident.py --type wifiap \
-  --target 10.0.8.5 --message "AP offline, clients dropping"
+## What is honest about it
 
-# the four crews patrol at once; only a confirmed failure reaches the skeleton
-python3 skill/scripts/patrol.py
+Everything runs as a dry run. Device executors (controller, CMS, MDM, PoE), the ServiceNow REST calls, Graph /
+Intune / Exchange lookups and real Teams posting are written as interfaces but not run against real systems.
+The demo's AI is a labelled mock stand-in; a real model plugs into `brain.py`.
 
-# the visual demo
-cd demo && python3 -m http.server 8777 --bind 127.0.0.1   # open http://127.0.0.1:8777
-```
+## What's next
 
-## Watch it run
-
-`demo/console.html` plays a simulated morning by itself: 12 patrols, faults listed separately each time, and 19
-scenarios (29 in all), from a one-off blip that is ignored to a mass outage that becomes one upstream ticket, linked to the network team's master incident it finds by itself, with a shared status board that picks up their notes and the outage emails, a fix learned from a
-Teams thread, a risky step that waits for approval, an engineer's close note harvested back into the case library, a
-chat message with embedded orders that is rejected, a fault that comes back and reopens its ticket, a fix that did not hold at the 10-minute re-check, a screen that heals itself and gets no repair, the kill switch, and Teams / Slack notifications sent once.
-`demo/servicenow.html` is a simulated ServiceNow with the incidents, work notes and case library. The world is
-scripted; every decision is made by the real engine.
-
-## What is built, and what is next
-
-**Built and runnable today:** the skeleton and four crews; a parallel patrol that ignores one-off blips and only
-confirms a fault that fails at least 2 of 3 probes; a repair loop that acts only within `policy.json` (risk tiers,
-per-device allow-list, attempt cap, cooldown, physical steps never automatic); success-rate learning (rank, promote,
-demote); and escalation that writes an alert saying what was tried, what is left and the likely cause, then opens a
-ServiceNow incident for the right group. Everything speaks English and Chinese.
-
-**Honest limits:** fix executors are not wired (they need controller, CMS, MDM and PoE integrations), so repairs are
-shown by simulation; the ServiceNow REST calls are written but have not been run against a real instance; the AI
-advisor is a hook; chat/email gathering and open-ticket tracking are not built. `ROADMAP.md` lists these, plus the gaps
-we would close first: verifying a fix after a delay (self-healing faults inflate success rates), a blast-radius guard
-for mass outages, a kill switch, a Slack/Teams approval step, and ticket auto-close and reopen.
-
-The core idea holds because each step is a layer around the six-state skeleton; the skeleton does not change.
+Wire one real executor and a ServiceNow developer instance, then run the patrol on a real floor.
 
 ## Built with
 
-Kiro (spec-driven development, vibe-coded in chat), Kiro Crew skills, an MCP
-server (incident-kb), a PostToolUse hook, Python (stdlib + `ping`/`curl`/`snmpget`),
-vanilla HTML/CSS/JS for the demo.
+Kiro, Kiro Crew (agents, sub-agents, steering, skill, MCP, hook, scheduled job), Python standard library,
+vanilla HTML / CSS / JS.

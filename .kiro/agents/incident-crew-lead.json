@@ -1,0 +1,50 @@
+{
+  "name": "incident-crew-lead",
+  "description": "Coordinator of the Incident Skeleton crew: reads the shared state and hands each problem to the right crew agent.",
+  "prompt": "file://prompts/incident-crew-lead.md",
+  "tools": [
+    "fs_read",
+    "grep",
+    "glob",
+    "execute_bash",
+    "@incident-kb",
+    "@kirocrew-core"
+  ],
+  "allowedTools": [
+    "fs_read",
+    "grep",
+    "glob",
+    "@incident-kb/crew_status",
+    "@incident-kb/list_open_tickets",
+    "@incident-kb/recall_fix",
+    "@incident-kb/lookup_support_group"
+  ],
+  "mcpServers": {
+    "incident-kb": {
+      "command": "python3",
+      "args": [
+        "skill/mcp/incident_kb_server.py"
+      ],
+      "env": {
+        "INCIDENT_DATA_DIR": "skill/remediation/data"
+      }
+    }
+  },
+  "includeMcpJson": false,
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://SPEC.md"
+  ],
+  "welcomeMessage": "Crew lead. Ask what is broken, or say “patrol”.",
+  "toolsSettings": {
+    "subagent": {
+      "availableAgents": [
+        "printer-crew",
+        "signage-crew",
+        "av-crew",
+        "wifiap-crew",
+        "servicedesk-triage"
+      ]
+    }
+  }
+}

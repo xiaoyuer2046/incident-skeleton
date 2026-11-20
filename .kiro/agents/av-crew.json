@@ -1,0 +1,38 @@
+{
+  "name": "av-crew",
+  "description": "Meeting-room AV crew for Incident Skeleton: investigates and repairs av faults through the shared skeleton (dry run).",
+  "prompt": "file://prompts/av-crew.md",
+  "tools": [
+    "fs_read",
+    "grep",
+    "glob",
+    "execute_bash",
+    "@incident-kb"
+  ],
+  "allowedTools": [
+    "fs_read",
+    "grep",
+    "glob",
+    "@incident-kb/crew_status",
+    "@incident-kb/list_open_tickets",
+    "@incident-kb/recall_fix",
+    "@incident-kb/lookup_support_group"
+  ],
+  "mcpServers": {
+    "incident-kb": {
+      "command": "python3",
+      "args": [
+        "skill/mcp/incident_kb_server.py"
+      ],
+      "env": {
+        "INCIDENT_DATA_DIR": "skill/remediation/data"
+      }
+    }
+  },
+  "includeMcpJson": false,
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://SPEC.md"
+  ],
+  "welcomeMessage": "Meeting-room AV crew ready. Give me a device id and a symptom."
+}

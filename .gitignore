@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 incident-audit.log
 skill/remediation/data/
+skill/apps/*/data/run/
