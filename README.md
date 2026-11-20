@@ -12,6 +12,8 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
  shared    shared    crew          crew      shared    shared
 ```
 
+Full documentation (Chinese): [系统说明](docs/系统说明.md) · [技术说明](docs/技术说明.md)
+
 ## What it does
 
 1. **Patrol** four device types in parallel. One failed probe is a blip; only a fault
