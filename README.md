@@ -17,6 +17,7 @@ read-only checks into INVESTIGATE and its own prescribed fixes into MITIGATE.
 | `SPEC.md` | The spec — defines the skeleton (source of truth, edited in Kiro) |
 | `skill/SKILL.md` | A Kiro Crew skill: the procedure an agent follows |
 | `skill/scripts/run_incident.py` | The runnable engine: walks one alert through the 6 states, does real read-only checks, writes a postmortem |
+| `skill/scripts/patrol.py` | Four crews patrol four devices in parallel; only a device failing ≥ 2 of 3 probes is confirmed and handed to the skeleton |
 | `skill/logs/` | Auto-generated incident postmortems |
 | `skill/mcp/incident_kb_server.py` | A real MCP server (stdio JSON-RPC): lookup_support_group / recall_fix / record_case tools |
 | `skill/mcp/kb.json` | The local knowledge base the MCP `recall_fix` tool reads |
@@ -73,7 +74,9 @@ cd demo && python3 -m http.server 8777 --bind 127.0.0.1
 ```
 
 Pick a crew, hit **触发告警**, watch the alert walk the same six states. Hit
-**连跑四套班底** to see one core drive all four.
+**连跑四套班底** to see one core drive all four. Hit **🔭 同时巡检四台** to see
+four crews probe at once: a one-off blip is ignored, only a confirmed failure
+is handed to the skeleton.
 
 ## Record the demo (for Devpost)
 

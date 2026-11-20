@@ -196,6 +196,7 @@
       <button id="fire">🔥 触发告警</button>
       <button id="reset" class="ghost">重置</button>
       <button id="runAll" class="ghost">连跑四套班底</button>
+      <button id="patrol" class="ghost">🔭 同时巡检四台</button>
     </div>
   </div>
 
@@ -393,6 +394,40 @@ document.getElementById("runAll").addEventListener("click", async ()=>{
   if(running) return;
   for(const k of Object.keys(CREW)){ await runIncident(k); await sleep(500); }
   logLine("🦴 四套班底跑完 — 同一套骨架，四种告警。", "ok");
+});
+
+// Patrol: four crews probe their own device at the same time. One failed probe is
+// a blip and is ignored; only >= 2 of 3 failures is confirmed and handed to the skeleton.
+document.getElementById("patrol").addEventListener("click", async ()=>{
+  if(running) return;
+  running = true;
+  document.getElementById("fire").disabled = true;
+  logEl.innerHTML = "";
+  document.querySelectorAll(".state").forEach(s => s.classList.remove("active","done"));
+  Object.keys(CREW).forEach(k => setTomb(k,false));
+  logLine("🔭 四个代理同时巡检：每台探测 3 次，失败 ≥ 2 次才确认（演示数据）", "warn");
+  // 1 = probe ok, 0 = probe failed. signage blips once; av is really down.
+  const plan = { printer:[1,1,1], signage:[1,0,1], av:[0,0,0], wifiap:[1,1,1] };
+  const keys = Object.keys(CREW);
+  const fails = await Promise.all(keys.map(async k => {
+    let f = 0;
+    for(let r=1; r<=3; r++){
+      await sleep(450 + Math.random()*350);
+      const ok = plan[k][r-1];
+      if(!ok) f++;
+      logLine(`  ${CREW[k].ico} ${CREW[k].label} 第${r}次：${ok?"正常":"失败"}`, ok?"ok":"err");
+    }
+    return f;
+  }));
+  const confirmed = [];
+  keys.forEach((k,i) => {
+    if(fails[i] >= 2){ confirmed.push(k); logLine(`🔴 ${CREW[k].label}：失败 ${fails[i]} 次，确认故障 → 交给骨架`, "err"); }
+    else if(fails[i] === 1){ logLine(`🟡 ${CREW[k].label}：只失败 1 次，偶发抖动，忽略，不开单`, "warn"); }
+    else { logLine(`🟢 ${CREW[k].label}：正常`, "ok"); }
+  });
+  running = false;
+  document.getElementById("fire").disabled = false;
+  for(const k of confirmed){ await runIncident(k); }
 });
 
 renderTrack();

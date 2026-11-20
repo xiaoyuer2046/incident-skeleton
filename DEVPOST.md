@@ -88,6 +88,9 @@ python3 skill/scripts/run_incident.py --type printer \
 python3 skill/scripts/run_incident.py --type wifiap \
   --target 10.0.8.5 --message "AP offline, clients dropping"
 
+# the four crews patrol at once; only a confirmed failure reaches the skeleton
+python3 skill/scripts/patrol.py
+
 # the visual demo
 cd demo && python3 -m http.server 8777 --bind 127.0.0.1   # open http://127.0.0.1:8777
 ```

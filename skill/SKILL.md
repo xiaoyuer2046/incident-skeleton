@@ -36,6 +36,10 @@ python3 <skill-dir>/scripts/run_incident.py --type <printer|signage|av|wifiap> \
   (curl) for a CMS health endpoint or a room-controller API.
 - `--sample` runs one built-in alert of each type against safe public targets,
   so real ping/curl actually fire — use it to see the skeleton work end to end.
+- `scripts/patrol.py` runs all four crews at the same time, one probe loop per
+  device. A single failed probe is ignored; a device failing at least 2 of 3
+  probes is confirmed and handed to the skeleton (the threshold gate from the
+  roadmap). Run: `python3 <skill-dir>/scripts/patrol.py`.
 
 ## How to use it
 
