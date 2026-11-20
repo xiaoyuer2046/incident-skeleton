@@ -13,7 +13,7 @@ resolve). The scenario tags at the end are DETECTED from what the engine did.
 
 Writes demo/data/sim.js, which demo/console.html and demo/servicenow.html replay.
 
-    python3 simulate.py            # 12 patrols, 09:00-10:50, every 10 minutes
+    python3 simulate.py            # 14 patrols, 09:00-11:10, every 10 minutes
 """
 import argparse, json, os, shutil, sys, tempfile
 from datetime import datetime, timedelta
@@ -104,7 +104,12 @@ CYCLES = [
      "approvals": {"reset-room-profile": APPROVER}},
     {"harvest": True, "faults": {"PRN-2F-03": ("offline", [])}},
     {"faults": {"AP-3F-12": ("ap", []), "AV-2F-201": ("hung", ["reboot-codec"])}},
-    {"faults": {"AV-3F-301": ("hung", ["reboot-codec"])}, "probes": {"SIG-LOBBY-W": BLIP}},
+    # 10:50 the 10:40 codec reboot on AV-2F-201 did not hold: the re-check finds the fault back
+    {"faults": {"AV-3F-301": ("hung", ["reboot-codec"]), "AV-2F-201": ("hung", [])}, "probes": {"SIG-LOBBY-W": BLIP}},
+    # 11:00 the café screen drops and comes back by itself
+    {"probes": {"SIG-CAF-01": [False, False, True]}},
+    # 11:10 someone presses the kill switch before a printer jams
+    {"before": [("stop", {"en": "Chen Wei (AV lead)", "zh": "陈伟（AV 主管）"})], "faults": {"PRN-5F-02": ("jam", ["clear-queue"])}},
 ]
 WINDOWS = [{"device": "PRN-2F-03", "from": "2026-11-21T09:55:00", "to": "2026-11-21T10:35:00",
             "reason": {"en": "Fuser replacement (CHG0004417)", "zh": "更换定影器（CHG0004417）"}}]
@@ -112,11 +117,20 @@ WINDOWS = [{"device": "PRN-2F-03", "from": "2026-11-21T09:55:00", "to": "2026-11
 TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_knowledge", "blast",
         "master_linked", "comms_detected", "master_hint", "progress_posted", "board_closed", "duplicate",
         "escalated", "upstream_resolved", "cooldown", "maintenance", "approval_wait", "approved_fix", "auto_resolved",
-        "engineer_learned", "injection", "reopened", "demoted"]
+        "engineer_learned", "injection", "reopened", "demoted",
+        "self_healed", "recheck_held", "regressed", "kill_switch", "notified"]
 
 
 def detect_tags(cyc, library, prev_ts):
     tags = set()
+    if any(r["status"] == "self_healed" for r in cyc["rows"]):
+        tags.add("self_healed")
+    for x in cyc.get("rechecks", []):
+        tags.add("recheck_held" if x["held"] else "regressed")
+    if any(t["decision"] == "killed" for r in cyc["results"] for t in r["trace"]):
+        tags.add("kill_switch")
+    if cyc.get("notifications"):
+        tags.add("notified")
     for b in cyc.get("boards", []):
         for it in b["timeline"]:
             fresh = prev_ts < it["ts"] <= cyc["ts"]
@@ -131,7 +145,7 @@ def detect_tags(cyc, library, prev_ts):
             if it.get("kind") == "close":
                 tags.add("board_closed")
     st = [r["status"] for r in cyc["rows"]]
-    if not any(s in ("confirmed", "maintenance", "upstream") for s in st):
+    if not any(s in ("confirmed", "maintenance", "upstream", "self_healed") for s in st):
         tags.add("quiet")
     if "blip" in st:
         tags.add("blip")
@@ -224,7 +238,10 @@ def main():
 
         def do(evs):
             for ev in evs or []:
-                if ev[0] == "ack":
+                if ev[0] == "stop":
+                    rm.save_json(os.path.join(ctx.dir, "STOP"), {"by": ev[1]["en"], "by_zh": ev[1]["zh"], "ts": ctx.ts()})
+                    human.append({"kind": "stop", "author": ev[1]})
+                elif ev[0] == "ack":
                     num = rm.ticket_update(ctx, ev[1], ev[2], "engineer_ack", {"text": ev[3]}, assigned_to=ev[2])
                     human.append({"kind": "ack", "ticket": num, "author": ev[2], "text": ev[3]})
                 elif ev[0] == "resolve":
@@ -248,6 +265,7 @@ def main():
                "results": rep["results"], "scoreboard": rm.scoreboard(ctx),
                "library_size": len(library.get("entries", [])), "library_verified": sum(1 for e in library.get("entries", []) if e.get("status") == "verified"),
                "boards": json.loads(json.dumps(list(rep["board"].values()), ensure_ascii=False))}
+        cyc["rechecks"], cyc["notifications"] = rep["rechecks"], rep["notifications"]
         cyc["tags"] = detect_tags(cyc, library, cycles[-1]["ts"] if cycles else "")
         for t in cyc["tags"]:
             seen.setdefault(t, i + 1)

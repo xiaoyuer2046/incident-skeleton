@@ -64,7 +64,20 @@ def main():
     ap.add_argument("--remediate", action="store_true", help="try permitted fixes, then escalate if they fail")
     ap.add_argument("--simulate-fix", help="with --remediate: comma list of action ids that fix it; 'none' = nothing does")
     ap.add_argument("--data-dir", help="where the crew keeps what it learned")
+    ap.add_argument("--quiet", action="store_true", help="print only new notifications (for a scheduled job)")
     args = ap.parse_args()
+    if args.quiet:
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            notes = cycle(args)
+        for n in notes or []:
+            print("[%s] %s" % (", ".join(n["channels"]), n["text"][ri.LANG]))
+        return
+    cycle(args)
+
+
+def cycle(args):
     if args.lang:
         ri.set_lang(args.lang)
 
@@ -94,18 +107,25 @@ def main():
         print("  %-18s%-14s%-8s%s" % (name, marks, fails, verdict))
     print("\n  " + T("四台并行巡检用时 %.1f 秒" % elapsed, "Four devices patrolled in parallel in %.1f s" % elapsed) + "\n")
 
+    if args.remediate:
+        # the full loop: re-check earlier fixes, threshold, blast radius, outage watch, repair, tickets, notifications
+        import remediate as rm
+        import orchestrator as orch
+        ctx = rm.Ctx(args.data_dir or os.path.join(HERE, "..", "remediation", "data"), ri.LANG)
+        devs = [{"id": "%s-sample" % d["type"], "type": d["type"], "target": d["target"], "location": d["source"]} for d in DEVICES]
+        probes = {"%s-sample" % d["type"]: results[d["type"]] for d in DEVICES}
+        faults = {}
+        for d in DEVICES:
+            f = {"message": d["message"]}
+            if args.simulate_fix is not None:
+                f["fixes"] = [] if args.simulate_fix == "none" else [x for x in args.simulate_fix.split(",") if x]
+            faults["%s-sample" % d["type"]] = f
+        rep = orch.run_cycle(ctx, devs, probes, faults, quiet=False)
+        for n in rep["notifications"]:
+            print("  📣 [%s] %s" % (", ".join(n["channels"]), n["text"][ri.LANG]))
+        return rep["notifications"]
     if not confirmed:
         print("  " + T("没有达到阈值的故障，不开单。", "No fault reached the threshold. No ticket.") + "\n")
-        return
-    if args.remediate:
-        import remediate as rm
-        ctx = rm.Ctx(args.data_dir or os.path.join(HERE, "..", "remediation", "data"), ri.LANG)
-        scen = None
-        if args.simulate_fix is not None:
-            scen = set() if args.simulate_fix == "none" else set(x for x in args.simulate_fix.split(",") if x)
-        for d in confirmed:
-            ns = argparse.Namespace(type=d["type"], target=d["target"], source=d["source"], message=d["message"])
-            rm.remediate(ns, ctx, scenario=scen)
         return
     for d in confirmed:
         ns = argparse.Namespace(type=d["type"], target=d["target"], source=d["source"], message=d["message"])

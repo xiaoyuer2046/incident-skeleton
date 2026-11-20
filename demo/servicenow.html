@@ -135,7 +135,7 @@ const I = {
   wn:'工作备注', cm:'评论', k_created:'自动开单', k_updated:'故障仍在，追加记录（没有重复开单）', k_reopened:'72 小时内复发，重新打开', k_resolved:'已解决',
   sym:'症状', cause:'可能的原因', tried:'自动化已做', left:'还没做 / 需人工', wait:'等待批准', cool:'冷却中跳过', kbref:'给工程师的参考', devices:'受影响设备', held:'逐台修复已暂停，先查上游。',
   fixed_by:'自动化修好：%a', appr:'批准人：%a', up_rec:'上游下的设备全部恢复，自动解决。', rec:'✓ 恢复', notrec:'✗ 没恢复', nothing:'（无）',
-  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', killed_by:'%a 按下了紧急开关：自动修复已暂停',
   lib_title:'病例库（自动收集）', lib_sub:'来源：ServiceNow KB、历史工单、我们的已结工单、Teams、Slack、企业微信、邮件。只有验证过的修法才会被自动化使用，并且仍受权限限制。',
   id:'ID', device:'设备', symptom:'症状', fix:'修法', kind:'类型', status:'状态', sources:'来源', text:'原文', auto:'可自动', engineer:'工程师参考',
   verified:'已验证', unverified:'未确认', contradicted:'有反例', failed:'无效', rej_title:'被拦截的来源', rej_sub:'这些消息想下命令（改规则、执行下载的脚本、关保护）。只当数据看，从不执行，留给人审查。',
@@ -153,7 +153,7 @@ const I = {
   wn:'Work notes', cm:'Comments', k_created:'Opened by automation', k_updated:'Fault still present, note added (no duplicate ticket)', k_reopened:'Came back within 72 h, reopened', k_resolved:'Resolved',
   sym:'Symptom', cause:'Likely cause', tried:'Automation tried', left:'Not done / needs a human', wait:'Waiting for approval', cool:'Skipped (cooling down)', kbref:'For the engineer', devices:'Affected devices', held:'Per-device repairs held back; check upstream first.',
   fixed_by:'Fixed by automation: %a', appr:'Approved by %a', up_rec:'All devices behind the switch recovered; resolved automatically.', rec:'✓ recovered', notrec:'✗ not recovered', nothing:'(none)',
-  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', killed_by:'%a pressed the kill switch: automatic repairs are paused',
   lib_title:'Case library (harvested automatically)', lib_sub:'Sources: ServiceNow KB, past incidents, our resolved tickets, Teams, Slack, WeChat Work, email. Only verified fixes are used by automation, and the policy still applies.',
   id:'ID', device:'Device', symptom:'Symptom', fix:'Fix', kind:'Kind', status:'Status', sources:'Sources', text:'Original text', auto:'automatable', engineer:'engineer advice',
   verified:'verified', unverified:'unconfirmed', contradicted:'contradicted', failed:'failed', rej_title:'Rejected sources', rej_sub:'These messages tried to give orders (override rules, run a downloaded script, switch off a safeguard). Kept as data for review, never executed.',
@@ -236,7 +236,8 @@ function noteBody(n, tk){
     const wait = (d.awaiting || []).length ? `<div><b>${esc(t('wait'))}:</b> ${d.awaiting.map(act).map(esc).join(', ')}</div>` : '';
     const kb = (d.knowledge || []).map(id => LIB[id]).filter(e => e && e.kind === 'engineer' && e.first_seen <= n.ts).map(e => `<li>${esc(e.text)} <span class="pill ${e.status === 'verified' ? 'p-res' : 'p-mute'}">${esc(t(e.status))}</span> <span class="mono">${esc(e.id)}</span></li>`).join('');
     const aiN = d.ai ? `<div><b>🧠 ${esc(d.ai.by)}:</b> ${esc(L(d.ai.cause))}. ${esc(L(d.ai.next))} (${esc(d.ai.confidence)})</div>` : '';
-    return aiN + `<b>${esc(t(head))}</b><div>${esc(t('sym'))}: ${esc(L({en: tk.message, zh: tk.message_zh || tk.message}))}</div><div>${esc(t('cause'))}: ${esc(bad || t('nothing'))}</div>
+    const kl = d.killed ? `<div style="color:var(--red);font-weight:600">⛔ ${esc(t('killed_by', L({en: d.killed.by, zh: d.killed.by_zh || d.killed.by})))}</div>` : '';
+    return kl + aiN + `<b>${esc(t(head))}</b><div>${esc(t('sym'))}: ${esc(L({en: tk.message, zh: tk.message_zh || tk.message}))}</div><div>${esc(t('cause'))}: ${esc(bad || t('nothing'))}</div>
       <div><b>${esc(t('tried'))}</b><ul>${triedList(d)}</ul></div>${cool}<div><b>${esc(t('left'))}</b><ul>${left}</ul></div>${wait}${kb ? `<div><b>${esc(t('kbref'))}</b><ul>${kb}</ul></div>` : ''}`;
   }
   if (n.kind === 'upstream'){

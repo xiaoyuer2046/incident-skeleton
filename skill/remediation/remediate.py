@@ -45,7 +45,7 @@ AUTOMATION = "Incident Skeleton (automation)"
 S = {
  "zh": {
   "head": "修复闭环", "cands": "候选修法（先软后硬，再按成功率）", "skip_demoted": "跳过：已降级，成功率太低",
-  "skip_denied": "跳过：权限不允许", "skip_cool": "跳过：冷却中", "human": "需人工", "approval": "需批准",
+  "skip_denied": "跳过：权限不允许", "skip_cool": "跳过：冷却中", "skip_killed": "跳过：紧急开关已按下", "skip_rate": "跳过：今天对这台的修复次数已满", "human": "需人工", "approval": "需批准",
   "approved": "已批准", "notify": "先通知再动手", "fixed": "✅ 已恢复", "notfixed": "✗ 没恢复",
   "learned": "已记录结果，成功率会影响下次排序", "alert": "告警：自动修复失败", "dev": "设备", "sym": "症状",
   "tried": "已做", "left": "还没做 / 需人工", "cause": "可能的原因", "ticket": "工单", "group": "派给",
@@ -58,7 +58,7 @@ S = {
  "en": {
   "head": "Remediation loop", "cands": "Candidate fixes (soft before hard, then by success rate)",
   "skip_demoted": "skipped: demoted, success rate too low", "skip_denied": "skipped: not permitted by policy",
-  "skip_cool": "skipped: cooling down", "human": "needs a human", "approval": "needs approval",
+  "skip_cool": "skipped: cooling down", "skip_killed": "skipped: kill switch is on", "skip_rate": "skipped: daily repair limit for this device reached", "human": "needs a human", "approval": "needs approval",
   "approved": "approved", "notify": "notify, then act", "fixed": "✅ recovered", "notfixed": "✗ not recovered",
   "learned": "outcome recorded; success rate shapes the next ranking", "alert": "ALERT: automatic repair failed",
   "dev": "Device", "sym": "Symptom", "tried": "What was done", "left": "Not done / needs a human",
@@ -236,7 +236,50 @@ def execute(ctx, action, ns):
     return ok, out
 
 
-def decide(ctx, device, aid, state, tried_recently):
+def kill_state(ctx):
+    """The kill switch: policy.json "kill_switch": true, or a STOP file in the data dir (remediate.py --stop)."""
+    if ctx.policy.get("kill_switch"):
+        return {"by": "policy.json", "ts": None}
+    p = os.path.join(ctx.dir, "STOP")
+    if os.path.exists(p):
+        return load_json(p, {}) or {"by": "STOP file", "ts": None}
+    return None
+
+
+def repairs_today(ctx, target):
+    now = ctx.clock()
+    return sum(1 for r in read_jsonl(ctx.attempts_path)
+               if r.get("target") == target and r.get("outcome") == "ran" and now - to_epoch(r["ts"]) < 86400)
+
+
+def recheck(ctx, statuses):
+    """Delayed verification. A fix counts as provisional until the device is still healthy
+    recheck_minutes later. If the fault is back, the attempt is turned into a failure."""
+    rows, now, out, changed = read_jsonl(ctx.attempts_path), ctx.clock(), [], False
+    for r in rows:
+        if not (r.get("verified") and r.get("confirmed") is None and r.get("recheck_due")):
+            continue
+        if to_epoch(r["recheck_due"]) > now:
+            continue
+        st = statuses.get(r.get("target"))
+        if st == "healthy":
+            r["confirmed"] = True
+        elif st in ("confirmed", "self_healed"):
+            r.update(confirmed=False, verified=False, regressed=True)
+        else:
+            continue  # maintenance, upstream outage or unknown: check again next patrol
+        r["rechecked_at"] = ctx.ts()
+        changed = True
+        out.append({"device": r["target"], "action": r["action"], "held": r["confirmed"], "fixed_at": r["ts"]})
+        append_jsonl(ctx.audit_path, {"ts": ctx.ts(), "device": r["target"], "action": r["action"], "decision": "recheck", "held": r["confirmed"]})
+    if changed:
+        with open(ctx.attempts_path, "w", encoding="utf-8") as f:
+            for r in rows:
+                f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    return out
+
+
+def decide(ctx, device, aid, state, tried_recently, gate=None):
     a = ctx.actions[aid]
     if a.get("physical"):
         return "needs_human", None
@@ -244,6 +287,8 @@ def decide(ctx, device, aid, state, tried_recently):
         return "demoted", None
     if aid not in ctx.policy.get("allow", {}).get(device, []):
         return "denied", None
+    if gate:
+        return gate, None  # "killed" or "rate_limited"
     if aid in tried_recently:
         return "cooldown", None
     tier = ctx.policy.get("autonomy", {}).get(a["risk"], "approval")
@@ -307,6 +352,8 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
 
     st = stats(ctx)
     recent = cooldown_set(ctx, device, target) if use_cooldown else set()
+    killed = kill_state(ctx)
+    gate = "killed" if killed else ("rate_limited" if repairs_today(ctx, target) >= ctx.policy.get("max_repairs_per_device_per_day", 6) else None)
     rows = []
     for aid, srcs in cands.items():
         key = (device, skey, aid)
@@ -336,14 +383,15 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
             break
         aid = r["id"]
         a = ctx.actions[aid]
-        d, tier = decide(ctx, device, aid, r["state"], recent)
+        d, tier = decide(ctx, device, aid, r["state"], recent, gate)
         tr = {k: r[k] for k in ("sources", "state", "score", "hist", "lib", "hint")}
         if aid in ai_why:
             tr["ai_why"] = ai_why[aid]
         tr.update({"action": aid, "risk": a["risk"], "decision": d, "tier": tier})
         label = "%s  [%s · %s]" % (ctx.desc(aid), a["risk"], ",".join(r["sources"]))
         if d != "run":
-            msg = {"needs_human": t["human"], "demoted": t["skip_demoted"], "denied": t["skip_denied"], "cooldown": t["skip_cool"]}[d]
+            msg = {"needs_human": t["human"], "demoted": t["skip_demoted"], "denied": t["skip_denied"], "cooldown": t["skip_cool"],
+                   "killed": t["skip_killed"], "rate_limited": t["skip_rate"]}[d]
             out("   · %s  → %s" % (label, msg))
             if d == "cooldown":
                 cooled.append(aid)
@@ -374,7 +422,9 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
         append_jsonl(ctx.attempts_path, {"ts": ctx.ts(), "device": device, "target": target, "symptom": skey,
                      "action": aid, "risk": a["risk"], "source": ",".join(r["sources"]), "tier": tier,
                      "outcome": "ran" if ok else "failed_to_run", "verified": verified if ok else None,
-                     "live": ctx.live, "output": output[:200]})
+                     "live": ctx.live, "output": output[:200],
+                     "recheck_due": datetime.fromtimestamp(ctx.clock() + 60 * ctx.policy.get("recheck_minutes", 10)).isoformat(timespec="seconds") if (ok and verified) else None,
+                     "confirmed": None})
         append_jsonl(ctx.audit_path, {"ts": ctx.ts(), "device": device, "target": target, "action": aid,
                      "decision": "run", "tier": tier, "approved_by": tr.get("approved_by"), "live": ctx.live})
         tr.update({"ran": ok, "recovered": verified if ok else None, "output": output[:120]})
@@ -390,7 +440,7 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
     key = "%s|%s|%s" % (device, ci, skey)
     result = {"resolved": resolved, "attempts": attempts, "left": left, "cooldown": cooled, "evidence": evidence,
               "symptom": skey, "trace": trace, "key": key, "ci": ci, "device": device, "message": ns.message,
-              "builtin_first": builtin_first, "ticket": None}
+              "builtin_first": builtin_first, "ticket": None, "killed": killed}
     if resolved:
         last = attempts[-1]
         num = ticket_resolve(ctx, key, AUTOMATION, "auto_fixed",
@@ -527,11 +577,12 @@ def escalate(ns, ctx, result, quiet=False):
     import brain
     ai = brain.ask(ctx, "diagnose", {"device": ns.type, "ci": result["ci"], "message": ns.message, "evidence": result["evidence"],
                    "tried": [{"action": a["action"], "recovered": a["recovered"]} for a in result["attempts"]],
-                   "left_for_human": [{"en": ctx.actions[x["action"]]["en"], "zh": ctx.actions[x["action"]]["zh"]} for x in result["left"]],
+                   "left_for_human": [{"en": ctx.actions[x["action"]]["en"], "zh": ctx.actions[x["action"]]["zh"]} for x in result["left"]
+                                      if x["why"] in ("approval", "human")],
                    "allowed_actions": []})
     data = {"tried": [{k: a[k] for k in ("action", "tier", "ran", "recovered")} for a in result["attempts"]],
             "left": result["left"], "cooldown": result["cooldown"], "evidence": result["evidence"],
-            "awaiting": awaiting, "knowledge": [k["id"] for k in knowledge], "ai": ai}
+            "awaiting": awaiting, "knowledge": [k["id"] for k in knowledge], "ai": ai, "killed": result.get("killed")}
     desc = "Symptom: %s\nLikely cause: %s\nTried: %s\nNot done: %s" % (
         ns.message, explain(ctx, result["evidence"]),
         ", ".join("%s (%s)" % (ctx.actions[a["action"]]["en"], "recovered" if a["recovered"] else "not recovered") for a in result["attempts"]) or "-",
@@ -611,7 +662,20 @@ def main():
     ap.add_argument("--approve", default="", help="comma list of action ids a human approved")
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--demo", action="store_true")
+    ap.add_argument("--stop", action="store_true", help="kill switch: pause every automatic repair")
+    ap.add_argument("--resume", action="store_true", help="lift the kill switch")
+    ap.add_argument("--by", default=os.environ.get("USER", "operator"), help="who pressed the kill switch")
     a = ap.parse_args()
+    if a.stop or a.resume:
+        os.makedirs(a.data_dir, exist_ok=True)
+        stop = os.path.join(a.data_dir, "STOP")
+        if a.stop:
+            save_json(stop, {"by": a.by, "ts": datetime.now().isoformat(timespec="seconds")})
+            print("kill switch ON: automatic repairs paused (%s). Undo: --resume" % stop)
+        elif os.path.exists(stop):
+            os.remove(stop)
+            print("kill switch OFF: automatic repairs allowed again")
+        return
     if a.demo:
         demo(a.lang)
         return

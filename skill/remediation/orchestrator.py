@@ -19,7 +19,13 @@ import remediate as rm
 
 def classify(probes, need):
     fails = probes.count(False)
-    return "healthy" if fails == 0 else ("blip" if fails < need else "confirmed")
+    if fails == 0:
+        return "healthy"
+    if fails < need:
+        return "blip"
+    # failed enough to confirm, but the last probe answered: it came back on its own.
+    # No repair, and no credit to any fix.
+    return "self_healed" if probes[-1] else "confirmed"
 
 
 def in_maintenance(ctx, dev_id, windows):
@@ -47,6 +53,7 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
                 row.update(status="maintenance", window=w)
         rows.append(row)
     by_id = {r["id"]: r for r in rows}
+    rechecks = rm.recheck(ctx, {r["id"]: r["status"] for r in rows})
     dev_by_id = {d["id"]: d for d in devices}
     events = []
 
@@ -83,9 +90,10 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
         if r["status"] != "confirmed":
             continue
         d, f = dev_by_id[r["id"]], faults.get(r["id"], {})
-        ns = argparse.Namespace(type=d["type"], target=d["id"], ci=d["id"], source=d.get("location", ""),
+        ns = argparse.Namespace(type=d["type"], target=d.get("target", d["id"]), ci=d["id"], source=d.get("location", ""),
                                 message=f.get("message", "patrol: %s unreachable" % d["id"]), message_zh=f.get("message_zh"))
-        res = rm.remediate(ns, ctx, scenario=set(f.get("fixes", [])), approvals=approvals or {}, quiet=quiet,
+        scenario = set(f["fixes"]) if "fixes" in f else None  # None = verify with a real probe
+        res = rm.remediate(ns, ctx, scenario=scenario, approvals=approvals or {}, quiet=quiet,
                            evidence=f.get("evidence"), hints=hints.get(d["id"]))
         res["message_zh"] = f.get("message_zh")
         r["ticket"] = (res.get("ticket") or {}).get("number")
@@ -107,4 +115,6 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
                                   close_notes="All devices behind %s recovered." % tk.get("cmdb_ci"))
                 events.append({"kind": "upstream_recovered", "upstream": tk.get("cmdb_ci"), "devices": devs, "ticket": num, "needed_fix": needed})
     board = watch.after(ctx, rows, results)
-    return {"rows": rows, "events": events, "results": results, "board": board}
+    import notify
+    notes = notify.run(ctx, rows, events, results, board, rechecks)
+    return {"rows": rows, "events": events, "results": results, "board": board, "rechecks": rechecks, "notifications": notes}

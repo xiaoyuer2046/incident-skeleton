@@ -38,6 +38,19 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 | AI brain | interface, guardrails and tests are real; the demo uses a **mock stand-in**; real-model backends are written but untested |
 | Demo page | simulated data, for the story |
 
+## Safety and staying in touch
+
+| Part | What it does | How to use it |
+|---|---|---|
+| Kill switch | pauses every automatic repair; tickets are still opened for people | `python3 skill/remediation/remediate.py --stop --by <name>`, undo with `--resume`, or `"kill_switch": true` in `policy.json` |
+| Daily limit | at most `max_repairs_per_device_per_day` (6) repairs per device | `policy.json` |
+| Delayed re-check | a fix counts only if the device is still healthy `recheck_minutes` (10) later; if the fault is back the fix is counted as a failure | automatic |
+| Self-heal rule | a device that fails twice and then answers is not repaired and gives no credit to any fix | automatic |
+| Notifications (`notify.py`) | outage, board news, failed repair, approval needed, fixed, fix did not hold, kill switch → Teams / Slack, each sent once | channels in `policy.json`; webhook URLs in `TEAMS_WEBHOOK_URL` / `SLACK_WEBHOOK_URL`; dry run writes `outbox.jsonl` |
+| Scheduled patrol | runs every 10 minutes as a Kiro Crew command job (no AI cost), prints only new notifications | `python3 skill/scripts/patrol.py --remediate --quiet --lang zh` |
+
+`skill/tests/test_safety.py` checks the kill switch, the daily limit, both re-check outcomes, the self-heal rule and that notifications are routed and not repeated.
+
 ## The AI brain (`skill/remediation/brain.py`)
 
 One interface where an AI plugs in. The engine asks; the AI advises; the rules decide.
@@ -70,9 +83,9 @@ Sources are sample files; the live ServiceNow and mailbox connectors are not wir
 
 ## The autoplay demo (no clicks needed)
 
-Open `demo/console.html`. It plays one simulated morning, 12 patrols from 09:00 to 10:50, by itself and loops.
+Open `demo/console.html`. It plays one simulated morning, 14 patrols from 09:00 to 11:10, by itself and loops.
 Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 24 scenarios as they happen. EN / 中文 switch top right;
+harvest, learning, ServiceNow tickets, and a checklist of the 29 scenarios as they happen. EN / 中文 switch top right;
 `?at=5` jumps to a patrol, `?speed=2` speeds it up.
 
 `demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
@@ -99,12 +112,14 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
 | `skill/remediation/brain.py` | the AI interface: four tasks, guardrails, backends off / mock / claude / http / cmd |
 | `skill/tests/test_brain_guardrails.py` | a badly behaved AI must not change what the engine does |
+| `skill/remediation/notify.py` | pushes the right news to Teams / Slack once (dry run by default) |
+| `skill/tests/test_safety.py` | kill switch, daily limit, re-check, self-heal, notifications |
 | `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
 | `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
 | `skill/mcp/incident_kb_server.py` | a real stdio MCP server: route, recall a fix, record a case |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, 24 scenarios |
+| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, 29 scenarios |
 | `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
 | `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |

@@ -58,5 +58,30 @@
   "min_devices": 3,
   "_comment": "this many confirmed faults behind one upstream switch = one upstream ticket, no per-device repairs"
  },
- "reopen_hours": 72
+ "reopen_hours": 72,
+ "kill_switch": false,
+ "max_repairs_per_device_per_day": 6,
+ "recheck_minutes": 10,
+ "notify": {
+  "dry_run": true,
+  "channels": [
+   {
+    "name": "Teams · IT on-call",
+    "platform": "teams",
+    "webhook_env": "TEAMS_WEBHOOK_URL",
+    "kinds": "*"
+   },
+   {
+    "name": "Slack #it-announce",
+    "platform": "slack",
+    "webhook_env": "SLACK_WEBHOOK_URL",
+    "kinds": [
+     "outage",
+     "board",
+     "board_closed",
+     "kill"
+    ]
+   }
+  ]
+ }
 }
