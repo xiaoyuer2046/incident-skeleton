@@ -97,8 +97,8 @@ def send(ctx, msgs):
     return msgs
 
 
-def run(ctx, rows, events, results, board, rechecks):
+def run(ctx, rows, events, results, board, rechecks, extra=None):
     st = rm.load_json(_state_path(ctx), {"last_ts": ""})
-    msgs = send(ctx, build(ctx, rows, events, results, board, rechecks, st["last_ts"]))
+    msgs = send(ctx, build(ctx, rows, events, results, board, rechecks, st["last_ts"]) + list(extra or []))
     rm.save_json(_state_path(ctx), {"last_ts": ctx.ts()})
     return msgs

@@ -135,7 +135,8 @@ const I = {
   wn:'工作备注', cm:'评论', k_created:'自动开单', k_updated:'故障仍在，追加记录（没有重复开单）', k_reopened:'72 小时内复发，重新打开', k_resolved:'已解决',
   sym:'症状', cause:'可能的原因', tried:'自动化已做', left:'还没做 / 需人工', wait:'等待批准', cool:'冷却中跳过', kbref:'给工程师的参考', devices:'受影响设备', held:'逐台修复已暂停，先查上游。',
   fixed_by:'自动化修好：%a', appr:'批准人：%a', up_rec:'上游下的设备全部恢复，自动解决。', rec:'✓ 恢复', notrec:'✗ 没恢复', nothing:'（无）',
-  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', killed_by:'%a 按下了紧急开关：自动修复已暂停',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', killed_by:'%a 按下了紧急开关：自动修复已暂停', n_kbd:'KB 草稿', kbd_title:'KB 草稿（由自动化起草，等待审核）', kbd_sub:'同一修法在本地修好并在 10 分钟复查时稳住至少 2 次，才会起草。不会自动发布。',
+  kbd_steps:'步骤', kbd_dont:'不用试', kbd_ev:'依据', m_risk:'会议风险：%a', c_appr:'在聊天里批准：%a',
   lib_title:'病例库（自动收集）', lib_sub:'来源：ServiceNow KB、历史工单、我们的已结工单、Teams、Slack、企业微信、邮件。只有验证过的修法才会被自动化使用，并且仍受权限限制。',
   id:'ID', device:'设备', symptom:'症状', fix:'修法', kind:'类型', status:'状态', sources:'来源', text:'原文', auto:'可自动', engineer:'工程师参考',
   verified:'已验证', unverified:'未确认', contradicted:'有反例', failed:'无效', rej_title:'被拦截的来源', rej_sub:'这些消息想下命令（改规则、执行下载的脚本、关保护）。只当数据看，从不执行，留给人审查。',
@@ -153,7 +154,8 @@ const I = {
   wn:'Work notes', cm:'Comments', k_created:'Opened by automation', k_updated:'Fault still present, note added (no duplicate ticket)', k_reopened:'Came back within 72 h, reopened', k_resolved:'Resolved',
   sym:'Symptom', cause:'Likely cause', tried:'Automation tried', left:'Not done / needs a human', wait:'Waiting for approval', cool:'Skipped (cooling down)', kbref:'For the engineer', devices:'Affected devices', held:'Per-device repairs held back; check upstream first.',
   fixed_by:'Fixed by automation: %a', appr:'Approved by %a', up_rec:'All devices behind the switch recovered; resolved automatically.', rec:'✓ recovered', notrec:'✗ not recovered', nothing:'(none)',
-  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', killed_by:'%a pressed the kill switch: automatic repairs are paused',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', killed_by:'%a pressed the kill switch: automatic repairs are paused', n_kbd:'KB drafts', kbd_title:'KB drafts (written by automation, awaiting review)', kbd_sub:'Drafted only after a fix worked here and held at the 10-minute re-check at least twice. Never published automatically.',
+  kbd_steps:'Steps', kbd_dont:'Do not bother', kbd_ev:'Evidence', m_risk:'Meeting at risk: %a', c_appr:'Approved in chat: %a',
   lib_title:'Case library (harvested automatically)', lib_sub:'Sources: ServiceNow KB, past incidents, our resolved tickets, Teams, Slack, WeChat Work, email. Only verified fixes are used by automation, and the policy still applies.',
   id:'ID', device:'Device', symptom:'Symptom', fix:'Fix', kind:'Kind', status:'Status', sources:'Sources', text:'Original text', auto:'automatable', engineer:'engineer advice',
   verified:'verified', unverified:'unconfirmed', contradicted:'contradicted', failed:'failed', rej_title:'Rejected sources', rej_sub:'These messages tried to give orders (override rules, run a downloaded script, switch off a safeguard). Kept as data for review, never executed.',
@@ -199,7 +201,7 @@ function renderNav(){
   const c = counts(), h = location.hash || '#open';
   const a = (href, k, n) => `<a href="${href}" class="${h === href ? 'on' : ''}">${esc(t(k))}<span>${n ?? ''}</span></a>`;
   $('#nav').innerHTML = `<h4>${esc(t('n_inc'))}</h4>${a('#major','n_major',c.major)}${a('#open','n_open',c.open)}${a('#hold','n_hold',c.hold)}${a('#resolved','n_res',c.res)}${a('#all','n_all',c.all)}
-    <h4>${esc(t('n_kb'))}</h4>${a('#library','n_lib',(D.library.entries||[]).filter(e => e.first_seen <= tsAt()).length)}${a('#rejected','n_rej',(D.library.rejected||[]).filter(r => r.ts <= tsAt()).length)}`;
+    <h4>${esc(t('n_kb'))}</h4>${a('#kbdrafts','n_kbd',(D.kb_drafts||[]).filter(d => d.ts <= tsAt()).length)}${a('#library','n_lib',(D.library.entries||[]).filter(e => e.first_seen <= tsAt()).length)}${a('#rejected','n_rej',(D.library.rejected||[]).filter(r => r.ts <= tsAt()).length)}`;
 }
 
 let lastSeen = {};
@@ -245,6 +247,8 @@ function noteBody(n, tk){
     return `<b>${esc(t(head))}</b><div>${esc(t('devices'))}: <span class="mono">${esc((d.devices || []).join(', '))}</span></div><div>${esc(t('held'))}</div>`;
   }
   if (n.kind === 'upstream_recovered') return `<b>${esc(t('k_resolved'))}</b><div>${esc(t('up_rec'))}</div>${(d.needed_fix||[]).length ? `<div>${esc(t('needed', d.needed_fix.join(', ')))}</div>` : ''}`;
+  if (n.kind === 'meeting_risk') return `<b>${esc(t('m_risk', d.meeting + ' ' + d.start + ' · ' + d.attendees))}</b>${d.alternative ? `<div>${esc(d.move ? '→ ' : 'Plan B: ')}${esc(d.alternative)}</div>` : ''}<div>Priority → 2 - High</div>`;
+  if (n.kind === 'chat_approval') return esc(t('c_appr', act(d.action)));
   if (n.kind === 'linked_master') return esc(t('linked', d.master));
   if (n.kind === 'master_note') return `${esc(L(d.text))}${d.eta ? `<div>${esc(t('eta'))}: <b>${esc(d.eta)}</b></div>` : ''}${d.engineer ? `<div><b>${esc(t('eng_step'))}:</b> ${esc(L(d.engineer))}</div>` : ''}`;
   if (n.kind === 'child_progress') return `<b>${esc(t('progress'))}</b><div>${esc(L(d.text))}</div>`;
@@ -304,6 +308,13 @@ function renderLibrary(){
   $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('lib_title'))}</h1></div><div style="padding:8px 18px;color:var(--muted)">${esc(t('lib_sub'))}</div>
     <table class="lib"><thead><tr><th>${esc(t('id'))}</th><th>${esc(t('device'))}</th><th>${esc(t('symptom'))}</th><th>${esc(t('fix'))}</th><th>${esc(t('kind'))}</th><th>${esc(t('status'))}</th><th>${esc(t('sources'))}</th><th>${esc(t('text'))}</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
+function renderKbDrafts(){
+  const rows = (D.kb_drafts || []).filter(d => d.ts <= tsAt()).map(d => `<div class="kb"><div class="hd"><b class="mono">${esc(d.number)}</b><b>${esc(L(d.title))}</b><span class="pill p-hold">Draft</span></div>
+    <div style="margin-top:6px"><b>${esc(t('kbd_steps'))}</b><ol>${(L(d.steps)||[]).map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>
+    ${(L(d.dont)||[]).length ? `<div><b>${esc(t('kbd_dont'))}</b><ul>${L(d.dont).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+    <div style="color:var(--muted)">${esc(t('kbd_ev'))}: ${esc(L(d.evidence))} · ${esc(fmt(d.ts))}</div></div>`).join('');
+  $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('kbd_title'))}</h1></div><div style="padding:8px 18px;color:var(--muted)">${esc(t('kbd_sub'))}</div><div style="padding:0 18px">${rows || '<div class="empty">—</div>'}</div>`;
+}
 function renderRejected(){
   const rows = (D.library.rejected || []).filter(r => r.ts <= tsAt()).map(r => `<tr><td>${esc(r.where)}</td><td>${esc(r.author)}</td><td class="mono">${esc(fmt(r.ts))}</td><td><span class="pill p-prog">${esc(t('rr_' + r.reason))}</span></td><td><q>${esc(r.text)}</q></td></tr>`).join('');
   $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('rej_title'))}</h1></div><div style="padding:8px 18px;color:var(--muted)">${esc(t('rej_sub'))}</div>` +
@@ -317,6 +328,7 @@ function render(){
   const h = (location.hash || '#open').slice(1);
   if (['open','hold','resolved','all','major'].includes(h)) renderList(h);
   else if (h === 'library') renderLibrary();
+  else if (h === 'kbdrafts') renderKbDrafts();
   else if (h === 'rejected') renderRejected();
   else renderForm(h);
 }

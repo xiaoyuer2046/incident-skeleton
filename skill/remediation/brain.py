@@ -42,6 +42,8 @@ SHAPES = {
     "map_fix_text": '{"actions":["<id from allowed_actions>"],"engineer_only":true|false}',
     "diagnose": '{"cause":{"en":"...","zh":"..."},"next":{"en":"...","zh":"..."},"confidence":"low|medium|high"}',
     "summarize_outage_board": '{"summary":{"en":"...","zh":"..."}}',
+    "draft_kb": '{"draft":{"title":{"en":"...","zh":"..."},"steps":{"en":["..."],"zh":["..."]}}}',
+    "answer_chat": '{"reply":{"en":"...","zh":"..."}}',
 }
 
 
@@ -132,6 +134,14 @@ def _validate(task, out, payload):
     if task == "summarize_outage_board":
         s = _clip(out.get("summary"))
         return {"summary": s} if s and s.get("en") else None
+    if task == "answer_chat":
+        r = out.get("reply")
+        if isinstance(r, dict) and r.get("en"):
+            return {"reply": {k: str(v)[:900] for k, v in r.items() if k in ("en", "zh")}}
+        return None
+    if task == "draft_kb":
+        d = out.get("draft")
+        return {"draft": d} if isinstance(d, dict) and isinstance(d.get("title"), dict) else None
     return None
 
 
@@ -192,4 +202,8 @@ def _mock(task, p):
         return {"cause": {"en": "Most likely " + c_en, "zh": "最可能是" + c_zh}, "next": {"en": n_en, "zh": n_zh}, "confidence": "medium"}
     if task == "summarize_outage_board":
         return {"summary": p.get("draft")}
+    if task == "answer_chat":
+        return {"reply": p.get("draft")}
+    if task == "draft_kb":
+        return {"draft": p.get("draft")}
     return None

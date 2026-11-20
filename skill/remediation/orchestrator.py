@@ -86,6 +86,9 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
     board, hints = watch.poll(ctx)
 
     results = []
+    # one-time, per-device approvals given in chat (chatops.py)
+    chat_ap_path = os.path.join(ctx.dir, "approvals.json")
+    chat_ap = rm.load_json(chat_ap_path, {})
     for r in rows:
         if r["status"] != "confirmed":
             continue
@@ -93,8 +96,13 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
         ns = argparse.Namespace(type=d["type"], target=d.get("target", d["id"]), ci=d["id"], source=d.get("location", ""),
                                 message=f.get("message", "patrol: %s unreachable" % d["id"]), message_zh=f.get("message_zh"))
         scenario = set(f["fixes"]) if "fixes" in f else None  # None = verify with a real probe
-        res = rm.remediate(ns, ctx, scenario=scenario, approvals=approvals or {}, quiet=quiet,
+        ap = dict(approvals or {})
+        if d["id"] in chat_ap:
+            ap[chat_ap[d["id"]]["action"]] = "%s · via %s" % (chat_ap[d["id"]]["by"], chat_ap[d["id"]].get("via", "chat"))
+        res = rm.remediate(ns, ctx, scenario=scenario, approvals=ap, quiet=quiet,
                            evidence=f.get("evidence"), hints=hints.get(d["id"]))
+        if d["id"] in chat_ap and any(t["action"] == chat_ap[d["id"]]["action"] and t["decision"] == "run" for t in res["trace"]):
+            del chat_ap[d["id"]]  # an approval is used once
         res["message_zh"] = f.get("message_zh")
         r["ticket"] = (res.get("ticket") or {}).get("number")
         r["resolved"] = res["resolved"]
@@ -114,7 +122,15 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
                                   "master": tk.get("parent_incident")},
                                   close_notes="All devices behind %s recovered." % tk.get("cmdb_ci"))
                 events.append({"kind": "upstream_recovered", "upstream": tk.get("cmdb_ci"), "devices": devs, "ticket": num, "needed_fix": needed})
+    rm.save_json(chat_ap_path, chat_ap)
     board = watch.after(ctx, rows, results)
-    import notify
-    notes = notify.run(ctx, rows, events, results, board, rechecks)
-    return {"rows": rows, "events": events, "results": results, "board": board, "rechecks": rechecks, "notifications": notes}
+    fixed_now = {r["ci"] for r in results if r["resolved"]}
+    rm.save_json(os.path.join(ctx.dir, "last_patrol.json"), {"ts": ctx.ts(), "devices": [{"id": d["id"], "type": d["type"]} for d in devices],
+                 "status": {r["id"]: ("fixed" if r["id"] in fixed_now else r["status"]) for r in rows}})
+    import premeeting, kbdraft, notify
+    meetings, m_msgs = premeeting.run(ctx, rows, results, devices)
+    rm.save_json(os.path.join(ctx.dir, "premeeting_last.json"), meetings)
+    kb, kb_msgs = kbdraft.run(ctx)
+    notes = notify.run(ctx, rows, events, results, board, rechecks, extra=m_msgs + kb_msgs)
+    return {"rows": rows, "events": events, "results": results, "board": board, "rechecks": rechecks, "notifications": notes,
+            "meetings": meetings, "kb": kb}

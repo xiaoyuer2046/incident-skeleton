@@ -24,6 +24,7 @@ import remediate as rm
 import harvest as hv
 import orchestrator as orch
 import watch as wt
+import chatops
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "demo", "data", "sim.js")
@@ -92,24 +93,27 @@ CYCLES = [
     {"harvest": True, "faults": {"SIG-LOBBY-E": ("black", ["clear-player-cache"])}},
     {"faults": dict(UP4)},
     {"faults": dict(UP4, **{"AP-3F-12": ("ap", [])}), "probes": {"PRN-5F-02": BLIP},
+     "chat": [("Lena Fischer (Facilities)", "Floor 4 Wi-Fi is down. Any ETA?")],
      "after": [("ack", "wifiap|AP-3F-12|offline", "Zhang Min (Network)",
                 {"en": "Picked up. Heading to floor 3 east with a spare PoE injector.", "zh": "已接单，带备用 PoE 供电器去三楼东。"})]},
     {"harvest": True, "faults": {"AP-4F-09": ("ap_after", ["poe-cycle"]), "AP-3F-12": ("ap", []), "PRN-2F-03": ("offline", [])}},
     {"faults": {"AP-3F-12": ("ap", []), "PRN-2F-03": ("offline", []), "AV-5F-502": ("hung", ["reset-room-profile"])},
+     "chat": [("Marco Ruiz (AV)", "approve the profile reset on 5F-502"), ("Chen Wei (AV lead)", "批准 5F-502 重置房间控制器配置")],
      "after": [("ack", "av|AV-5F-502|hung", "Chen Wei (AV lead)",
                 {"en": "Saw the approval request for the profile reset. Checking the vendor note first.", "zh": "看到重置配置的审批请求，先核对厂商说明。"})]},
     {"before": [("resolve", "wifiap|AP-3F-12|offline", "Zhang Min (Network)",
                  "Replaced the failed PoE injector and moved the AP to a PoE+ port.")],
-     "faults": {"PRN-2F-03": ("offline", []), "AV-5F-502": ("hung", ["reset-room-profile"])},
-     "approvals": {"reset-room-profile": APPROVER}},
+     "faults": {"PRN-2F-03": ("offline", []), "AV-5F-502": ("hung", ["reset-room-profile"])}},
     {"harvest": True, "faults": {"PRN-2F-03": ("offline", [])}},
     {"faults": {"AP-3F-12": ("ap", []), "AV-2F-201": ("hung", ["reboot-codec"])}},
     # 10:50 the 10:40 codec reboot on AV-2F-201 did not hold: the re-check finds the fault back
-    {"faults": {"AV-3F-301": ("hung", ["reboot-codec"]), "AV-2F-201": ("hung", [])}, "probes": {"SIG-LOBBY-W": BLIP}},
+    {"faults": {"AV-3F-301": ("hung", ["reboot-codec"]), "AV-2F-201": ("hung", [])}, "probes": {"SIG-LOBBY-W": BLIP},
+     "chat": [("Wang Gong", "2F-201 怎么了？11 点要面试")]},
     # 11:00 the café screen drops and comes back by itself
     {"probes": {"SIG-CAF-01": [False, False, True]}},
     # 11:10 someone presses the kill switch before a printer jams
-    {"before": [("stop", {"en": "Chen Wei (AV lead)", "zh": "陈伟（AV 主管）"})], "faults": {"PRN-5F-02": ("jam", ["clear-queue"])}},
+    {"before": [("stop", {"en": "Chen Wei (AV lead)", "zh": "陈伟（AV 主管）"})], "faults": {"PRN-5F-02": ("jam", ["clear-queue"])},
+     "chat": [("Chen Wei (AV lead)", "resume automatic repairs")]},
 ]
 WINDOWS = [{"device": "PRN-2F-03", "from": "2026-11-21T09:55:00", "to": "2026-11-21T10:35:00",
             "reason": {"en": "Fuser replacement (CHG0004417)", "zh": "更换定影器（CHG0004417）"}}]
@@ -118,7 +122,9 @@ TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_kn
         "master_linked", "comms_detected", "master_hint", "progress_posted", "board_closed", "duplicate",
         "escalated", "upstream_resolved", "cooldown", "maintenance", "approval_wait", "approved_fix", "auto_resolved",
         "engineer_learned", "injection", "reopened", "demoted",
-        "self_healed", "recheck_held", "regressed", "kill_switch", "notified"]
+        "self_healed", "recheck_held", "regressed", "kill_switch", "notified",
+        "meeting_ready", "meeting_saved", "meeting_at_risk", "room_moved", "kb_drafted",
+        "chat_status", "chat_denied", "chat_approved", "chat_resume"]
 
 
 def detect_tags(cyc, library, prev_ts):
@@ -131,6 +137,22 @@ def detect_tags(cyc, library, prev_ts):
         tags.add("kill_switch")
     if cyc.get("notifications"):
         tags.add("notified")
+    for m in cyc.get("meetings", []):
+        if m["state"] == "ready" and m["prev"] is None:
+            tags.add("meeting_ready")
+        if m["state"] == "fixed":
+            tags.add("meeting_saved")
+        if m["state"] == "at_risk":
+            tags.add("room_moved" if m.get("action") == "move" else "meeting_at_risk")
+    if cyc.get("kb"):
+        tags.add("kb_drafted")
+    for c in cyc.get("chat", []):
+        if c["intent"] == "status":
+            tags.add("chat_status")
+        elif c["intent"] == "approve":
+            tags.add("chat_approved" if c["ok"] else "chat_denied")
+        elif c["intent"] == "resume" and c["ok"]:
+            tags.add("chat_resume")
     for b in cyc.get("boards", []):
         for it in b["timeline"]:
             fresh = prev_ts < it["ts"] <= cyc["ts"]
@@ -266,6 +288,11 @@ def main():
                "library_size": len(library.get("entries", [])), "library_verified": sum(1 for e in library.get("entries", []) if e.get("status") == "verified"),
                "boards": json.loads(json.dumps(list(rep["board"].values()), ensure_ascii=False))}
         cyc["rechecks"], cyc["notifications"] = rep["rechecks"], rep["notifications"]
+        cyc["meetings"], cyc["kb"] = rep["meetings"], rep["kb"]
+        cyc["chat"] = []
+        for who, text in spec.get("chat", []):
+            r = chatops.handle(ctx, who, text)
+            cyc["chat"].append(dict(r, sender=who, text=text, ts=ctx.ts()))
         cyc["tags"] = detect_tags(cyc, library, cycles[-1]["ts"] if cycles else "")
         for t in cyc["tags"]:
             seen.setdefault(t, i + 1)
@@ -283,7 +310,9 @@ def main():
                       "reopen_hours": pol.get("reopen_hours"), "blast_min": pol.get("blast_radius", {}).get("min_devices"),
                       "need": pol.get("patrol", {}).get("need"), "rounds": pol.get("patrol", {}).get("rounds"),
                       "groups": pol.get("escalation", {}).get("groups"), "evolution": pol.get("evolution")},
-           "cycles": cycles, "tickets": tickets, "library": library}
+           "cycles": cycles, "tickets": tickets, "library": library,
+           "calendar": rm.load_json(os.path.join(HERE, "sources", "calendar.json"), []),
+           "kb_drafts": sorted(rm.load_json(os.path.join(data_dir, "kb_drafts.json"), {}).values(), key=lambda d: d["number"])}
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as f:
         f.write("// Generated by skill/remediation/simulate.py. Scripted world, real engine, dry run.\n")

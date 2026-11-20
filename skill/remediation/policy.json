@@ -81,7 +81,46 @@
      "board_closed",
      "kill"
     ]
+   },
+   {
+    "name": "Teams · meeting organizer (DM)",
+    "platform": "teams",
+    "webhook_env": "TEAMS_DM_WEBHOOK_URL",
+    "kinds": [
+     "meeting_saved",
+     "meeting_risk",
+     "room_move",
+     "meeting_ok_again"
+    ]
    }
   ]
+ },
+ "premeeting": {
+  "lead_minutes": 30,
+  "move_minutes": 15
+ },
+ "kb_draft": {
+  "min_confirmed": 2,
+  "min_rate": 0.5
+ },
+ "chatops": {
+  "approvers": {
+   "av": [
+    "Chen Wei (AV lead)"
+   ],
+   "wifiap": [
+    "Zhang Min (Network)",
+    "Ravi Kumar (Network on-call)"
+   ],
+   "printer": [
+    "Liu Yang (Print)"
+   ],
+   "signage": [
+    "Marco Ruiz (AV)"
+   ],
+   "*": [
+    "liuyan"
+   ]
+  }
  }
 }

@@ -1,0 +1,8 @@
+[
+ {"id": "MTG-1", "room": "AV-3F-301", "start": "2026-11-21T09:30:00", "end": "2026-11-21T10:00:00", "attendees": 8,
+  "title": {"en": "Weekly ops sync", "zh": "每周运维例会"}, "organizer": {"en": "Amy Chen", "zh": "Amy Chen"}},
+ {"id": "MTG-2", "room": "AV-5F-502", "start": "2026-11-21T10:30:00", "end": "2026-11-21T11:30:00", "attendees": 14, "vip": true,
+  "title": {"en": "Customer QBR", "zh": "客户季度汇报"}, "organizer": {"en": "Lena Fischer (Facilities)", "zh": "Lena Fischer（行政）"}},
+ {"id": "MTG-3", "room": "AV-2F-201", "start": "2026-11-21T11:00:00", "end": "2026-11-21T11:30:00", "attendees": 6,
+  "title": {"en": "Hiring panel", "zh": "招聘面试"}, "organizer": {"en": "Wang Gong", "zh": "王工"}}
+]

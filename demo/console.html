@@ -74,6 +74,17 @@ button{font:inherit;color:inherit}
 .c-trace{grid-column:span 7}.c-harvest{grid-column:span 5}
 .c-learn{grid-column:span 3}.c-tickets{grid-column:span 3}.c-cover{grid-column:span 3}.c-notify{grid-column:span 3}
 .c-history{grid-column:span 12}
+.c-meet{grid-column:span 5}.c-chat{grid-column:span 7}
+.mt{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.mt .tm{font:700 13px var(--mono)}.mt .sub{color:var(--dim);font-size:11.5px}.mt.done{opacity:.5}
+.chat{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto}
+.bub{max-width:82%;padding:8px 11px;border-radius:14px;font-size:13px;line-height:1.5}
+.bub .who{font:600 11px var(--mono);color:var(--dim);margin-bottom:2px}
+.bub.me{align-self:flex-end;background:rgba(108,182,255,.12);border:1px solid rgba(108,182,255,.3);border-bottom-right-radius:4px}
+.bub.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--line2);border-bottom-left-radius:4px}
+.bub.bot.no{border-color:rgba(255,77,100,.45)}.bub.fresh{animation:rise .35s ease both}
+.kbd{margin-top:12px;border:1px solid rgba(78,230,160,.35);border-radius:12px;padding:10px 12px;background:rgba(78,230,160,.05);font-size:12.5px}
+.kbd ol,.kbd ul{margin:4px 0 0;padding-left:18px}
 .c-board{grid-column:span 12;border-color:rgba(255,77,100,.45);box-shadow:0 0 0 1px rgba(255,77,100,.15),0 18px 50px -24px rgba(255,77,100,.5)}
 .c-board.recovering{border-color:rgba(255,194,74,.5);box-shadow:none}.c-board.closed{border-color:rgba(78,230,160,.4);box-shadow:none}
 .bd-top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
@@ -89,7 +100,7 @@ button{font:inherit;color:inherit}
 .sol{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--panel2);font-size:13px}
 .devs{display:flex;flex-wrap:wrap;gap:6px}
 .mfield{font-size:12.5px;color:var(--muted)}.mfield b{color:var(--text);font-weight:600}
-@media (max-width:1180px){.c-fleet,.c-faults,.c-trace,.c-harvest{grid-column:span 12}.c-learn,.c-tickets,.c-cover,.c-notify{grid-column:span 6}}
+@media (max-width:1180px){.c-fleet,.c-faults,.c-trace,.c-harvest,.c-meet,.c-chat{grid-column:span 12}.c-learn,.c-tickets,.c-cover,.c-notify{grid-column:span 6}}
 @media (max-width:760px){.c-learn,.c-tickets,.c-cover,.c-notify{grid-column:span 12}.clock b{font-size:24px}}
 
 /* ---------- fleet ---------- */
@@ -216,6 +227,10 @@ td.mono,.mono{font-family:var(--mono);font-size:12px}
     <div class="body" id="trace"></div></section>
   <section class="card c-harvest"><h2><span data-i18n="h_harvest"></span><span class="r" id="harvsum"></span></h2>
     <div class="body" id="harvest"></div></section>
+  <section class="card c-meet"><h2><span data-i18n="h_meet"></span><span class="r" data-i18n="meet_hint"></span></h2>
+    <div class="body" id="meet"></div></section>
+  <section class="card c-chat"><h2><span data-i18n="h_chat"></span><span class="r" data-i18n="chat_hint"></span></h2>
+    <div class="body"><div class="chat" id="chat"></div></div></section>
   <section class="card c-learn"><h2><span data-i18n="h_learn"></span><span class="r" data-i18n="learn_hint"></span></h2>
     <div class="body" id="learn"></div></section>
   <section class="card c-tickets"><h2><span data-i18n="h_tickets"></span><span class="r" data-i18n="sim_tag"></span></h2>
@@ -253,7 +268,9 @@ const I = {
   s_builtin:'内置手册', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信',
   st_builtin:'内置', st_candidate:'候选', st_promoted:'已晋升', st_demoted:'已降级',
   evidence:'证据', esc_title:'告警：自动修复失败', esc_tried:'已做', esc_left:'还没做 / 需人工', esc_wait:'等待批准', esc_kb:'给工程师的参考', none:'无',
-  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', d_killed:'紧急开关：暂停', d_rate_limited:'今日次数已满',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限', h_meet:'会议 · 会前体检', meet_hint:'会前 30 分钟检查房间', h_chat:'和值班员对话 · Teams', chat_hint:'提问 · 批准 · 暂停', no_chat:'还没有对话。',
+  m_upcoming:'未到检查时间', m_ready:'房间正常', m_fixed:'已提前修好', m_at_risk:'房间故障', m_move:'建议换到 %r', m_planb:'备选 %r', m_done:'已结束', m_people:'%n 人', bot:'Incident Skeleton',
+  kb_title:'📝 KB 草稿（待审核）', kb_steps:'步骤', kb_dont:'不用试', kb_ev:'依据', why_killed:'紧急开关', why_rate_limited:'今日次数已满', d_killed:'紧急开关：暂停', d_rate_limited:'今日次数已满',
   killed_by:'%a 按下了紧急开关：自动修复已暂停', h_stop:'⛔ %a 按下紧急开关：全部自动修复暂停。', self_healed:'自己恢复', v_self_healed:'自己恢复了，不修', o_self:'不修，也不算功劳',
   rc_held:'🔁 复查 %d · %x（%t 修的）：稳住了 ✓', rc_back:'🔁 复查 %d · %x（%t 修的）：又坏了 ✗ 这次修复记为失败', h_notify:'通知 · Teams / Slack', notify_hint:'演练：未真正发送', no_notify:'还没有通知。',
   harv_last:'上次收集 %t', harv_now:'本轮收集中…', harv_none:'还没收集。', src:'来源', scanned:'扫描', verified:'已验证', unverified:'未确认', failed:'无效', rejected:'拦截',
@@ -275,7 +292,9 @@ const I = {
    upstream_resolved:'上游恢复：工单自动关闭', cooldown:'冷却中：不重复折腾', maintenance:'维护窗口：静默', approval_wait:'需批准：工单挂起等人批', approved_fix:'批准后自动修好',
    auto_resolved:'自动修好后关单', engineer_learned:'工程师的处理被收进病例库', injection:'夹带指令的消息被拦截', reopened:'72 小时内复发：重开工单', demoted:'总失败的修法被降级跳过',
    master_linked:'主动找到总单，挂成子单', comms_detected:'主动发现故障邮件，更新面板', master_hint:'用总单给的修法在权限内修好', progress_posted:'把我们的进度写回总单', board_closed:'总单关闭且巡检确认后，面板关闭',
-   self_healed:'探测时自己恢复：不修，不算功劳', recheck_held:'修完 10 分钟后复查：稳住了', regressed:'复查发现又坏了：这次修复记为失败', kill_switch:'紧急开关：一键暂停全部自动修复', notified:'主动推送到 Teams / Slack'}},
+   self_healed:'探测时自己恢复：不修，不算功劳', recheck_held:'修完 10 分钟后复查：稳住了', regressed:'复查发现又坏了：这次修复记为失败', kill_switch:'紧急开关：一键暂停全部自动修复', notified:'主动推送到 Teams / Slack',
+   meeting_ready:'会前体检：房间正常', meeting_saved:'会前发现故障，开会前修好', meeting_at_risk:'会议有风险：提高优先级，通知组织者并给备选房间', room_moved:'快开会还修不好：建议换房间', kb_drafted:'修好两次以上：自动起草 KB',
+   chat_status:'在 Teams 里问进展，直接回答', chat_denied:'没权限的人批准：被拒绝', chat_approved:'在 Teams 里批准，下一轮执行', chat_resume:'在 Teams 里恢复自动修复'}},
  en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
   banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow. 🧠 AI advice here comes from a mock stand-in, not a model; see brain.py to plug in a real one.',
   h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
@@ -292,7 +311,9 @@ const I = {
   s_builtin:'runbook', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work',
   st_builtin:'builtin', st_candidate:'candidate', st_promoted:'promoted', st_demoted:'demoted',
   evidence:'evidence', esc_title:'ALERT: automatic repair failed', esc_tried:'What was done', esc_left:'Not done / needs a human', esc_wait:'Waiting for approval', esc_kb:'For the engineer', none:'none',
-  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', d_killed:'kill switch: paused', d_rate_limited:'daily limit reached',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', h_meet:'Meetings · pre-check', meet_hint:'rooms checked 30 min ahead', h_chat:'Chat with the crew · Teams', chat_hint:'ask · approve · pause', no_chat:'No messages yet.',
+  m_upcoming:'not checked yet', m_ready:'room ready', m_fixed:'fixed in time', m_at_risk:'room down', m_move:'move to %r', m_planb:'plan B %r', m_done:'finished', m_people:'%n people', bot:'Incident Skeleton',
+  kb_title:'📝 KB draft (awaiting review)', kb_steps:'Steps', kb_dont:'Do not bother', kb_ev:'Evidence', why_killed:'kill switch', why_rate_limited:'daily limit', d_killed:'kill switch: paused', d_rate_limited:'daily limit reached',
   killed_by:'%a pressed the kill switch: automatic repairs are paused', h_stop:'⛔ %a pressed the kill switch: all automatic repairs paused.', self_healed:'self-healed', v_self_healed:'came back on its own, no repair', o_self:'no repair, no credit',
   rc_held:'🔁 Re-check %d · %x (fixed %t): held ✓', rc_back:'🔁 Re-check %d · %x (fixed %t): fault is back ✗ counted as a failure', h_notify:'Notifications · Teams / Slack', notify_hint:'dry run: not really sent', no_notify:'No notifications yet.',
   harv_last:'last harvest %t', harv_now:'harvesting this patrol…', harv_none:'Not harvested yet.', src:'source', scanned:'scanned', verified:'verified', unverified:'unconfirmed', failed:'failed', rejected:'rejected',
@@ -314,7 +335,9 @@ const I = {
    upstream_resolved:'Upstream recovered, ticket auto-resolved', cooldown:'Cooldown: no repeated retries', maintenance:'Silenced in a maintenance window', approval_wait:'Needs approval: ticket on hold', approved_fix:'Approved, then fixed automatically',
    auto_resolved:'Ticket closed after the automatic fix', engineer_learned:"Engineer's fix harvested into the library", injection:'Message with embedded orders rejected', reopened:'Came back within 72 h, ticket reopened', demoted:'Repeatedly failing fix demoted and skipped',
    master_linked:'Found the master incident, linked ours as child', comms_detected:'Picked up outage email, updated the board', master_hint:"Fixed within permissions using the master's guidance", progress_posted:'Posted our progress back to the master', board_closed:'Board closed once the master resolved and patrol confirmed',
-   self_healed:'Came back on its own: no repair, no credit', recheck_held:'Re-checked 10 min after the fix: it held', regressed:'Re-check found the fault back: fix counted as failed', kill_switch:'Kill switch pauses every automatic repair', notified:'Pushed to Teams / Slack'}}
+   self_healed:'Came back on its own: no repair, no credit', recheck_held:'Re-checked 10 min after the fix: it held', regressed:'Re-check found the fault back: fix counted as failed', kill_switch:'Kill switch pauses every automatic repair', notified:'Pushed to Teams / Slack',
+   meeting_ready:'Pre-meeting check: room ready', meeting_saved:'Fault found before a meeting, fixed in time', meeting_at_risk:'Meeting at risk: priority raised, organizer told, plan B given', room_moved:'Too close to start: move rooms', kb_drafted:'Fix proven twice: KB article drafted',
+   chat_status:'Asked in Teams, answered from live data', chat_denied:'Approval from a non-approver refused', chat_approved:'Approved in Teams, run next patrol', chat_resume:'Automation resumed from Teams'}}
 };
 let lang = 'en';
 try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
@@ -554,6 +577,39 @@ function renderNotify(c){
   $('#notify').innerHTML = all.length ? all.reverse().slice(0, 7).map(([n, f]) => notifHTML(n, f ? 'fresh' : 'old')).join('') : `<div class="empty">${esc(t('no_notify'))}</div>`;
 }
 
+/* ================= meetings, chat, KB drafts ================= */
+function renderMeet(c){
+  const ts = D.cycles[c].ts, recs = {};
+  D.cycles.slice(0, c+1).forEach(cy => (cy.meetings || []).forEach(m => { recs[m.id] = m; }));
+  $('#meet').innerHTML = (D.calendar || []).map(m => {
+    const r = recs[m.id], done = m.end <= ts;
+    let chip = `<span class="chip k-mute">${esc(t(done ? 'm_done' : 'm_upcoming'))}</span>`;
+    if (r && !done){
+      if (r.state === 'ready') chip = `<span class="chip k-ok">${esc(t('m_ready'))}</span>`;
+      else if (r.state === 'fixed') chip = `<span class="chip k-ok">✓ ${esc(t('m_fixed'))}</span>`;
+      else chip = `<span class="chip k-bad">${esc(t('m_at_risk'))}</span> <span class="chip ${r.action === 'move' ? 'k-warn' : 'k-mute'}">${esc(t(r.action === 'move' ? 'm_move' : 'm_planb').replace('%r', r.alternative || '—'))}</span>`;
+    }
+    const fresh = r && (D.cycles[c].meetings || []).some(x => x.id === m.id && x.state !== x.prev);
+    return `<div class="mt${done ? ' done' : ''}"${fresh ? ' style="background:linear-gradient(90deg,rgba(255,122,26,.10),transparent)"' : ''}><span class="tm">${esc(hhmm(m.start))}</span>
+      <div><div>${m.vip ? '★ ' : ''}${esc(L(m.title))}</div><div class="sub">${esc(m.room)} · ${esc(L(m.organizer))} · ${esc(t('m_people').replace('%n', m.attendees))}</div></div><div style="text-align:right">${chip}</div></div>`;
+  }).join('');
+}
+function renderChat(c){
+  const all = [];
+  D.cycles.slice(0, c+1).forEach((cy, i) => (cy.chat || []).forEach(x => all.push([x, i === c])));
+  if (!all.length){ $('#chat').innerHTML = `<div class="empty">${esc(t('no_chat'))}</div>`; return; }
+  $('#chat').innerHTML = all.slice(-8).map(([x, f]) => `<div class="bub me${f ? ' fresh' : ''}"><div class="who">${esc(x.sender)} · ${esc(hhmm(x.ts))}</div>${esc(x.text)}</div>
+    <div class="bub bot${x.ok ? '' : ' no'}${f ? ' fresh' : ''}"><div class="who">🤖 ${esc(t('bot'))}${x.by ? ' · 🧠 ' + esc(brainLabel(x.by)) : ''}</div>${esc(L(x.reply))}</div>`).join('');
+  $('#chat').scrollTop = 1e6;
+}
+function kbHTML(c){
+  const ts = D.cycles[c].ts;
+  return (D.kb_drafts || []).filter(d => d.ts <= ts).map(d => `<div class="kbd"><b>${esc(t('kb_title'))} ${esc(d.number)}</b><div style="margin:4px 0"><b>${esc(L(d.title))}</b></div>
+    <div>${esc(t('kb_steps'))}:</div><ol>${(L(d.steps) || []).map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+    ${(L(d.dont) || []).length ? `<div>${esc(t('kb_dont'))}:</div><ul>${L(d.dont).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    <div style="color:var(--dim);margin-top:4px">${esc(t('kb_ev'))}: ${esc(L(d.evidence))}</div></div>`).join('');
+}
+
 function harvestIndex(c){ for (let i = c; i >= 0; i--) if (D.cycles[i].harvest) return i; return -1; }
 function renderHarvestStatic(c){
   const hi = harvestIndex(c);
@@ -589,6 +645,7 @@ function renderLearn(c, flash){
       <div class="mono"><span class="bar"><i style="width:${Math.round(rate*100)}%;background:${rate>=.5?'var(--ghost)':'var(--blood)'}"></i></span> ${r.successes}/${r.attempts}</div><span class="chip ${cls}">${esc(t('st_'+r.state))}</span></div>`;
   }).join('');
   prevScore = now;
+  $('#learn').insertAdjacentHTML('beforeend', kbHTML(c));
 }
 function renderTickets(c){
   const ts = D.cycles[c].ts;
@@ -633,7 +690,7 @@ function renderStatic(c){
   const cyc = D.cycles[c];
   $('#humans').innerHTML = cyc.human.map(humanHTML).join('');
   $('#rechecks').innerHTML = (cyc.rechecks || []).map(rcHTML).join('');
-  renderNotify(c);
+  renderNotify(c); renderMeet(c); renderChat(c);
   const bad = cyc.rows.filter(r => r.status !== 'healthy');
   $('#faultsum').textContent = t('faults_n', {n: bad.length});
   $('#faults').innerHTML = bad.length ? faultHead() : `<div class="empty">${esc(t('no_fault'))}</div>`;
@@ -675,7 +732,7 @@ async function animate(c, tk){
     box.insertAdjacentHTML('beforeend', res.resolved ? okHTML(res) : escalHTML(res)); await wait(700, tk);
   }
   await animateBoard(c, tk, 2);
-  renderNotify(c);
+  renderNotify(c); renderMeet(c); renderChat(c);
   renderLearn(c, true); renderTickets(c); renderCover(c, true); renderHistory(c); renderCaption(c);
 }
 
@@ -718,6 +775,8 @@ addEventListener('keydown', e => { if (e.code === 'Space' && e.target === docume
 
 applyLang();
 const q = new URLSearchParams(location.search);
+// ?only=meet,chat shows just those cards (for screenshots)
+if (q.get('only')) { const keep = q.get('only').split(','); document.querySelectorAll('main.grid > .card').forEach(n => { if (!keep.some(k => n.classList.contains('c-' + k))) n.style.display = 'none'; }); }
 const at = q.has('at') ? Math.min(Math.max(+q.get('at'), 0), N-1) : null;
 if (q.get('speed')) { speed = +q.get('speed') || 1; document.querySelectorAll('#speed button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.s === speed))); }
 if (at !== null){ paused = q.get('play') !== '1'; applyLang(); if (at > 0) renderLearn(at-1, false); renderStatic(at); if (!paused) playFrom(at+1); }
