@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Incident Skeleton — 一套骨架，四套班底</title>
+<script src="theme.js"></script>
+
 <style>
 :root{
   --ink:#0a0712; --panel:rgba(22,15,36,.74); --line:rgba(190,170,255,.14);
@@ -12,6 +14,24 @@
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --serif:ui-serif,"Songti SC",Georgia,"Times New Roman",serif;
 }
+html[data-theme=day]{
+  color-scheme:light;
+  --ink:#f7f4fb; --panel:rgba(255,255,255,.86); --line:rgba(80,60,140,.15); --text:#1d1a26; --muted:#6b6480;
+  --ember:#e05a00; --violet:#6b46e0; --ghost:#14905a; --blood:#d0263f; --amber:#a86a00;
+}
+html[data-theme=day] .sky{background:radial-gradient(900px 520px at 82% -8%,rgba(255,170,60,.22),transparent 62%),radial-gradient(700px 480px at 6% 108%,rgba(139,92,246,.10),transparent 60%),linear-gradient(180deg,#fdfbff 0%,#f5f0fb 100%)}
+html[data-theme=day] .moon{background:radial-gradient(circle at 40% 38%,#fff3c4,#ffc65c 60%,#ff9f2e);box-shadow:0 0 80px 24px rgba(255,180,60,.30)}
+html[data-theme=day] #stars,html[data-theme=day] #bats{display:none}
+html[data-theme=day] .fog{opacity:.18}
+html[data-theme=day] .card{box-shadow:0 8px 28px -18px rgba(40,20,80,.25)}
+html[data-theme=day] .pip{background:rgba(0,0,0,.09)}
+html[data-theme=day] .v.crew .bone *,html[data-theme=day] .legend .c{fill:#fff3e8;background:#fff3e8}
+html[data-theme=day] .v.done.crew .bone *{fill:#e6f7ee}
+html[data-theme=day] .socket{fill:#ffffff}
+html[data-theme=day] .crewcard .ico{color:var(--muted)}
+html[data-theme=day] #log{color:var(--text)}
+html[data-theme=day] .dock{background:rgba(255,255,255,.88)}
+html[data-theme=night]{color-scheme:dark}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{margin:0;background:var(--ink);color:var(--text);
@@ -197,7 +217,8 @@ footer{margin-top:22px;text-align:center;color:#6f6588;font-size:12px}
       <div class="legend"><span><i class="b"></i><span data-i18n="legend_shared"></span></span><span><i class="c"></i><span data-i18n="legend_crew"></span></span></div>
     </div>
     <div class="hright">
-      <div class="lang" role="group" aria-label="Language / 语言">
+      <div class="lang" id="themeSeg"></div>
+      <div class="lang" id="langSeg" role="group" aria-label="Language / 语言">
         <button type="button" data-lang="zh" aria-pressed="false">中文</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
@@ -507,7 +528,7 @@ function renderCase(){
   st.textContent = stampKey ? t(stampKey) : '';
 }
 function resetCase(){ for(const k in CASE) delete CASE[k]; stampKey = null; stampBad = false; renderCase(); }
-const lock = b => { busy = b; document.querySelectorAll('.dock button').forEach(x => x.disabled = b); document.querySelectorAll('.lang button').forEach(x => x.disabled = b); };
+const lock = b => { busy = b; document.querySelectorAll('.dock button').forEach(x => x.disabled = b); document.querySelectorAll('#langSeg button').forEach(x => x.disabled = b); };
 function resetAll(){
   resetSpine(); resetCase(); clearPips(); clearLog();
   Object.keys(CREW).forEach(k => setStatus(k,''));
@@ -626,10 +647,11 @@ function applyLang(){
   document.title = t('title');
   document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
   $('#tagline').innerHTML = t('tagline');
-  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  document.querySelectorAll('#langSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  if (window.Theme) Theme.relabel();
   renderRoster(); labelSpine(); relog(); renderCase(); drawLinks();
 }
-document.querySelector('.lang').addEventListener('click', e => {
+document.querySelector('#langSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b || busy) return;
   lang = b.dataset.lang;
   try { localStorage.setItem('lang', lang); } catch(err) {}

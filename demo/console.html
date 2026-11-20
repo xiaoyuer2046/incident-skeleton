@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Incident Skeleton · Ops console</title>
+<script src="theme.js"></script>
+
 <style>
 :root{
   --ink:#0b0812; --panel:#161022; --panel2:#1d1530; --line:rgba(190,170,255,.13); --line2:rgba(190,170,255,.22);
@@ -11,6 +13,19 @@
   --ember:#ff7a1a; --violet:#8b5cf6; --ghost:#4ee6a0; --blood:#ff4d64; --amber:#ffc24a; --sky:#6cb6ff; --slate:#7c8aa6;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
+html[data-theme=day]{
+  color-scheme:light;
+  --ink:#f6f4fa; --panel:#ffffff; --panel2:#f8f6fc; --line:rgba(60,40,110,.12); --line2:rgba(60,40,110,.2);
+  --text:#1d1a26; --muted:#5f5874; --dim:#8a83a0;
+  --ember:#e05a00; --violet:#6b46e0; --ghost:#14905a; --blood:#d0263f; --amber:#a86a00; --sky:#1f6fd1; --slate:#64748b;
+}
+html[data-theme=day] body{background:radial-gradient(1100px 500px at 85% -10%,rgba(139,92,246,.10),transparent 60%),var(--ink)}
+html[data-theme=day] .top{background:rgba(255,255,255,.86)}
+html[data-theme=day] .pip,html[data-theme=day] .bar{background:rgba(0,0,0,.09)}
+html[data-theme=day] .k-up,html[data-theme=day] .tile.upstream em{color:var(--violet)}
+html[data-theme=day] .card{box-shadow:0 1px 2px rgba(30,20,60,.04),0 8px 24px -16px rgba(30,20,60,.18)}
+html[data-theme=day] .dot.cur{color:#fff}
+html[data-theme=night]{color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(1100px 500px at 85% -10%,rgba(139,92,246,.18),transparent 60%),var(--ink);color:var(--text);
   font:14px/1.5 -apple-system,"PingFang SC","Segoe UI",system-ui,sans-serif}
@@ -178,6 +193,7 @@ td.mono,.mono{font-family:var(--mono);font-size:12px}
     <button class="btn on" id="play" aria-label="Pause"></button>
     <div class="seg" id="speed" role="group" aria-label="Speed"><button data-s="1" aria-pressed="true">1×</button><button data-s="2" aria-pressed="false">2×</button><button data-s="4" aria-pressed="false">4×</button></div>
     <button class="btn" id="restart" data-i18n="restart"></button>
+    <div class="seg" id="themeSeg"></div>
     <div class="seg" id="lang" role="group" aria-label="Language / 语言"><button data-l="zh" aria-pressed="false">中文</button><button data-l="en" aria-pressed="false">EN</button></div>
     <a class="lnk" id="snlink" href="servicenow.html" target="_blank" rel="noopener" data-i18n="open_sn"></a>
     <a class="lnk" href="index.html" data-i18n="open_skel"></a>
@@ -685,6 +701,7 @@ function applyLang(){
   document.title = 'Incident Skeleton · ' + t('console');
   document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
   document.querySelectorAll('#lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === lang)));
+  if (window.Theme) Theme.relabel();
   $('#play').textContent = paused ? t('play') : t('pause');
   renderLegend();
 }

@@ -12,7 +12,7 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
  shared    shared    crew          crew      shared    shared
 ```
 
-For reviewers: open `demo/guide.html` (EN / 中文 product guide). Full documentation (Chinese): [系统说明](docs/系统说明.md) · [技术说明](docs/技术说明.md)
+For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page has three skins: Day, Night edition, and Auto (follows the system). Full documentation (Chinese): [系统说明](docs/系统说明.md) · [技术说明](docs/技术说明.md)
 
 ## What it does
 
