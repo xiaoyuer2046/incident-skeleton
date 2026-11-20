@@ -263,9 +263,10 @@ def cooldown_set(ctx, device, target):
             and now - to_epoch(r["ts"]) < lim}
 
 
-def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=False, evidence=None):
+def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=False, evidence=None, hints=None):
     """Walk one confirmed fault through the loop. `scenario` (set of action ids) replaces real verification
-    in simulations; `evidence` replaces the live INVESTIGATE checks; `approvals` maps action id -> approver."""
+    in simulations; `evidence` replaces the live INVESTIGATE checks; `approvals` maps action id -> approver;
+    `hints` maps action id -> master incident that recommends it (tried first, still under the policy)."""
     t = ctx.t
     out = (lambda *a: None) if quiet else print
     approvals = dict(approvals) if isinstance(approvals, dict) else {a: "approved" for a in (approvals or ())}
@@ -302,6 +303,9 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
     ai, ai_on = ai_actions(ctx, device, packet)
     for aid, src in ai:
         add(aid, src)
+    hints = hints or {}
+    for aid in hints:
+        add(aid, "master")
     builtin_first = next((a for a in order if not ctx.actions.get(a, {}).get("physical")), None)
 
     st = stats(ctx)
@@ -314,8 +318,8 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
         phys = bool(ctx.actions[aid].get("physical"))
         idx = order.index(aid) if aid in order else 99
         rows.append({"id": aid, "sources": srcs, "state": state_of(ctx, st, key, srcs), "score": round(sc, 2),
-                     "hist": dict(st.get(key, {"attempts": 0, "successes": 0})), "lib": p["ids"],
-                     "rank": (phys, RISK_ORDER[ctx.actions[aid]["risk"]], -sc, idx)})
+                     "hist": dict(st.get(key, {"attempts": 0, "successes": 0})), "lib": p["ids"], "hint": hints.get(aid),
+                     "rank": (phys, RISK_ORDER[ctx.actions[aid]["risk"]], 0 if aid in hints else 1, -sc, idx)})
     rows.sort(key=lambda r: r["rank"])
 
     out("")
@@ -336,7 +340,7 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
         aid = r["id"]
         a = ctx.actions[aid]
         d, tier = decide(ctx, device, aid, r["state"], recent)
-        tr = {k: r[k] for k in ("sources", "state", "score", "hist", "lib")}
+        tr = {k: r[k] for k in ("sources", "state", "score", "hist", "lib", "hint")}
         tr.update({"action": aid, "risk": a["risk"], "decision": d, "tier": tier})
         label = "%s  [%s · %s]" % (ctx.desc(aid), a["risk"], ",".join(r["sources"]))
         if d != "run":

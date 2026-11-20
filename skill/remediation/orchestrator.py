@@ -74,16 +74,9 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
         for r in rs:
             r["ticket"] = num
 
-    # an open upstream ticket resolves itself once every device behind it is healthy again
-    tk_all = rm.tickets_load(ctx)
-    for key, num in list(tk_all["by_key"].items()):
-        tk = tk_all["tickets"][num]
-        if key.startswith("upstream|") and tk["state"] in rm.OPEN_STATES:
-            devs = tk.get("devices", [])
-            if devs and all(by_id.get(x, {}).get("status") == "healthy" for x in devs):
-                rm.ticket_resolve(ctx, key, rm.AUTOMATION, "upstream_recovered", {"devices": devs},
-                                  close_notes="All devices behind %s recovered." % tk.get("cmdb_ci"))
-                events.append({"kind": "upstream_recovered", "upstream": tk.get("cmdb_ci"), "devices": devs, "ticket": num})
+    # active watch: master incident + outage mail for every open outage (see watch.py)
+    import watch
+    board, hints = watch.poll(ctx)
 
     results = []
     for r in rows:
@@ -93,9 +86,25 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
         ns = argparse.Namespace(type=d["type"], target=d["id"], ci=d["id"], source=d.get("location", ""),
                                 message=f.get("message", "patrol: %s unreachable" % d["id"]), message_zh=f.get("message_zh"))
         res = rm.remediate(ns, ctx, scenario=set(f.get("fixes", [])), approvals=approvals or {}, quiet=quiet,
-                           evidence=f.get("evidence"))
+                           evidence=f.get("evidence"), hints=hints.get(d["id"]))
         res["message_zh"] = f.get("message_zh")
         r["ticket"] = (res.get("ticket") or {}).get("number")
         r["resolved"] = res["resolved"]
         results.append(res)
-    return {"rows": rows, "events": events, "results": results}
+
+    # an open upstream ticket resolves itself once every device behind it is healthy again
+    # (healthy on the probe, or fixed by the repair loop in this patrol)
+    fixed = {r["ci"] for r in results if r["resolved"]}
+    tk_all = rm.tickets_load(ctx)
+    for key, num in list(tk_all["by_key"].items()):
+        tk = tk_all["tickets"][num]
+        if key.startswith("upstream|") and tk["state"] in rm.OPEN_STATES:
+            devs = tk.get("devices", [])
+            if devs and all(by_id.get(x, {}).get("status") == "healthy" or x in fixed for x in devs):
+                needed = [x for x in devs if x in fixed]
+                rm.ticket_resolve(ctx, key, rm.AUTOMATION, "upstream_recovered", {"devices": devs, "needed_fix": needed,
+                                  "master": tk.get("parent_incident")},
+                                  close_notes="All devices behind %s recovered." % tk.get("cmdb_ci"))
+                events.append({"kind": "upstream_recovered", "upstream": tk.get("cmdb_ci"), "devices": devs, "ticket": num, "needed_fix": needed})
+    board = watch.after(ctx, rows, results)
+    return {"rows": rows, "events": events, "results": results, "board": board}

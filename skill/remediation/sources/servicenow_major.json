@@ -1,0 +1,17 @@
+[
+ {"number": "INC0009990", "major": true, "ci": "SW-4F", "affected": ["AP-4F-07", "AP-4F-08", "AP-4F-09"],
+  "short_description": {"en": "MAJOR: Floor 4 network down (SW-4F stack)", "zh": "重大事件：四楼网络中断（SW-4F 堆叠）"},
+  "assignment_group": "Network / LAN", "owner": "Ravi Kumar (Network on-call)", "opened_at": "2026-11-21T09:43:00",
+  "priority": "1 - Critical", "category": "Network", "impact": "1", "urgency": "1",
+  "notes": [
+   {"ts": "2026-11-21T09:43:00", "author": "Ravi Kumar (Network on-call)", "state": "In Progress", "eta": null,
+    "text": {"en": "Major incident opened. Floor 4 users report no Wi-Fi. Investigating SW-4F.", "zh": "已开重大事件。四楼用户反映没有 Wi-Fi，正在查 SW-4F。"}},
+   {"ts": "2026-11-21T09:48:00", "author": "Ravi Kumar (Network on-call)", "state": "In Progress", "eta": "10:20",
+    "text": {"en": "Line card 2 on SW-4F failed. Spare dispatched from the IDF store, ETA 10:20.", "zh": "SW-4F 的 2 号线卡坏了，已从机房调备件，预计 10:20。"}},
+   {"ts": "2026-11-21T09:57:00", "author": "Ravi Kumar (Network on-call)", "state": "In Progress", "eta": "10:20",
+    "text": {"en": "Line card replaced, the switch is back. If an AP stays down, bounce the PoE port.", "zh": "线卡已更换，交换机恢复。如果某个 AP 还不上线，给它的 PoE 端口断电再上电。"},
+    "engineer": {"en": "If the PoE bounce does not help, reseat the AP uplink at the floor-4 IDF.", "zh": "如果断电再上电没用，到四楼机房重新插拔 AP 上联线。"}},
+   {"ts": "2026-11-21T10:06:00", "author": "Ravi Kumar (Network on-call)", "state": "Resolved", "eta": null,
+    "text": {"en": "Resolved. Root cause: failed line card 2. Monitoring for 24 h.", "zh": "已解决。根因：2 号线卡故障。观察 24 小时。"}}
+  ]}
+]

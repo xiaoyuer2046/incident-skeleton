@@ -101,7 +101,7 @@ cd demo && python3 -m http.server 8777 --bind 127.0.0.1   # open http://127.0.0.
 ## Watch it run
 
 `demo/console.html` plays a simulated morning by itself: 12 patrols, faults listed separately each time, and 19
-scenarios, from a one-off blip that is ignored to a mass outage that becomes one upstream ticket, a fix learned from a
+scenarios (24 in all), from a one-off blip that is ignored to a mass outage that becomes one upstream ticket, linked to the network team's master incident it finds by itself, with a shared status board that picks up their notes and the outage emails, a fix learned from a
 Teams thread, a risky step that waits for approval, an engineer's close note harvested back into the case library, a
 chat message with embedded orders that is rejected, and a fault that comes back and reopens its ticket.
 `demo/servicenow.html` is a simulated ServiceNow with the incidents, work notes and case library. The world is

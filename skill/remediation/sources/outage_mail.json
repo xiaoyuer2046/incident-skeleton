@@ -1,0 +1,14 @@
+[
+ {"id": "mail-mi-1", "ts": "2026-11-21T09:45:00", "from": "it-comms@corp.example", "kind": "notice",
+  "subject": {"en": "[Major incident] Floor 4 Wi-Fi outage (INC0009990)", "zh": "【重大事件】四楼 Wi-Fi 中断（INC0009990）"},
+  "text": {"en": "Floor 4 Wi-Fi is down. Network is working on SW-4F. Next update by 10:00.", "zh": "四楼 Wi-Fi 中断，网络组正在处理 SW-4F。10:00 前再更新。"}},
+ {"id": "mail-chg-1", "ts": "2026-11-21T09:50:00", "from": "change-mgmt@corp.example", "kind": "notice",
+  "subject": {"en": "[Planned] PRN-2F-03 fuser replacement 09:55-10:35 (CHG0004417)", "zh": "【计划内】PRN-2F-03 更换定影器 09:55-10:35（CHG0004417）"},
+  "text": {"en": "Printer PRN-2F-03 on floor 2 will be offline during the window.", "zh": "二楼打印机 PRN-2F-03 在窗口期内离线。"}},
+ {"id": "mail-mi-2", "ts": "2026-11-21T09:58:00", "from": "it-comms@corp.example", "kind": "update",
+  "subject": {"en": "[Update] Floor 4 Wi-Fi restoring (INC0009990)", "zh": "【更新】四楼 Wi-Fi 正在恢复（INC0009990）"},
+  "text": {"en": "The switch is replaced and SW-4F is back. Wi-Fi is coming back; a few APs may need a minute.", "zh": "交换机已更换，SW-4F 恢复。Wi-Fi 正在恢复，个别 AP 可能要等一会儿。"}},
+ {"id": "mail-mi-3", "ts": "2026-11-21T10:07:00", "from": "it-comms@corp.example", "kind": "resolved",
+  "subject": {"en": "[Resolved] Floor 4 Wi-Fi outage (INC0009990)", "zh": "【已解决】四楼 Wi-Fi 中断（INC0009990）"},
+  "text": {"en": "Service restored at 09:57. Root cause: a failed switch line card.", "zh": "服务已于 09:57 恢复。根因：交换机线卡故障。"}}
+]

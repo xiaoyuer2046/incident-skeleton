@@ -23,6 +23,7 @@ sys.path.insert(0, HERE)
 import remediate as rm
 import harvest as hv
 import orchestrator as orch
+import watch as wt
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "demo", "data", "sim.js")
@@ -68,6 +69,10 @@ KINDS = {
         E("codec API", "编解码器 API", "responds, call service hung", "有响应，通话服务挂起", "err"),
         E("room service", "房间服务", "offline in the admin portal", "管理台显示离线", "err"),
         E("touch panel", "触控面板", "no heartbeat for 6 min", "6 分钟无心跳", "warn")]),
+    "ap_after": ("AP still offline after the switch came back", "交换机恢复后 AP 仍离线", [
+        E("ping AP", "ping AP", "no reply", "无响应", "err"),
+        E("upstream SW-4F", "上游 SW-4F", "back up since 09:57", "09:57 起已恢复", "ok"),
+        E("PoE port", "PoE 端口", "port up, 0 W delivered", "端口 up，但供电 0 W", "err")]),
     "ap": ("AP offline, clients dropping", "AP 离线，客户端掉线", [
         E("ping AP", "ping AP", "no reply", "无响应", "err"),
         E("controller API", "控制器 API", "AP state: down", "AP 状态：down", "err"),
@@ -89,7 +94,7 @@ CYCLES = [
     {"faults": dict(UP4, **{"AP-3F-12": ("ap", [])}), "probes": {"PRN-5F-02": BLIP},
      "after": [("ack", "wifiap|AP-3F-12|offline", "Zhang Min (Network)",
                 {"en": "Picked up. Heading to floor 3 east with a spare PoE injector.", "zh": "已接单，带备用 PoE 供电器去三楼东。"})]},
-    {"harvest": True, "faults": {"AP-3F-12": ("ap", []), "PRN-2F-03": ("offline", [])}},
+    {"harvest": True, "faults": {"AP-4F-09": ("ap_after", ["poe-cycle"]), "AP-3F-12": ("ap", []), "PRN-2F-03": ("offline", [])}},
     {"faults": {"AP-3F-12": ("ap", []), "PRN-2F-03": ("offline", []), "AV-5F-502": ("hung", ["reset-room-profile"])},
      "after": [("ack", "av|AV-5F-502|hung", "Chen Wei (AV lead)",
                 {"en": "Saw the approval request for the profile reset. Checking the vendor note first.", "zh": "看到重置配置的审批请求，先核对厂商说明。"})]},
@@ -104,13 +109,27 @@ CYCLES = [
 WINDOWS = [{"device": "PRN-2F-03", "from": "2026-11-21T09:55:00", "to": "2026-11-21T10:35:00",
             "reason": {"en": "Fuser replacement (CHG0004417)", "zh": "更换定影器（CHG0004417）"}}]
 
-TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_knowledge", "blast", "duplicate",
+TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_knowledge", "blast",
+        "master_linked", "comms_detected", "master_hint", "progress_posted", "board_closed", "duplicate",
         "escalated", "upstream_resolved", "cooldown", "maintenance", "approval_wait", "approved_fix", "auto_resolved",
         "engineer_learned", "injection", "reopened", "demoted"]
 
 
-def detect_tags(cyc, library):
+def detect_tags(cyc, library, prev_ts):
     tags = set()
+    for b in cyc.get("boards", []):
+        for it in b["timeline"]:
+            fresh = prev_ts < it["ts"] <= cyc["ts"]
+            if not fresh:
+                continue
+            if it.get("kind") == "link":
+                tags.add("master_linked")
+            if it["source"] == "email":
+                tags.add("comms_detected")
+            if it.get("kind") == "post":
+                tags.add("progress_posted")
+            if it.get("kind") == "close":
+                tags.add("board_closed")
     st = [r["status"] for r in cyc["rows"]]
     if not any(s in ("confirmed", "maintenance", "upstream") for s in st):
         tags.add("quiet")
@@ -137,6 +156,8 @@ def detect_tags(cyc, library):
                 tags.add("notify")
             if fx.get("approved_by"):
                 tags.add("approved_fix")
+            if fx.get("hint"):
+                tags.add("master_hint")
         elif "approval" in decs:
             tags.add("approval_wait")
         ev = (r.get("ticket") or {}).get("event")
@@ -152,6 +173,35 @@ def detect_tags(cyc, library):
             tags.add("engineer_learned")
     tags.discard("")
     return [t for t in TAGS if t in tags]
+
+
+def master_tickets(ctx, ours):
+    """Turn the sample master incidents into ticket records for the simulated ServiceNow page,
+    with our progress notes (watch.py posts) merged in and the child incidents listed."""
+    board = wt.load_board(ctx)
+    out = []
+    for m in rm.load_json(os.path.join(HERE, "sources", "servicenow_major.json"), []):
+        notes = []
+        for i, n in enumerate(m["notes"]):
+            notes.append({"ts": n["ts"], "author": n["author"], "type": "created" if i == 0 else ("resolved" if n["state"] == "Resolved" else "comment"),
+                          "kind": "master_note", "data": {"text": n["text"], "engineer": n.get("engineer"), "eta": n.get("eta")}, "state": n["state"]})
+        for b in board.values():
+            for p in b.get("posted", []):
+                if p["ref"] == m["number"]:
+                    notes.append({"ts": p["ts"], "author": p["author"], "type": "comment", "kind": "child_progress", "data": {"text": p["text"]},
+                                  "state": next((n["state"] for n in reversed(m["notes"]) if n["ts"] <= p["ts"]), "In Progress")})
+        notes.sort(key=lambda n: n["ts"])
+        res = next((n for n in m["notes"] if n["state"] == "Resolved"), None)
+        out.append({"number": m["number"], "kind": "master", "major": True, "key": "master|" + m["number"], "caller": m["owner"],
+                    "assigned_to": m["owner"], "opened_at": m["opened_at"], "updated_at": notes[-1]["ts"], "state": notes[-1]["state"],
+                    "resolved_at": res["ts"] if res else None, "close_code": "Solved (Permanently)" if res else "",
+                    "close_notes": res["text"]["en"] if res else "", "short_description": m["short_description"]["en"],
+                    "message": m["short_description"]["en"], "message_zh": m["short_description"]["zh"], "cmdb_ci": m["ci"],
+                    "assignment_group": m["assignment_group"], "priority": m["priority"], "impact": m["impact"], "urgency": m["urgency"],
+                    "category": m["category"], "description": "Affected: " + ", ".join(m["affected"]), "devices": m["affected"],
+                    "children": [t["number"] for t in ours if t.get("parent_incident") == m["number"]], "work_notes": notes,
+                    "reopen_count": 0, "knowledge": [], "awaiting_approval": []})
+    return out
 
 
 def main():
@@ -192,13 +242,15 @@ def main():
         library = rm.load_json(ctx.library_path, {})
         cyc = {"n": i + 1, "ts": ctx.ts(), "harvest": harvest, "human": human, "rows": rep["rows"], "events": rep["events"],
                "results": rep["results"], "scoreboard": rm.scoreboard(ctx),
-               "library_size": len(library.get("entries", [])), "library_verified": sum(1 for e in library.get("entries", []) if e.get("status") == "verified")}
-        cyc["tags"] = detect_tags(cyc, library)
+               "library_size": len(library.get("entries", [])), "library_verified": sum(1 for e in library.get("entries", []) if e.get("status") == "verified"),
+               "boards": json.loads(json.dumps(list(rep["board"].values()), ensure_ascii=False))}
+        cyc["tags"] = detect_tags(cyc, library, cycles[-1]["ts"] if cycles else "")
         for t in cyc["tags"]:
             seen.setdefault(t, i + 1)
         cycles.append(cyc)
 
     tickets = sorted(rm.tickets_load(ctx)["tickets"].values(), key=lambda t: t["number"])
+    tickets = master_tickets(ctx, tickets) + tickets
     library = rm.load_json(ctx.library_path, {})
     pol = ctx.policy
     sim = {"meta": {"generated": datetime.now().isoformat(timespec="seconds"), "start": START.isoformat(), "step_minutes": 10,

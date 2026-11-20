@@ -59,6 +59,21 @@ button{font:inherit;color:inherit}
 .c-trace{grid-column:span 7}.c-harvest{grid-column:span 5}
 .c-learn{grid-column:span 4}.c-tickets{grid-column:span 4}.c-cover{grid-column:span 4}
 .c-history{grid-column:span 12}
+.c-board{grid-column:span 12;border-color:rgba(255,77,100,.45);box-shadow:0 0 0 1px rgba(255,77,100,.15),0 18px 50px -24px rgba(255,77,100,.5)}
+.c-board.recovering{border-color:rgba(255,194,74,.5);box-shadow:none}.c-board.closed{border-color:rgba(78,230,160,.4);box-shadow:none}
+.bd-top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.bd-top .ttl{font:600 16px -apple-system,"PingFang SC",sans-serif}
+.bd-sum{margin:10px 0;padding:10px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line2);font-size:14px}
+.bd-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:6px}
+@media (max-width:1000px){.bd-grid{grid-template-columns:1fr}}
+.bd-sub{font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:6px 0}
+.tl{display:grid;grid-template-columns:44px 104px 1fr;gap:8px;padding:6px 0;border-top:1px dashed var(--line);font-size:13px;align-items:start}
+.tl .tm{font:600 11.5px var(--mono);color:var(--muted)}
+.tl .who{color:var(--dim);font-size:11.5px}
+.tl.fresh{background:linear-gradient(90deg,rgba(255,122,26,.12),transparent);animation:rise .35s ease both}
+.sol{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--panel2);font-size:13px}
+.devs{display:flex;flex-wrap:wrap;gap:6px}
+.mfield{font-size:12.5px;color:var(--muted)}.mfield b{color:var(--text);font-weight:600}
 @media (max-width:1180px){.c-fleet,.c-faults,.c-trace,.c-harvest{grid-column:span 12}.c-learn,.c-tickets,.c-cover{grid-column:span 6}}
 @media (max-width:760px){.c-learn,.c-tickets,.c-cover{grid-column:span 12}.clock b{font-size:24px}}
 
@@ -167,6 +182,8 @@ td.mono,.mono{font-family:var(--mono);font-size:12px}
 <div class="donebar" id="donebar"></div>
 
 <main class="grid">
+  <section class="card c-board" id="boardcard" hidden><h2><span data-i18n="h_board"></span><span class="r" id="boardsum"></span></h2>
+    <div class="body" id="board"></div></section>
   <section class="card c-fleet"><h2><span data-i18n="h_fleet"></span><span class="r" id="fleetsum"></span></h2>
     <div class="body"><div class="fleet" id="fleet"></div><div class="legend" id="legend"></div></div></section>
   <section class="card c-faults"><h2><span data-i18n="h_faults"></span><span class="r" id="faultsum"></span></h2>
@@ -219,11 +236,17 @@ const I = {
   no_learn:'还没有修复记录。', no_tk:'还没有工单。', tk_open:'未关 %n', st_New:'新建', st_In_Progress:'处理中', st_On_Hold:'挂起·等批准', st_Resolved:'已解决',
   cov_n:'/ %t 种场景', hist_time:'时间', hist_ok:'正常', hist_bad:'异常', hist_fix:'自动修好', hist_tk:'工单动作', hist_tags:'本轮演示',
   done:'演示完成：%n / %t 种场景都由引擎真的跑出来了。8 秒后从头再播。', this_shows:'本轮演示：',
+  h_board:'大面积故障 · 进展面板（大家看同一份）', b_open:'处理中', b_recovering:'我们这边已恢复，等总单关闭', b_closed:'已解决并确认', b_title:'%u 下多台设备同时掉线',
+  b_master:'总单', b_ours:'我们的子单', b_nomaster:'还没找到总单', b_checked:'%t 主动查过：ServiceNow %s 条 · 邮件 %m 封 · 巡检', b_eta:'预计', b_owner:'负责人',
+  b_tl:'时间线（巡检 · ServiceNow · 邮件 · 自动化）', b_sol:'来自总单的修法', b_devs:'受影响设备', src_patrol:'巡检', src_servicenow:'ServiceNow', src_email:'邮件', src_automation:'自动化',
+  so_auto:'可自动（在权限内试）', so_engineer:'给工程师', so_fixed:'自动化已试：修好 %d', so_failed:'自动化试了没好 %d → 交给工程师', so_ready:'需要时自动试', so_eng:'人工步骤，已写进工单',
+  b_old:'展开时间线', s_master:'总单修法', hint:'来自总单 %h',
   types:{printer:'打印机', signage:'数字标牌', av:'会议室音视频', wifiap:'无线 AP'}, sym:{jam:'卡纸', offline:'离线', down:'黑屏/不更新', hung:'卡死/进不了会', generic:'其他'},
   tags:{quiet:'全部正常', blip:'偶发一次：忽略，不开单', library_reordered:'病例库里验证过的修法排到最前', notify:'中风险：先通知再修', library_grows:'定期收集：病例库变大',
    new_knowledge:'用群聊里刚学到的新修法修好', blast:'批量掉线：只开一张上游单，不逐台重启', duplicate:'已有未关单：追加记录，不重复开', escalated:'修不好：写清做了什么并开单',
    upstream_resolved:'上游恢复：工单自动关闭', cooldown:'冷却中：不重复折腾', maintenance:'维护窗口：静默', approval_wait:'需批准：工单挂起等人批', approved_fix:'批准后自动修好',
-   auto_resolved:'自动修好后关单', engineer_learned:'工程师的处理被收进病例库', injection:'夹带指令的消息被拦截', reopened:'72 小时内复发：重开工单', demoted:'总失败的修法被降级跳过'}},
+   auto_resolved:'自动修好后关单', engineer_learned:'工程师的处理被收进病例库', injection:'夹带指令的消息被拦截', reopened:'72 小时内复发：重开工单', demoted:'总失败的修法被降级跳过',
+   master_linked:'主动找到总单，挂成子单', comms_detected:'主动发现故障邮件，更新面板', master_hint:'用总单给的修法在权限内修好', progress_posted:'把我们的进度写回总单', board_closed:'总单关闭且巡检确认后，面板关闭'}},
  en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
   banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow.',
   h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
@@ -249,11 +272,17 @@ const I = {
   no_learn:'No repairs recorded yet.', no_tk:'No tickets yet.', tk_open:'%n open', st_New:'New', st_In_Progress:'In Progress', st_On_Hold:'On Hold · approval', st_Resolved:'Resolved',
   cov_n:'/ %t scenarios', hist_time:'time', hist_ok:'healthy', hist_bad:'not', hist_fix:'auto-fixed', hist_tk:'ticket actions', hist_tags:'shows',
   done:'Demo complete: all %n / %t scenarios were produced by the engine. Replaying in 8 s.', this_shows:'This patrol shows:',
+  h_board:'Mass outage · status board (one shared view)', b_open:'in progress', b_recovering:'our side recovered, waiting for the master to close', b_closed:'resolved and confirmed', b_title:'Several devices behind %u down at once',
+  b_master:'Master incident', b_ours:'Our child ticket', b_nomaster:'no master incident found yet', b_checked:'actively checked %t: ServiceNow %s · mailbox %m · patrol', b_eta:'ETA', b_owner:'owner',
+  b_tl:'Timeline (patrol · ServiceNow · email · automation)', b_sol:'Fixes from the master', b_devs:'Affected devices', src_patrol:'patrol', src_servicenow:'ServiceNow', src_email:'email', src_automation:'automation',
+  so_auto:'automatable (tried within permissions)', so_engineer:'for engineers', so_fixed:'automation tried it: fixed %d', so_failed:'automation tried it on %d, not fixed → engineers', so_ready:'ready if a device stays down', so_eng:'manual step, written on the ticket',
+  b_old:'Show timeline', s_master:'master fix', hint:'from master %h',
   types:{printer:'Printer', signage:'Digital signage', av:'Meeting-room AV', wifiap:'Wireless AP'}, sym:{jam:'paper jam', offline:'offline', down:'black / not updating', hung:'frozen / cannot join', generic:'other'},
   tags:{quiet:'Quiet patrol, all healthy', blip:'One-off miss ignored, no ticket', library_reordered:'Verified case-library fix tried first', notify:'Medium risk: notify, then act', library_grows:'Periodic harvest grows the library',
    new_knowledge:'Fixed with a fix just learned from chat', blast:'Mass outage: one upstream ticket, no per-device reboots', duplicate:'Open ticket exists: note added, no duplicate', escalated:'Repair failed: says what it did, opens a ticket',
    upstream_resolved:'Upstream recovered, ticket auto-resolved', cooldown:'Cooldown: no repeated retries', maintenance:'Silenced in a maintenance window', approval_wait:'Needs approval: ticket on hold', approved_fix:'Approved, then fixed automatically',
-   auto_resolved:'Ticket closed after the automatic fix', engineer_learned:"Engineer's fix harvested into the library", injection:'Message with embedded orders rejected', reopened:'Came back within 72 h, ticket reopened', demoted:'Repeatedly failing fix demoted and skipped'}}
+   auto_resolved:'Ticket closed after the automatic fix', engineer_learned:"Engineer's fix harvested into the library", injection:'Message with embedded orders rejected', reopened:'Came back within 72 h, ticket reopened', demoted:'Repeatedly failing fix demoted and skipped',
+   master_linked:'Found the master incident, linked ours as child', comms_detected:'Picked up outage email, updated the board', master_hint:"Fixed within permissions using the master's guidance", progress_posted:'Posted our progress back to the master', board_closed:'Board closed once the master resolved and patrol confirmed'}}
 };
 let lang = 'en';
 try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
@@ -367,7 +396,8 @@ function srcChips(tr){
       const types = new Set();
       for (const id of tr.lib){ for (const x of (LIB[id]||{}).sources||[]) if (x.verdict === 'verified') types.add(x.platform || x.type); }
       for (const ty of types) out.push(`<span class="chip k-info">${esc(t('s_'+ty))}</span>`);
-    } else out.push(`<span class="chip">${esc(t('s_'+s))}</span>`);
+    } else if (s === 'master') out.push(`<span class="chip k-up">${esc(t('hint', {h: tr.hint}))}</span>`);
+    else out.push(`<span class="chip">${esc(t('s_'+s))}</span>`);
   }
   return out.join('');
 }
@@ -403,6 +433,71 @@ function okHTML(res){
 function traceHead(res){
   const ev = res.evidence.map(e => `<span class="chip ${e.status==='err'?'k-bad':e.status==='ok'?'k-ok':'k-warn'}">${esc(L(e.check))}: ${esc(L(e.result))}</span>`).join('');
   return `<div class="th"><b>${esc(res.ci)}</b><span class="chip">${esc(I[lang].types[res.device])}</span><span class="chip k-bad">${esc(L({en: res.message, zh: res.message_zh || res.message}))}</span></div><div class="ev">${ev}</div>`;
+}
+
+/* ================= mass-outage status board ================= */
+const prevTs = c => c > 0 ? D.cycles[c-1].ts : '';
+const isAfter = it => !!(it.device || it.kind === 'post' || it.kind === 'close');
+function tlHTML(it, fresh){
+  const cls = {patrol:'k-info', servicenow:'k-up', email:'k-warn', automation:'k-ember'}[it.source] || '';
+  const txt = L(it.text);
+  const body = it.body ? `<div class="who">${esc(L(it.body))}</div>` : '';
+  const who = it.author ? `<div class="who">${esc(it.author)}${it.ref ? ' · ' + esc(it.ref) : ''}</div>` : (it.ref ? `<div class="who">${esc(it.ref)}</div>` : '');
+  return `<div class="tl${fresh ? ' fresh' : ''}"><span class="tm">${esc(hhmm(it.ts))}</span><span><span class="chip ${cls}">${esc(t('src_' + it.source))}</span></span><div>${esc(txt)}${body}${who}</div></div>`;
+}
+function solHTML(s){
+  const out = s.outcome || '';
+  let chip;
+  if (out.startsWith('fixed:')) chip = `<span class="chip k-ok">${esc(t('so_fixed').replace('%d', out.slice(6)))}</span>`;
+  else if (out.startsWith('failed:')) chip = `<span class="chip k-bad">${esc(t('so_failed').replace('%d', out.slice(7)))}</span>`;
+  else if (out === 'for_engineer') chip = `<span class="chip k-mute">${esc(t('so_eng'))}</span>`;
+  else chip = `<span class="chip k-info">${esc(t('so_ready'))}</span>`;
+  return `<div class="sol"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="chip ${s.kind === 'auto' ? 'k-ember' : 'k-mute'}">${esc(t(s.kind === 'auto' ? 'so_auto' : 'so_engineer'))}</span>${s.action ? `<b>${esc(act(s.action))}</b>` : ''}<span class="mono" style="color:var(--dim)">${esc(s.ref)} · ${esc(hhmm(s.ts))}</span></div><div style="margin:4px 0">${esc(L(s.text))}</div>${chip}</div>`;
+}
+function boardShell(c, b){
+  const m = b.master;
+  const stCls = b.status === 'closed' ? 'k-ok' : b.status === 'recovering' ? 'k-warn' : 'k-bad';
+  const devs = b.devices.map(d => { const s = (b.device_status || {})[d] || 'upstream';
+    return `<span class="chip ${s === 'healthy' ? 'k-ok' : s === 'confirmed' ? 'k-bad' : 'k-up'}">${esc(d)} · ${esc(t(s === 'confirmed' ? 'confirmed' : s))}</span>`; }).join('');
+  const mtxt = m ? `<span class="mfield">${esc(t('b_master'))}: <a href="servicenow.html?at=${c}&lang=${lang}#${esc(m.number)}" target="_blank" rel="noopener"><b>${esc(m.number)}</b></a> · ${esc(L(m.short_description))} · <span class="chip ${m.state === 'Resolved' ? 'k-ok' : 'k-bad'}">${esc(t('st_' + m.state.replace(' ','_')))}</span> · ${esc(t('b_owner'))} ${esc(m.owner)}${m.eta && m.state !== 'Resolved' ? ' · ' + esc(t('b_eta')) + ' <b>' + esc(m.eta) + '</b>' : ''}</span>`
+                 : `<span class="chip k-mute">${esc(t('b_nomaster'))}</span>`;
+  return `<div class="bd-top"><span class="chip ${stCls}">${esc(t('b_' + b.status))}</span><span class="ttl">${esc(t('b_title').replace('%u', b.upstream))}</span>${mtxt}
+      <span class="mfield">${esc(t('b_ours'))}: <a href="servicenow.html?at=${c}&lang=${lang}#${esc(b.our_ticket)}" target="_blank" rel="noopener"><b>${esc(b.our_ticket)}</b></a></span></div>
+    <div class="bd-sum">${esc(L(b.summary))}</div>
+    <div class="bd-sub">${esc(t('b_devs'))}</div><div class="devs">${devs}</div>
+    <div class="bd-grid"><div><div class="bd-sub">${esc(t('b_tl'))}</div><div class="tlbox"></div></div><div><div class="bd-sub">${esc(t('b_sol'))}</div><div class="solbox">${b.solutions.map(solHTML).join('') || `<div class="empty">—</div>`}</div></div></div>`;
+}
+function renderBoard(c){
+  const bs = D.cycles[c].boards || [];
+  const card = $('#boardcard');
+  if (!bs.length){ card.hidden = true; return; }
+  card.hidden = false;
+  const b = bs[0];
+  card.className = 'card c-board ' + b.status;
+  $('#boardsum').textContent = t('b_checked').replace('%t', hhmm(b.checked)).replace('%s', (b.polled||{}).servicenow ?? 0).replace('%m', (b.polled||{}).email ?? 0);
+  $('#board').innerHTML = boardShell(c, b);
+  const old = b.status === 'closed' && b.closed_at < D.cycles[c].ts;
+  const items = b.timeline.map(it => tlHTML(it, it.ts > prevTs(c) && it.ts <= D.cycles[c].ts)).join('');
+  $('#board .tlbox').innerHTML = old ? `<details><summary style="cursor:pointer;color:var(--muted)">${esc(t('b_old'))}</summary>${items}</details>` : items;
+}
+async function animateBoard(c, tk, phase){
+  const bs = D.cycles[c].boards || [];
+  const card = $('#boardcard');
+  if (!bs.length){ card.hidden = true; return; }
+  const b = bs[0], p = prevTs(c), now = D.cycles[c].ts;
+  const fresh = it => it.ts > p && it.ts <= now;
+  if (phase === 1){
+    card.hidden = false; card.className = 'card c-board ' + b.status;
+    $('#boardsum').textContent = t('b_checked').replace('%t', hhmm(b.checked)).replace('%s', (b.polled||{}).servicenow ?? 0).replace('%m', (b.polled||{}).email ?? 0);
+    $('#board').innerHTML = boardShell(c, b);
+    const box = $('#board .tlbox');
+    if (b.status === 'closed' && b.closed_at < now){ renderBoard(c); return; }
+    box.innerHTML = b.timeline.filter(it => !fresh(it)).map(it => tlHTML(it, false)).join('');
+    for (const it of b.timeline.filter(it => fresh(it) && !isAfter(it))){ box.insertAdjacentHTML('beforeend', tlHTML(it, true)); await wait(800, tk); }
+  } else {
+    const box = $('#board .tlbox'); if (!box || (b.status === 'closed' && b.closed_at < now)) return;
+    for (const it of b.timeline.filter(it => fresh(it) && isAfter(it))){ box.insertAdjacentHTML('beforeend', tlHTML(it, true)); await wait(800, tk); }
+  }
 }
 
 function harvestIndex(c){ for (let i = c; i >= 0; i--) if (D.cycles[i].harvest) return i; return -1; }
@@ -447,7 +542,7 @@ function renderTickets(c){
   if (!vis.length){ $('#tickets').innerHTML = `<div class="empty">${esc(t('no_tk'))}</div>`; return; }
   $('#tickets').innerHTML = vis.map(([tk, s]) => {
     const cls = s.state === 'Resolved' ? 'k-ok' : s.state === 'On Hold' ? 'k-warn' : 'k-bad';
-    const sd = tk.kind === 'upstream' ? L({en: tk.message, zh: tk.message_zh}) : `${tk.cmdb_ci} · ${L({en: tk.message, zh: tk.message_zh || tk.message})}`;
+    const sd = (tk.kind === 'upstream' || tk.kind === 'master') ? (tk.kind === 'master' ? '★ ' : '') + L({en: tk.message, zh: tk.message_zh}) : `${tk.cmdb_ci} · ${L({en: tk.message, zh: tk.message_zh || tk.message})}`;
     return `<a class="tk" href="servicenow.html?at=${c}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener"><b>${esc(tk.number)}</b><div><div>${esc(sd)}</div><div class="sub">${esc(tk.assignment_group)} · ${s.notes.length} ${lang==='zh'?'条记录':'notes'}${s.notes.some(n=>n.type==='reopened')?(lang==='zh'?' · 已重开':' · reopened'):''}</div></div><span class="chip ${cls}">${esc(t('st_'+s.state.replace(' ','_')))}</span></a>`;
   }).join('');
 }
@@ -480,7 +575,7 @@ function header(c){
 /* ================= one patrol: static or animated ================= */
 function renderStatic(c){
   cur = c; header(c); renderTimeline(); renderCaption(c);
-  renderFleet(c, 'final'); renderHarvestStatic(c); renderLearn(c, false); renderTickets(c); renderCover(c, false); renderHistory(c);
+  renderFleet(c, 'final'); renderBoard(c); renderHarvestStatic(c); renderLearn(c, false); renderTickets(c); renderCover(c, false); renderHistory(c);
   const cyc = D.cycles[c];
   $('#humans').innerHTML = cyc.human.map(humanHTML).join('');
   const bad = cyc.rows.filter(r => r.status !== 'healthy');
@@ -514,6 +609,7 @@ async function animate(c, tk){
   $('#faults').innerHTML = bad.length ? faultHead() : `<div class="empty">${esc(t('no_fault'))}</div>`;
   await wait(300, tk);
   for (const r of bad){ $('#fbody').insertAdjacentHTML('beforeend', faultRow(c, r, true)); await wait(380, tk); }
+  await animateBoard(c, tk, 1);
   if (!cyc.results.length) $('#trace').innerHTML = `<div class="empty">${esc(t('no_trace'))}</div>`;
   for (const res of cyc.results){
     const box = document.createElement('div'); box.className = 'tr'; box.innerHTML = traceHead(res);
@@ -521,6 +617,7 @@ async function animate(c, tk){
     for (const tr of res.trace){ box.insertAdjacentHTML('beforeend', stepHTML(tr)); await wait(tr.decision === 'run' ? 650 : 380, tk); }
     box.insertAdjacentHTML('beforeend', res.resolved ? okHTML(res) : escalHTML(res)); await wait(700, tk);
   }
+  await animateBoard(c, tk, 2);
   renderLearn(c, true); renderTickets(c); renderCover(c, true); renderHistory(c); renderCaption(c);
 }
 

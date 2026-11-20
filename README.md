@@ -38,11 +38,21 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 | AI advisor | a hook only (`INCIDENT_AI_CMD`); suggestions can only pick known actions and stay under the policy |
 | Demo page | simulated data, for the story |
 
+## Mass outages: one shared status board
+
+When many devices behind one switch fail together, the system opens ONE upstream ticket and then, every patrol,
+**actively** checks ServiceNow for a master (major) incident and the mailbox for outage emails (`skill/remediation/watch.py`).
+It links our ticket as a child of the master, keeps one timeline for everyone (patrol, ServiceNow notes, emails,
+automation), tries any fix the master names within its permissions (physical steps go to engineers), posts our progress
+back to the master, and closes the board only when the master is resolved **and** the patrol confirms the devices are
+healthy. The board is the red card at the top of `demo/console.html` during the floor-4 outage (09:40-10:10).
+Sources are sample files; the live ServiceNow and mailbox connectors are not wired.
+
 ## The autoplay demo (no clicks needed)
 
 Open `demo/console.html`. It plays one simulated morning, 12 patrols from 09:00 to 10:50, by itself and loops.
 Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 19 scenarios as they happen. EN / 中文 switch top right;
+harvest, learning, ServiceNow tickets, and a checklist of the 24 scenarios as they happen. EN / 中文 switch top right;
 `?at=5` jumps to a patrol, `?speed=2` speeds it up.
 
 `demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
@@ -67,11 +77,12 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/actions.json`, `runbooks.json` | the action catalogue and the built-in runbooks (zh/en) |
 | `skill/remediation/harvest.py` | the case library collects fixes itself: ServiceNow KB, closed incidents, our resolved tickets, Teams / Slack / WeChat Work, email; verdicts verified / failed / unverified / rejected |
 | `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
+| `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
 | `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
 | `skill/mcp/incident_kb_server.py` | a real stdio MCP server: route, recall a fix, record a case |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, 19 scenarios |
+| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, 24 scenarios |
 | `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
 | `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |
