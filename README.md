@@ -73,7 +73,7 @@ cd demo && python3 -m http.server 8777 --bind 127.0.0.1
 # open http://127.0.0.1:8777  — or just double-click demo/index.html
 ```
 
-Pick a crew, hit **触发告警**, watch the alert walk the same six states. Hit
+The page draws the skeleton as an actual spine: the alert is a glowing orb that travels down six vertebrae, and the chosen device crew plugs into the two crew sockets (INVESTIGATE, MITIGATE). Pick a crew, hit **触发告警**, watch the alert walk the same six states. Hit
 **连跑四套班底** to see one core drive all four. Hit **🔭 同时巡检四台** to see
 four crews probe at once: a one-off blip is ignored, only a confirmed failure
 is handed to the skeleton.

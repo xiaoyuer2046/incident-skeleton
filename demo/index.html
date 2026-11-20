@@ -2,436 +2,510 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Incident Skeleton — 骨架驱动四套班底</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Skeleton — 一套骨架，四套班底</title>
 <style>
-  :root {
-    --bg: #0d0a14;
-    --panel: #1a1326;
-    --panel2: #221a33;
-    --ink: #f4ecd8;
-    --muted: #9a8db0;
-    --orange: #ff7b1c;
-    --purple: #9b5de5;
-    --green: #3ddc84;
-    --red: #ff4d4d;
-    --shared: #6b5b95;
-    --plugged: #ff7b1c;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, "PingFang SC", "Segoe UI", system-ui, sans-serif;
-    background: radial-gradient(1200px 600px at 70% -10%, #2a1a3a 0%, var(--bg) 60%);
-    color: var(--ink);
-    min-height: 100vh;
-    padding: 24px 18px 60px;
-  }
-  header { text-align: center; margin-bottom: 18px; }
-  header h1 {
-    margin: 0 0 4px;
-    font-size: 26px;
-    letter-spacing: .5px;
-  }
-  header h1 .skull { color: var(--orange); }
-  header p { margin: 0; color: var(--muted); font-size: 13px; }
+:root{
+  --ink:#0a0712; --panel:rgba(22,15,36,.74); --line:rgba(190,170,255,.14);
+  --bone:#efe6cf; --text:#efe9dc; --muted:#9a90b3;
+  --ember:#ff7a1a; --violet:#8b5cf6; --ghost:#5dffb0; --blood:#ff3d57; --amber:#ffc24a;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --serif:ui-serif,"Songti SC",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--ink);color:var(--text);
+  font-family:-apple-system,"PingFang SC","Segoe UI",system-ui,sans-serif;overflow-x:hidden}
 
-  /* ---- Crew picker ---- */
-  .crew {
-    display: flex; gap: 12px; justify-content: center;
-    flex-wrap: wrap; margin: 18px 0 22px;
-  }
-  .crew button {
-    background: var(--panel);
-    border: 2px solid #3a2d52;
-    color: var(--ink);
-    border-radius: 14px;
-    padding: 12px 16px;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
-    transition: .15s;
-  }
-  .crew button:hover { border-color: var(--purple); transform: translateY(-2px); }
-  .crew button.active {
-    border-color: var(--orange);
-    background: linear-gradient(180deg, #2a1c10, var(--panel));
-    box-shadow: 0 0 0 3px rgba(255,123,28,.15);
-  }
-  .crew button .ico { font-size: 22px; }
+/* ---------- night sky ---------- */
+.sky{position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:
+   radial-gradient(900px 520px at 82% -8%,rgba(139,92,246,.30),transparent 62%),
+   radial-gradient(700px 480px at 6% 108%,rgba(255,122,26,.16),transparent 60%),
+   linear-gradient(180deg,#0d0818 0%,#0a0712 55%,#07050d 100%)}
+.moon{position:absolute;top:22px;right:27%;width:92px;height:92px;border-radius:50%;
+  background:radial-gradient(circle at 36% 34%,#fff7e0,#e9dcb4 58%,#b9ab89);
+  box-shadow:0 0 70px 18px rgba(255,236,190,.22),0 0 220px 60px rgba(139,92,246,.20);opacity:.92}
+.fog{position:absolute;left:-30%;width:160%;height:260px;filter:blur(36px);opacity:.5;
+  background:radial-gradient(closest-side,rgba(150,120,220,.30),transparent 70%);
+  animation:drift 46s linear infinite alternate}
+.fog.f1{bottom:-60px}
+.fog.f2{bottom:30px;animation-duration:64s;animation-direction:alternate-reverse;opacity:.32}
+@keyframes drift{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+#stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.5;animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.85}}
 
-  /* ---- Tombstone graveyard ---- */
-  .graveyard {
-    display: flex; gap: 14px; justify-content: center;
-    margin: 0 auto 22px; max-width: 760px; min-height: 86px;
-  }
-  .tomb {
-    width: 64px; text-align: center; opacity: .35; transition: .3s;
-  }
-  .tomb.up { opacity: 1; }
-  .tomb .stone {
-    font-size: 40px; line-height: 1; filter: grayscale(.6);
-  }
-  .tomb.up .stone { filter: none; }
-  .tomb .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .tomb.dead .stone { filter: drop-shadow(0 0 8px var(--red)); }
-  .tomb.dead .lbl { color: var(--red); }
+/* ---------- bats ---------- */
+#bats{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.bat{position:absolute;left:-70px;width:44px;color:#1b1030;
+  animation:batfly var(--d,5s) linear forwards}
+.bat svg{display:block;width:100%;animation:flap .22s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 6px rgba(139,92,246,.7))}
+@keyframes batfly{to{transform:translateX(calc(100vw + 140px)) translateY(var(--dy,40px))}}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.45)}}
 
-  /* ---- The skeleton state machine ---- */
-  .machine {
-    max-width: 760px; margin: 0 auto;
-    background: var(--panel);
-    border: 1px solid #322647;
-    border-radius: 16px;
-    padding: 18px;
-  }
-  .track { display: flex; flex-direction: column; gap: 8px; }
-  .state {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--panel2);
-    border: 1px solid #2e2444;
-    border-radius: 12px;
-    padding: 12px 14px;
-    position: relative;
-    opacity: .5; transition: .25s;
-  }
-  .state .n {
-    flex: 0 0 26px; height: 26px; border-radius: 50%;
-    background: #2a2038; color: var(--muted);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
-  }
-  .state .name { font-weight: 600; min-width: 110px; }
-  .state .desc { color: var(--muted); font-size: 13px; flex: 1; }
-  .state .tag {
-    font-size: 11px; padding: 2px 8px; border-radius: 20px;
-    border: 1px solid #44355e; color: var(--muted);
-  }
-  .state.plugged .tag { color: var(--plugged); border-color: var(--plugged); }
-  .state.shared .tag { color: var(--shared); border-color: var(--shared); }
+/* ---------- layout ---------- */
+.app{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:30px 28px 40px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:30px}
+.brand h1{margin:0;font:600 40px/1.05 var(--serif);letter-spacing:.01em}
+.brand h1 em{font-style:italic;background:linear-gradient(95deg,#ffb15e,var(--ember) 45%,#ff4d6d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:10px 0 0;color:var(--muted);font-size:14px;max-width:640px;line-height:1.7}
+.brand p b{color:var(--text);font-weight:600}
+.badge{font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember);
+  border:1px solid rgba(255,122,26,.4);padding:7px 12px;border-radius:999px;background:rgba(255,122,26,.07)}
+.legend{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.legend .b{background:linear-gradient(#f3ead2,#b8aa88)}
+.legend .c{background:#1d1022;border:1.5px solid var(--ember)}
 
-  .state.active {
-    opacity: 1; border-color: var(--orange);
-    box-shadow: 0 0 0 2px rgba(255,123,28,.25);
-    background: linear-gradient(180deg, #241830, var(--panel2));
-  }
-  .state.done { opacity: .85; border-color: var(--green); }
-  .state.done .n { background: #15301f; color: var(--green); }
-  .state.active .n { background: var(--orange); color: #1a0d00; }
-  .state .spinner {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid #44355e; border-top-color: var(--orange);
-    animation: spin .7s linear infinite; opacity: 0;
-  }
-  .state.active .spinner { opacity: 1; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.stage{position:relative;display:grid;grid-template-columns:268px minmax(340px,1fr) 392px;gap:30px;align-items:start}
+.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
+.stage>aside,.stage>section{position:relative;z-index:2}
+.links path{fill:none;stroke:var(--ember);stroke-width:2;opacity:.28;stroke-dasharray:3 7;stroke-linecap:round}
+.links path.hot{opacity:1;stroke-width:2.6;filter:drop-shadow(0 0 7px var(--ember));animation:flow .7s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-20}}
 
-  .state::after {
-    content: ""; position: absolute; left: 25px; bottom: -9px;
-    width: 2px; height: 8px; background: #44355e;
-  }
-  .state:last-child::after { display: none; }
+/* ---------- crew roster ---------- */
+.roster{display:flex;flex-direction:column;gap:14px}
+.rtitle{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 2px 2px}
+.crewcard{display:flex;align-items:center;gap:13px;padding:14px;border:1px solid var(--line);border-radius:16px;
+  background:var(--panel);backdrop-filter:blur(10px);cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;outline:none}
+.crewcard:hover,.crewcard:focus-visible{transform:translateX(4px);border-color:rgba(255,122,26,.55)}
+.crewcard.active{border-color:var(--ember);box-shadow:0 0 0 1px rgba(255,122,26,.35),0 14px 44px -14px rgba(255,122,26,.5)}
+.crewcard .ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex:none;
+  background:rgba(255,255,255,.05);color:var(--bone);transition:.2s}
+.crewcard .ico svg{width:23px;height:23px}
+.crewcard.active .ico{color:var(--ember);background:rgba(255,122,26,.13)}
+.meta{min-width:0;flex:1}
+.nm{font-weight:600;font-size:15px}
+.dev{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pips{display:flex;gap:4px;margin-top:9px}
+.pip{width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);transition:.25s}
+.pip.ok{background:var(--ghost);box-shadow:0 0 8px rgba(93,255,176,.6)}
+.pip.bad{background:var(--blood);box-shadow:0 0 8px rgba(255,61,87,.7)}
+.st{width:10px;height:10px;border-radius:50%;flex:none;background:var(--ghost);box-shadow:0 0 10px var(--ghost);transition:.3s}
+.st.down{background:var(--blood);box-shadow:0 0 14px var(--blood);animation:pulse 1s ease-in-out infinite}
+.st.blip{background:var(--amber);box-shadow:0 0 12px var(--amber)}
+@keyframes pulse{50%{transform:scale(1.5);opacity:.6}}
 
-  .controls {
-    display: flex; gap: 10px; justify-content: center;
-    margin-top: 18px; flex-wrap: wrap;
-  }
-  .controls button {
-    background: var(--orange); color: #1a0d00; border: none;
-    border-radius: 10px; padding: 11px 22px; font-size: 15px;
-    font-weight: 600; cursor: pointer; transition: .15s;
-  }
-  .controls button:hover { filter: brightness(1.08); transform: translateY(-1px); }
-  .controls button.ghost {
-    background: transparent; color: var(--muted); border: 1px solid #44355e;
-  }
-  .controls button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+/* ---------- the spine ---------- */
+.spine svg{width:100%;height:auto;max-height:calc(100vh - 330px);min-height:420px;display:block;overflow:visible;margin:0 auto}
+.v{opacity:.5;transition:opacity .35s,filter .35s}
+.v .bone *{fill:url(#boneG);stroke:#6f6246;stroke-width:1.2;transition:fill .3s,stroke .3s}
+.v.crew .bone *{fill:#1d1022;stroke:var(--ember);stroke-width:1.7}
+.v .num{fill:#3a2f1c;font:700 14px var(--mono)}
+.v.crew .num{fill:var(--ember)}
+.v .nm2{fill:var(--text);font:600 13px var(--mono);letter-spacing:.09em}
+.v .zh{fill:var(--muted);font:12px -apple-system,"PingFang SC",sans-serif}
+.v .tg{fill:#7d7298;font:600 10px var(--mono);letter-spacing:.12em}
+.v.crew .tg{fill:var(--ember)}
+.v .lead{stroke:rgba(190,170,255,.25);stroke-width:1}
+.socket{fill:#120d1e;stroke:var(--ember);stroke-width:2;transition:.25s}
+.v.active{opacity:1;filter:drop-shadow(0 0 13px rgba(255,122,26,.85))}
+.v.active .socket{fill:var(--ember)}
+.v.done{opacity:1}
+.v.done .bone *{stroke:var(--ghost)}
+.v.done.crew .bone *{fill:#0e2a1e}
+.v.done .num{fill:var(--ghost)}
+#prog{fill:url(#progG);transform-box:fill-box;transform-origin:top;transform:scaleY(0);transition:transform .8s cubic-bezier(.6,0,.2,1)}
+#orb{transition:transform .8s cubic-bezier(.6,0,.2,1)}
+#orb .halo{fill:rgba(255,122,26,.25);animation:halo 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes halo{50%{transform:scale(1.6);opacity:.3}}
+.skull path,.skull ellipse{fill:url(#boneG);stroke:#6f6246;stroke-width:1.3}
+.skull .eye{fill:#0a0712;stroke:none;transition:.3s}
+.skull .nose{fill:#0a0712;stroke:none}
+.skull .teeth{stroke:#6f6246;stroke-width:1.4;fill:none}
+#spine.alert .eye{fill:var(--blood);filter:drop-shadow(0 0 7px var(--blood))}
+#spine.ok .eye{fill:var(--ghost);filter:drop-shadow(0 0 7px var(--ghost))}
+#jaw{transition:transform .2s}
+#spine.grin #jaw{animation:chomp .42s ease-in-out infinite}
+@keyframes chomp{50%{transform:translateY(7px)}}
+.coccyx rect{fill:url(#boneG);opacity:.28}
 
-  .log {
-    max-width: 760px; margin: 16px auto 0;
-    background: #110b1c; border: 1px solid #2e2444; border-radius: 12px;
-    padding: 12px 14px; font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px; color: var(--muted); max-height: 150px; overflow:auto;
-  }
-  .log .line { padding: 1px 0; }
-  .log .line.ok { color: var(--green); }
-  .log .line.warn { color: var(--orange); }
-  .log .line.err { color: var(--red); }
+/* ---------- side cards ---------- */
+.side{display:flex;flex-direction:column;gap:18px}
+.card{border:1px solid var(--line);border-radius:18px;background:var(--panel);backdrop-filter:blur(10px);overflow:hidden}
+.card h3{margin:0;padding:12px 16px;font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.lights{display:inline-flex;gap:6px}
+.lights i{width:9px;height:9px;border-radius:50%;background:#3b3052;display:inline-block}
+.lights i:nth-child(1){background:#ff5f56}.lights i:nth-child(2){background:#ffbd2e}.lights i:nth-child(3){background:#27c93f}
+.tag-sim{margin-left:auto;font-size:10px;color:var(--amber);border:1px solid rgba(255,194,74,.4);padding:2px 8px;border-radius:999px}
+#log{height:300px;overflow:auto;padding:12px 16px;font:12.5px/1.75 var(--mono);color:#cfc6e6}
+#log .ln{animation:rise .3s ease both}
+#log .ok{color:var(--ghost)}#log .err{color:var(--blood)}#log .warn{color:var(--amber)}#log .dim{color:#7d7298}#log .st2{color:var(--ember)}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}}
+.case{display:grid;grid-template-columns:64px 1fr;gap:9px 12px;padding:16px;font-size:13px}
+.case dt{color:var(--muted);font-size:12px;padding-top:1px}
+.case dd{margin:0;min-height:18px;transition:color .3s}
+.case dd.filled{color:var(--text);animation:rise .35s ease both}
+.case dd.sev-高{color:var(--blood)}.case dd.sev-中{color:var(--amber)}
+.stamp{margin:0 16px 16px;padding:9px 12px;border:1px dashed rgba(93,255,176,.5);border-radius:10px;
+  color:var(--ghost);font:600 12px var(--mono);letter-spacing:.06em;opacity:0;transition:.4s}
+.stamp.on{opacity:1}
 
-  footer {
-    text-align: center; margin-top: 26px; color: var(--muted); font-size: 12px;
-  }
-  footer b { color: var(--ink); }
+/* ---------- dock ---------- */
+.dock{position:sticky;bottom:20px;z-index:20;width:max-content;max-width:100%;margin:34px auto 0;display:flex;gap:10px;flex-wrap:wrap;
+  justify-content:center;padding:10px;border:1px solid var(--line);border-radius:999px;background:rgba(14,9,24,.82);backdrop-filter:blur(14px);
+  box-shadow:0 18px 60px -18px #000}
+.dock button{font:600 14px -apple-system,"PingFang SC",sans-serif;border:1px solid transparent;border-radius:999px;padding:11px 22px;
+  cursor:pointer;color:var(--text);background:transparent;transition:.18s}
+.dock button:hover:not(:disabled){background:rgba(255,255,255,.07)}
+.dock button.primary{background:linear-gradient(135deg,#ff9a3c,var(--ember) 55%,#ff4d6d);color:#1b0b00;box-shadow:0 8px 28px -8px var(--ember)}
+.dock button.primary:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}
+.dock button:disabled{opacity:.4;cursor:not-allowed}
+.dock button:focus-visible,.crewcard:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+footer{margin-top:22px;text-align:center;color:#6f6588;font-size:12px}
 
-  /* dancing skeleton */
-  .dancer {
-    position: fixed; left: 50%; bottom: 8px; transform: translateX(-50%);
-    font-size: 46px; opacity: 0; transition: opacity .4s; pointer-events: none;
-  }
-  .dancer.show { opacity: 1; animation: jig .6s ease-in-out infinite alternate; }
-  @keyframes jig { from { transform: translateX(-50%) rotate(-8deg); } to { transform: translateX(-50%) rotate(8deg) translateY(-4px); } }
-
-  .bats { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
-  .bat { position: absolute; font-size: 22px; opacity: 0; }
+@media (max-width:1020px){
+  .stage{grid-template-columns:1fr}
+  .roster{display:grid;grid-template-columns:1fr 1fr}
+  .rtitle{grid-column:1/-1}
+  .links{display:none}
+  .spine svg{max-height:none;max-width:520px;margin:0 auto}
+  .brand h1{font-size:32px}
+}
+@media (prefers-reduced-motion:reduce){
+  .fog,#stars i,.st.down,#orb .halo,#spine.grin #jaw,.links path.hot{animation:none}
+  #orb,#prog{transition-duration:.01s}
+}
 </style>
 </head>
 <body>
+<div class="sky"><div class="moon"></div><div class="fog f1"></div><div class="fog f2"></div><div id="stars"></div></div>
+<div id="bats" aria-hidden="true"></div>
+
+<div class="app">
   <header>
-    <h1><span class="skull">💀</span> Incident Skeleton</h1>
-    <p>「Skeleton Crew」原意=维持运转的最少班底。骨架=状态机核心，班底=每种设备挂上去的处理逻辑。一套骨架，四套班底，处理四种设备告警。</p>
+    <div class="brand">
+      <h1>Incident <em>Skeleton</em></h1>
+      <p><b>一套骨架，四套班底。</b>Skeleton crew 的原意是“维持运转的最少班底”：骨架是状态机核心，班底是每种设备挂上去的处理逻辑。同一条脊柱，走完四种设备的告警。</p>
+      <div class="legend"><span><i class="b"></i>共享骨骼 · 4 步</span><span><i class="c"></i>班底插槽 · 2 步</span></div>
+    </div>
+    <div class="badge">Kiroween 2026 · Skeleton Crew</div>
   </header>
 
-  <div class="crew" id="crew">
-    <button data-crew="printer" class="active"><span class="ico">🖨️</span> 打印机</button>
-    <button data-crew="signage"><span class="ico">📺</span> 数字标牌</button>
-    <button data-crew="av"><span class="ico">🎥</span> 会议室音视频</button>
-    <button data-crew="wifiap"><span class="ico">📶</span> 无线 AP</button>
-  </div>
+  <main class="stage" id="stage">
+    <svg class="links" id="links" aria-hidden="true"></svg>
 
-  <div class="graveyard" id="graveyard"></div>
+    <aside class="roster" id="roster" aria-label="四套班底"></aside>
 
-  <div class="machine">
-    <div class="track" id="track"></div>
-    <div class="controls">
-      <button id="fire">🔥 触发告警</button>
-      <button id="reset" class="ghost">重置</button>
-      <button id="runAll" class="ghost">连跑四套班底</button>
-      <button id="patrol" class="ghost">🔭 同时巡检四台</button>
-    </div>
-  </div>
+    <section class="spine" aria-label="六步骨架">
+      <svg id="spine" viewBox="0 0 470 620" role="img" aria-label="六节脊柱：收告警、分诊、排查、处理、复查、记录"></svg>
+    </section>
 
-  <div class="log" id="log"><div class="line">就绪。选一套班底，点「触发告警」。</div></div>
+    <aside class="side">
+      <div class="card">
+        <h3><span class="lights"><i></i><i></i><i></i></span>实时日志</h3>
+        <div id="log" aria-live="polite"></div>
+      </div>
+      <div class="card">
+        <h3>病例卡 <span class="tag-sim">模拟数据</span></h3>
+        <dl class="case">
+          <dt>设备</dt><dd data-f="dev">—</dd>
+          <dt>症状</dt><dd data-f="sym">—</dd>
+          <dt>严重度</dt><dd data-f="sev">—</dd>
+          <dt>派给</dt><dd data-f="grp">—</dd>
+          <dt>根因</dt><dd data-f="root">—</dd>
+          <dt>处理</dt><dd data-f="fix">—</dd>
+          <dt>结果</dt><dd data-f="res">—</dd>
+        </dl>
+        <div class="stamp" id="stamp">✓ 已写入病例库</div>
+      </div>
+    </aside>
+  </main>
 
-  <div class="dancer" id="dancer">💃💀🕺</div>
-  <div class="bats" id="bats"></div>
-
-  <footer>
-    Kiroween 2026 · Skeleton Crew · <b>同一套骨架，四种告警</b>
-  </footer>
+  <nav class="dock" aria-label="控制">
+    <button class="primary" id="fire">触发告警</button>
+    <button id="patrol">同时巡检四台</button>
+    <button id="runAll">连跑四套班底</button>
+    <button id="reset">重置</button>
+  </nav>
+  <footer>演示用模拟数据。真实检查请运行 skill/scripts/run_incident.py 和 patrol.py。</footer>
+</div>
 
 <script>
-const SHARED = "shared", PLUGGED = "plugged";
-// The skeleton — shared core, every alert walks these 6 states.
-const SKELETON = [
-  { n:1, name:"RECEIVE",    tag:SHARED,   desc:"告警进来：类型 / 严重度 / 来源 / 消息" },
-  { n:2, name:"TRIAGE",     tag:SHARED,   desc:"分类 + 打分严重度，决定要不要动手" },
-  { n:3, name:"INVESTIGATE",tag:PLUGGED,  desc:"为这类设备查上下文（班底逻辑）" },
-  { n:4, name:"MITIGATE",   tag:PLUGGED,  desc:"为这类设备动手减影响（班底逻辑）" },
-  { n:5, name:"RESOLVE",    tag:SHARED,   desc:"复查健康，确认恢复" },
-  { n:6, name:"LOG",        tag:SHARED,   desc:"写事件记录 / 复盘" },
-];
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// The crew — each plugs its own INVESTIGATE + MITIGATE.
-const CREW = {
-  printer: {
-    ico:"🖨️", label:"打印机", device:"打印机 HP-LJ-405",
-    alert:{ type:"打印机故障", sev:"中", src:"SNMP 10.0.4.21", msg:"PAPER JAM (错误码 13.20)" },
-    inv:["SNMP 查状态 → ERROR","查打印队列 → 3 个任务堆积","查网络 → 通","查错误码 13.20 → 定影器卡纸"],
-    mit:["清纸 / 换耗材","重启打印后台","重新加设备","必要时断电重启"],
-    resolve:"错误码清零，队列恢复，设备在线",
-  },
-  signage: {
-    ico:"📺", label:"数字标牌", device:"标牌播放器 BS-12",
-    alert:{ type:"标牌黑屏", sev:"高", src:"CMS / 大厅东", msg:"播放器离线 14 分钟" },
-    inv:["ping 播放器 → 不通","查 CMS 排期 → 推送失败","查显示电源 → 亮（HDMI 信号丢）","查网络 → 端口 down"],
-    mit:["重启播放器","重推内容 / 排期","重插 HDMI","换备用播放器"],
-    resolve:"播放器在线，内容恢复轮播",
-  },
-  av: {
-    ico:"🎥", label:"会议室音视频", device:"会议室 AV-ROOM-3F",
-    alert:{ type:"进不了会", sev:"高", src:"Zoom Rooms / 3F-301", msg:"无法加入会议，控制器面板卡死" },
-    inv:["查控制器 → 无响应","查编解码器 → 在线但挂起","查 Zoom Rooms 状态 → 离线","测麦/摄 → 未枚举"],
-    mit:["重启控制器 / 编解码器","重启房间应用","重插 USB 设备","派 AV 工程师到场"],
-    resolve:"房间重新上线，会议已加入",
-  },
-  wifiap: {
-    ico:"📶", label:"无线 AP", device:"无线 AP AP-3F-12",
-    alert:{ type:"AP 离线/掉线", sev:"高", src:"控制器 / 楼层3", msg:"AP 离线，多个客户端掉线" },
-    inv:["ping AP → 不通","控制器 API 查 AP 状态 → down","查 PoE 端口 → 端口 down","查客户端数 → 大面积掉线"],
-    mit:["控制器 API 重启 AP","PoE 端口断电再上电","射频调优（换信道/功率）","补 AP / 换设备"],
-    resolve:"AP 上线，客户端重新关联",
-  },
+const ICONS = {
+  printer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>',
+  signage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+  av:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>',
+  wifiap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg>'
 };
 
-let current = "printer";
-let running = false;
+// The skeleton: shared core. Steps 3 and 4 are where a crew plugs in.
+const STATES = [
+  {n:1, name:'RECEIVE',     zh:'收告警',     kind:'shared'},
+  {n:2, name:'TRIAGE',      zh:'分诊 · 派单', kind:'shared'},
+  {n:3, name:'INVESTIGATE', zh:'排查',       kind:'crew'},
+  {n:4, name:'MITIGATE',    zh:'处理',       kind:'crew'},
+  {n:5, name:'RESOLVE',     zh:'复查',       kind:'shared'},
+  {n:6, name:'LOG',         zh:'记录 · 病例', kind:'shared'},
+];
+const Y = [140, 216, 292, 368, 444, 520];
+const TOP = 100, SPAN = 440;
 
-const track = document.getElementById("track");
-const logEl = document.getElementById("log");
-const graveyard = document.getElementById("graveyard");
-const dancer = document.getElementById("dancer");
-const batsEl = document.getElementById("bats");
+const CREW = {
+  printer:{label:'打印机', device:'HP LaserJet 405 · 3F', group:'Print Services',
+    alert:{type:'打印机故障', sev:'中', msg:'PAPER JAM (错误码 13.20)'},
+    inv:['SNMP 查状态 → ERROR','查打印队列 → 3 个任务堆积','查网络 → 通','查错误码 13.20 → 定影器区卡纸'],
+    mit:['现场清除卡纸','重启打印后台 (cups)','重新加入打印队列'],
+    root:'定影器区卡纸（13.20）', fix:'清纸 → 重启打印后台', res:'错误码清零，队列恢复'},
+  signage:{label:'数字标牌', device:'播放器 BS-12 · 大厅东', group:'AV / Digital Signage',
+    alert:{type:'标牌黑屏', sev:'高', msg:'播放器离线 14 分钟'},
+    inv:['ping 播放器 → 不通','查 CMS 排期 → 推送失败','查显示电源 → 亮，但 HDMI 无信号','查网络端口 → down'],
+    mit:['远程重启播放器','CMS 重新推送内容和排期','必要时换备用播放器'],
+    root:'HDMI 信号丢失，推送失败', fix:'重启播放器 → 重推内容', res:'播放器在线，内容恢复轮播'},
+  av:{label:'会议室音视频', device:'3F-301 会议室', group:'Meeting Rooms / AV',
+    alert:{type:'进不了会', sev:'高', msg:'无法加入会议，控制器面板卡死'},
+    inv:['查控制器 → 无响应','查编解码器 → 在线但挂起','查 Zoom Rooms → 离线','测麦克风和摄像头 → 未枚举'],
+    mit:['重启房间应用','重启编解码器和控制器','必要时派 AV 工程师到场'],
+    root:'控制器无响应，房间应用挂起', fix:'重启房间应用 → 重启控制器', res:'房间上线，会议已加入'},
+  wifiap:{label:'无线 AP', device:'AP-3F-12 · 三楼东', group:'Network / Wireless',
+    alert:{type:'AP 掉线', sev:'高', msg:'AP 离线，多个客户端掉线'},
+    inv:['ping AP → 不通','控制器 API → AP 状态 down','查 PoE 端口 → 掉电','查客户端数 → 大面积掉线'],
+    mit:['控制器重启 AP','PoE 端口断电再上电','必要时调射频或补 AP'],
+    root:'PoE 端口掉电，AP 离线', fix:'控制器重启 AP → PoE 端口重新上电', res:'AP 上线，客户端重新关联'},
+};
 
-function renderTrack(){
-  track.innerHTML = "";
-  SKELETON.forEach(s => {
-    const el = document.createElement("div");
-    el.className = "state " + s.tag;
-    el.dataset.n = s.n;
-    el.innerHTML = `
-      <span class="spinner"></span>
-      <span class="n">${s.n}</span>
-      <span class="name">${s.name}</span>
-      <span class="desc">${s.desc}</span>
-      <span class="tag">${s.tag===SHARED?"共享":"班底"}</span>`;
-    track.appendChild(el);
-  });
-}
-function renderGraveyard(){
-  graveyard.innerHTML = "";
-  Object.entries(CREW).forEach(([k,c]) => {
-    const t = document.createElement("div");
-    t.className = "tomb up"; t.dataset.k = k;
-    t.innerHTML = `<div class="stone">🪦</div><div class="lbl">${c.ico} ${c.label}</div>`;
-    graveyard.appendChild(t);
-  });
-}
-function pickCrew(k){
-  current = k;
-  document.querySelectorAll("#crew button").forEach(b => b.classList.toggle("active", b.dataset.crew===k));
-}
-document.getElementById("crew").addEventListener("click", e => {
-  const b = e.target.closest("button"); if(!b) return;
-  pickCrew(b.dataset.crew);
-});
+let current = 'printer', busy = false;
 
-function logLine(msg, cls){
-  const d = document.createElement("div");
-  d.className = "line" + (cls?(" "+cls):"");
-  const ts = new Date().toLocaleTimeString("zh-CN");
-  d.textContent = `[${ts}] ${msg}`;
-  logEl.appendChild(d);
-  logEl.scrollTop = logEl.scrollHeight;
-}
+/* ---------- sky ---------- */
+(function stars(){
+  const s = $('#stars');
+  for(let i=0;i<70;i++){
+    const d = document.createElement('i');
+    d.style.left = Math.random()*100+'%'; d.style.top = Math.random()*70+'%';
+    d.style.animationDelay = (Math.random()*4)+'s';
+    d.style.opacity = .2 + Math.random()*.5;
+    s.appendChild(d);
+  }
+})();
 
-function setTomb(k, dead){
-  const t = graveyard.querySelector(`.tomb[data-k="${k}"]`);
-  if(t) t.classList.toggle("dead", !!dead);
-}
-
+const BAT_SVG = '<svg viewBox="-20 -8 40 18" fill="currentColor"><path d="M0 -2 C-4 -7 -12 -6 -18 -1 C-14 -2 -11 0 -9 4 C-7 2 -4 2 0 7 C4 2 7 2 9 4 C11 0 14 -2 18 -1 C12 -6 4 -7 0 -2Z"/></svg>';
 function flyBats(){
-  for(let i=0;i<6;i++){
-    const b = document.createElement("div");
-    b.className = "bat"; b.textContent = "🦇";
-    b.style.left = Math.random()*100 + "%";
-    b.style.top = (Math.random()*40) + "%";
-    batsEl.appendChild(b);
-    requestAnimationFrame(()=>{
-      b.style.transition = "all 2.2s ease-in";
-      b.style.opacity = "0.9";
-      b.style.transform = `translate(${(Math.random()-.5)*300}px, ${200+Math.random()*200}px)`;
-      setTimeout(()=>b.style.opacity="0", 1800);
-      setTimeout(()=>b.remove(), 2400);
-    });
+  if(REDUCED) return;
+  const box = $('#bats');
+  for(let i=0;i<5;i++){
+    const b = document.createElement('div');
+    b.className = 'bat'; b.innerHTML = BAT_SVG;
+    b.style.top = (4 + Math.random()*34)+'%';
+    b.style.setProperty('--d', (4 + Math.random()*3)+'s');
+    b.style.setProperty('--dy', (Math.random()*120-30)+'px');
+    b.style.animationDelay = (i*0.35)+'s';
+    b.style.width = (30 + Math.random()*26)+'px';
+    box.appendChild(b);
+    setTimeout(()=>b.remove(), 9000);
   }
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* ---------- roster ---------- */
+function renderRoster(){
+  $('#roster').innerHTML = '<div class="rtitle">四套班底 · 点一个</div>' + Object.entries(CREW).map(([k,c]) =>
+    `<div class="crewcard${k===current?' active':''}" data-k="${k}" role="button" tabindex="0" aria-label="${c.label}">
+      <div class="ico">${ICONS[k]}</div>
+      <div class="meta"><div class="nm">${c.label}</div><div class="dev">${c.device}</div>
+        <div class="pips" data-pips="${k}"><i class="pip"></i><i class="pip"></i><i class="pip"></i></div></div>
+      <span class="st" data-st="${k}"></span></div>`).join('');
+}
+function pick(k){
+  current = k;
+  document.querySelectorAll('.crewcard').forEach(c => c.classList.toggle('active', c.dataset.k===k));
+  drawLinks();
+}
+$('#roster').addEventListener('click', e => { const c = e.target.closest('.crewcard'); if(c && !busy) pick(c.dataset.k); });
+$('#roster').addEventListener('keydown', e => {
+  if(e.key==='Enter' || e.key===' '){ const c = e.target.closest('.crewcard'); if(c && !busy){ e.preventDefault(); pick(c.dataset.k); } }
+});
+const setStatus = (k,cls) => { const el = document.querySelector(`[data-st="${k}"]`); if(el) el.className = 'st '+(cls||''); };
+function setPip(k,i,ok){ const p = document.querySelector(`[data-pips="${k}"]`).children[i]; p.className = 'pip '+(ok?'ok':'bad'); }
+function clearPips(){ document.querySelectorAll('.pip').forEach(p => p.className='pip'); }
 
+/* ---------- spine ---------- */
+function renderSpine(){
+  const verts = STATES.map((s,i) => {
+    const y = Y[i], crew = s.kind==='crew';
+    return `<g class="v ${s.kind}" data-n="${s.n}" transform="translate(0,${y})">
+      <g class="bone">
+        <ellipse cx="110" cy="0" rx="17" ry="9"/><ellipse cx="230" cy="0" rx="17" ry="9"/>
+        <rect x="126" y="-18" width="88" height="36" rx="13"/>
+        <rect x="160" y="-28" width="20" height="13" rx="5"/>
+      </g>
+      <text class="num" x="170" y="5" text-anchor="middle">${s.n}</text>
+      ${crew ? '<line class="lead" x1="93" y1="0" x2="110" y2="0" stroke="#ff7a1a" stroke-width="1.5"/><circle class="socket" cx="84" cy="0" r="9"/>' : ''}
+      <line class="lead" x1="252" y1="0" x2="272" y2="0"/>
+      <text class="nm2" x="282" y="-3">${s.name}</text>
+      <text class="zh" x="282" y="15">${s.zh}</text>
+      <text class="tg" x="404" y="15" text-anchor="start">${crew?'班底':'共享'}</text>
+    </g>`;
+  }).join('');
+  $('#spine').innerHTML = `
+    <defs>
+      <linearGradient id="boneG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6eed7"/><stop offset="1" stop-color="#b8aa88"/></linearGradient>
+      <linearGradient id="progG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset="1" stop-color="#ff4d6d"/></linearGradient>
+      <radialGradient id="orbG"><stop offset="0" stop-color="#fff3d6"/><stop offset=".5" stop-color="#ffa23c"/><stop offset="1" stop-color="#ff5a1f"/></radialGradient>
+    </defs>
+    <rect x="168" y="${TOP}" width="4" height="${SPAN}" rx="2" fill="rgba(190,170,255,.18)"/>
+    <rect id="prog" x="168" y="${TOP}" width="4" height="${SPAN}" rx="2"/>
+    <g class="skull" transform="translate(170,52)">
+      <path d="M-46 8C-46-34-22-50 0-50C22-50 46-34 46 8C46 22 38 30 30 34L30 44L-30 44L-30 34C-38 30-46 22-46 8Z"/>
+      <ellipse class="eye" cx="-17" cy="4" rx="11" ry="12"/><ellipse class="eye" cx="17" cy="4" rx="11" ry="12"/>
+      <path class="nose" d="M0 14L-5 27L5 27Z"/>
+      <g id="jaw"><path d="M-28 38L28 38L24 58L-24 58Z"/><path class="teeth" d="M-14 40V56M-5 40V56M5 40V56M14 40V56"/></g>
+    </g>
+    ${verts}
+    <g class="coccyx"><rect x="150" y="562" width="40" height="11" rx="5"/><rect x="155" y="577" width="30" height="10" rx="5"/><rect x="160" y="591" width="20" height="9" rx="4"/></g>
+    <g id="orb" style="transform:translateY(100px)">
+      <circle class="halo" cx="170" cy="0" r="17"/><circle cx="170" cy="0" r="8" fill="url(#orbG)"/>
+    </g>`;
+}
+let activeN = 0;
+function setActive(n){
+  activeN = n;
+  document.querySelectorAll('.v').forEach(v => v.classList.toggle('active', +v.dataset.n===n));
+  const y = Y[n-1];
+  $('#orb').style.transform = `translateY(${y}px)`;
+  $('#prog').style.transform = `scaleY(${(y-TOP)/SPAN})`;
+  drawLinks();
+}
+const markDone = n => { const v = document.querySelector(`.v[data-n="${n}"]`); v.classList.remove('active'); v.classList.add('done'); };
+function resetSpine(){
+  activeN = 0;
+  document.querySelectorAll('.v').forEach(v => v.classList.remove('active','done'));
+  $('#orb').style.transform = 'translateY(100px)';
+  $('#prog').style.transform = 'scaleY(0)';
+  $('#spine').classList.remove('alert','ok','grin');
+  drawLinks();
+}
+
+/* ---------- links: active crew card -> the two sockets ---------- */
+function drawLinks(){
+  const svg = $('#links');
+  const card = document.querySelector('.crewcard.active');
+  if(!card || innerWidth < 1020){ svg.innerHTML=''; return; }
+  const sr = $('#stage').getBoundingClientRect(), cr = card.getBoundingClientRect();
+  const x1 = cr.right - sr.left, y1 = cr.top + cr.height/2 - sr.top;
+  svg.innerHTML = [3,4].map(n => {
+    const s = document.querySelector(`.v[data-n="${n}"] .socket`).getBoundingClientRect();
+    const x2 = s.left + s.width/2 - sr.left, y2 = s.top + s.height/2 - sr.top;
+    const dx = Math.max(40, (x2-x1)*.55);
+    return `<path class="${activeN===n?'hot':''}" d="M${x1} ${y1} C${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}"/>`;
+  }).join('');
+}
+addEventListener('resize', drawLinks);
+
+/* ---------- log + case ---------- */
+function log(msg, cls){
+  const d = document.createElement('div');
+  d.className = 'ln '+(cls||''); d.textContent = msg;
+  $('#log').appendChild(d); $('#log').scrollTop = 1e6;
+}
+function setCase(o){
+  for(const [k,v] of Object.entries(o)){
+    const el = document.querySelector(`[data-f="${k}"]`);
+    el.textContent = v; el.classList.add('filled');
+    el.className = 'filled' + (k==='sev' ? ' sev-'+v : '');
+  }
+}
+function resetCase(){
+  document.querySelectorAll('[data-f]').forEach(e => { e.textContent='—'; e.className=''; });
+  $('#stamp').classList.remove('on');
+}
+const lock = b => { busy = b; document.querySelectorAll('.dock button').forEach(x => x.disabled = b); };
+function resetAll(){
+  resetSpine(); resetCase(); clearPips();
+  Object.keys(CREW).forEach(k => setStatus(k,''));
+  $('#log').innerHTML = '';
+}
+
+/* ---------- one incident walks the skeleton ---------- */
 async function runIncident(k){
   const c = CREW[k];
-  pickCrew(k);
-  running = true;
-  document.getElementById("fire").disabled = true;
-  setTomb(k, true);
-  flyBats();
-  logEl.innerHTML = "";
-
-  // reset states
-  document.querySelectorAll(".state").forEach(s => s.classList.remove("active","done"));
-
-  logLine(`告警进来：${c.alert.type}（${c.alert.sev}） — ${c.device} — ${c.alert.msg}`, "warn");
-
-  const steps = [...SKELETON];
-  for(const s of steps){
-    const el = track.querySelector(`.state[data-n="${s.n}"]`);
-    el.classList.add("active");
-    let detail = s.desc;
-    if(s.name === "INVESTIGATE"){
-      for(const line of c.inv){ await sleep(650); logLine("  ↳ "+line); }
-      detail = "查完，定位到根因";
-    } else if(s.name === "MITIGATE"){
-      for(const line of c.mit){ await sleep(650); logLine("  ↳ "+line, "warn"); }
-      detail = "处理完成，等恢复";
-    } else if(s.name === "TRIAGE"){
-      await sleep(700);
-      logLine(`  类型=${c.alert.type}，严重度=${c.alert.sev} → 动手`);
-    } else if(s.name === "RECEIVE"){
-      await sleep(700);
-    } else if(s.name === "RESOLVE"){
-      await sleep(700);
-      logLine("  "+c.resolve, "ok");
-      setTomb(k, false);
-    } else if(s.name === "LOG"){
-      await sleep(500);
-      logLine("  已写入事件记录 + 复盘", "ok");
+  pick(k); lock(true);
+  resetSpine(); resetCase(); $('#log').innerHTML = '';
+  $('#spine').classList.add('alert'); setStatus(k,'down'); flyBats();
+  log(`⚠ 告警：${c.alert.type} · ${c.device}`,'warn');
+  log(`  ${c.alert.msg}`,'dim');
+  const t = REDUCED ? 0.2 : 1;
+  for(const s of STATES){
+    setActive(s.n);
+    log(`[${s.n}/6] ${s.name} · ${s.zh}${s.kind==='crew'?'  ← 班底':''}`, 'st2');
+    await sleep(750*t);
+    if(s.name==='RECEIVE'){ setCase({dev:c.device, sym:c.alert.msg}); }
+    if(s.name==='TRIAGE'){
+      log(`  严重度 ${c.alert.sev} → 动手处理`);
+      log(`  派单 → ${c.group}（模拟）`,'dim');
+      setCase({sev:c.alert.sev, grp:c.group});
     }
-    el.classList.remove("active"); el.classList.add("done");
-    await sleep(180);
+    if(s.name==='INVESTIGATE'){
+      for(const l of c.inv){ log('  ✓ '+l); await sleep(560*t); }
+      setCase({root:c.root});
+    }
+    if(s.name==='MITIGATE'){
+      for(const l of c.mit){ log('  → '+l,'warn'); await sleep(560*t); }
+      setCase({fix:c.fix});
+    }
+    if(s.name==='RESOLVE'){ log('  '+c.res,'ok'); setCase({res:c.res}); setStatus(k,''); }
+    if(s.name==='LOG'){ log('  已写入复盘和病例库','ok'); $('#stamp').classList.add('on'); }
+    markDone(s.n);
+    await sleep(220*t);
   }
-
-  // skeleton dances on RESOLVE
-  dancer.classList.add("show");
-  logLine(`✅ ${c.label} 事件已闭环（同一套骨架）`, "ok");
-  await sleep(1600);
-  dancer.classList.remove("show");
-
-  running = false;
-  document.getElementById("fire").disabled = false;
+  $('#spine').classList.remove('alert'); $('#spine').classList.add('ok','grin');
+  log(`✔ ${c.label} 事件闭环，走的是同一套骨架`,'ok');
+  await sleep(1700*t);
+  $('#spine').classList.remove('grin');
+  lock(false);
 }
 
-document.getElementById("fire").addEventListener("click", ()=>{
-  if(running) return;
-  runIncident(current);
-});
-document.getElementById("reset").addEventListener("click", ()=>{
-  if(running) return;
-  document.querySelectorAll(".state").forEach(s => s.classList.remove("active","done"));
-  Object.keys(CREW).forEach(k => setTomb(k,false));
-  logEl.innerHTML = '<div class="line">已重置。选一套班底，点「触发告警」。</div>';
-});
-document.getElementById("runAll").addEventListener("click", async ()=>{
-  if(running) return;
-  for(const k of Object.keys(CREW)){ await runIncident(k); await sleep(500); }
-  logLine("🦴 四套班底跑完 — 同一套骨架，四种告警。", "ok");
-});
-
-// Patrol: four crews probe their own device at the same time. One failed probe is
-// a blip and is ignored; only >= 2 of 3 failures is confirmed and handed to the skeleton.
-document.getElementById("patrol").addEventListener("click", async ()=>{
-  if(running) return;
-  running = true;
-  document.getElementById("fire").disabled = true;
-  logEl.innerHTML = "";
-  document.querySelectorAll(".state").forEach(s => s.classList.remove("active","done"));
-  Object.keys(CREW).forEach(k => setTomb(k,false));
-  logLine("🔭 四个代理同时巡检：每台探测 3 次，失败 ≥ 2 次才确认（演示数据）", "warn");
-  // 1 = probe ok, 0 = probe failed. signage blips once; av is really down.
-  const plan = { printer:[1,1,1], signage:[1,0,1], av:[0,0,0], wifiap:[1,1,1] };
+/* ---------- patrol: four crews at once, only a confirmed failure reaches the skeleton ---------- */
+async function patrol(){
+  lock(true); resetAll();
+  log('🔭 四个代理同时巡检，每台探测 3 次','warn');
+  log('  失败 ≥ 2 次才确认，偶发一次忽略','dim');
+  const plan = {printer:[1,1,1], signage:[1,0,1], av:[0,0,0], wifiap:[1,1,1]};
   const keys = Object.keys(CREW);
   const fails = await Promise.all(keys.map(async k => {
     let f = 0;
-    for(let r=1; r<=3; r++){
-      await sleep(450 + Math.random()*350);
-      const ok = plan[k][r-1];
-      if(!ok) f++;
-      logLine(`  ${CREW[k].ico} ${CREW[k].label} 第${r}次：${ok?"正常":"失败"}`, ok?"ok":"err");
+    for(let r=0;r<3;r++){
+      await sleep(520 + Math.random()*420);
+      const ok = plan[k][r]; if(!ok) f++;
+      setPip(k,r,ok);
+      log(`  ${CREW[k].label} 第 ${r+1} 次：${ok?'正常':'失败'}`, ok?'ok':'err');
     }
     return f;
   }));
   const confirmed = [];
   keys.forEach((k,i) => {
-    if(fails[i] >= 2){ confirmed.push(k); logLine(`🔴 ${CREW[k].label}：失败 ${fails[i]} 次，确认故障 → 交给骨架`, "err"); }
-    else if(fails[i] === 1){ logLine(`🟡 ${CREW[k].label}：只失败 1 次，偶发抖动，忽略，不开单`, "warn"); }
-    else { logLine(`🟢 ${CREW[k].label}：正常`, "ok"); }
+    if(fails[i] >= 2){ confirmed.push(k); setStatus(k,'down'); log(`🔴 ${CREW[k].label}：失败 ${fails[i]} 次，确认故障`,'err'); }
+    else if(fails[i] === 1){ setStatus(k,'blip'); log(`🟡 ${CREW[k].label}：只失败 1 次，偶发，不开单`,'warn'); }
+    else { log(`🟢 ${CREW[k].label}：正常`,'ok'); }
   });
-  running = false;
-  document.getElementById("fire").disabled = false;
-  for(const k of confirmed){ await runIncident(k); }
-});
+  await sleep(900);
+  lock(false);
+  for(const k of confirmed) await runIncident(k);
+}
 
-renderTrack();
-renderGraveyard();
+$('#fire').addEventListener('click', () => { if(!busy) runIncident(current); });
+$('#patrol').addEventListener('click', () => { if(!busy) patrol(); });
+$('#runAll').addEventListener('click', async () => {
+  if(busy) return;
+  for(const k of Object.keys(CREW)){ await runIncident(k); await sleep(400); }
+  log('🦴 四套班底跑完：同一套骨架，四种设备','ok');
+});
+$('#reset').addEventListener('click', () => { if(!busy){ resetAll(); log('已重置。选一套班底，点“触发告警”。','dim'); } });
+
+renderRoster(); renderSpine(); drawLinks();
+log('就绪。选一套班底，点“触发告警”，或点“同时巡检四台”。','dim');
+requestAnimationFrame(drawLinks);
+
+// ?auto=printer|signage|av|wifiap|patrol  starts a run on load (used for screenshots)
+const auto = new URLSearchParams(location.search).get('auto');
+if(auto === 'patrol') patrol(); else if(CREW[auto]) runIncident(auto);
 </script>
 </body>
 </html>
