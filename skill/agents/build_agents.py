@@ -189,7 +189,30 @@ def main():
         with open(os.path.join(OUT, "prompts", name + ".md"), "w", encoding="utf-8") as f:
             f.write(p)
     print("wrote %d agents to %s: %s" % (len(out), os.path.relpath(OUT, ROOT), ", ".join(out)))
+    return out
+
+
+def install(out, home=os.path.expanduser("~/.kiro/agents")):
+    """Copy the agents to ~/.kiro/agents so Kiro Crew lists them from any folder.
+    Paths become absolute, because a global agent does not start in this repo."""
+    pdir = os.path.join(home, "incident-skeleton")
+    os.makedirs(pdir, exist_ok=True)
+    for name, (s, p) in out.items():
+        s = json.loads(json.dumps(s))
+        s["prompt"] = "file://incident-skeleton/%s.md" % name
+        s["mcpServers"]["incident-kb"]["args"] = [os.path.join(ROOT, "skill", "mcp", "incident_kb_server.py")]
+        s["mcpServers"]["incident-kb"]["env"] = {"INCIDENT_DATA_DIR": os.path.join(REM, "data")}
+        s["resources"] = ["file://" + os.path.join(ROOT, ".kiro", "steering", "incident-skeleton.md"), "file://" + os.path.join(ROOT, "SPEC.md")]
+        with open(os.path.join(home, name + ".json"), "w", encoding="utf-8") as f:
+            json.dump(s, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+        with open(os.path.join(pdir, name + ".md"), "w", encoding="utf-8") as f:
+            f.write(p)
+    print("installed %d agents to %s (undo: delete those %d .json files and the incident-skeleton folder)" % (len(out), home, len(out)))
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    built = main()
+    if "--install" in sys.argv:
+        install(built)
