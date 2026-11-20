@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Skeleton · Ops console</title>
+<style>
+:root{
+  --ink:#0b0812; --panel:#161022; --panel2:#1d1530; --line:rgba(190,170,255,.13); --line2:rgba(190,170,255,.22);
+  --text:#ece6d8; --muted:#9a90b3; --dim:#6f6588;
+  --ember:#ff7a1a; --violet:#8b5cf6; --ghost:#4ee6a0; --blood:#ff4d64; --amber:#ffc24a; --sky:#6cb6ff; --slate:#7c8aa6;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 500px at 85% -10%,rgba(139,92,246,.18),transparent 60%),var(--ink);color:var(--text);
+  font:14px/1.5 -apple-system,"PingFang SC","Segoe UI",system-ui,sans-serif}
+a{color:var(--sky)}
+button{font:inherit;color:inherit}
+
+/* ---------- top ---------- */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:12px 22px;
+  background:rgba(11,8,18,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.brand{font:600 18px ui-serif,Georgia,serif;white-space:nowrap}
+.brand em{font-style:italic;color:var(--ember)}
+.brand small{display:block;font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.clock{display:flex;align-items:baseline;gap:10px;margin-left:8px}
+.clock b{font:700 30px var(--mono);letter-spacing:.02em}
+.clock span{font:600 12px var(--mono);color:var(--muted)}
+.ctrl{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line2);background:var(--panel);border-radius:999px;padding:6px 13px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--ember)}
+.btn.on{background:rgba(255,122,26,.16);color:var(--ember);border-color:rgba(255,122,26,.5)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font:600 12px var(--mono);color:var(--muted)}
+.seg button[aria-pressed=true]{background:rgba(255,122,26,.16);color:var(--ember)}
+.btn:focus-visible,.seg button:focus-visible,.dot:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.lnk{font-size:13px;text-decoration:none;border-bottom:1px dashed rgba(108,182,255,.5)}
+
+.banner{margin:12px 22px 0;padding:9px 14px;border:1px dashed rgba(255,194,74,.45);border-radius:10px;color:var(--amber);
+  font-size:12.5px;background:rgba(255,194,74,.05)}
+.timeline{display:flex;gap:6px;align-items:center;margin:14px 22px 6px;flex-wrap:wrap}
+.dot{border:1px solid var(--line2);background:var(--panel);border-radius:9px;padding:5px 9px;cursor:pointer;font:600 11px var(--mono);color:var(--muted);min-width:58px;text-align:center}
+.dot i{display:block;font-style:normal;font-size:10px;color:var(--dim)}
+.dot.past{color:var(--text);border-color:rgba(78,230,160,.35)}
+.dot.cur{color:#1b0b00;background:var(--ember);border-color:var(--ember)}
+.dot.cur i{color:#3b1d00}
+.dot.has-bad::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blood);margin-left:5px;vertical-align:1px}
+.caption{margin:2px 22px 0;min-height:30px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.caption .chip{color:var(--text)}
+
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;padding:14px 22px 30px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;min-width:0}
+.card h2{margin:0;padding:11px 15px;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.card h2 .r{margin-left:auto;letter-spacing:0;text-transform:none;font:500 12px -apple-system,"PingFang SC",sans-serif;color:var(--dim)}
+.body{padding:12px 15px}
+.c-fleet{grid-column:span 5}.c-faults{grid-column:span 7}
+.c-trace{grid-column:span 7}.c-harvest{grid-column:span 5}
+.c-learn{grid-column:span 4}.c-tickets{grid-column:span 4}.c-cover{grid-column:span 4}
+.c-history{grid-column:span 12}
+@media (max-width:1180px){.c-fleet,.c-faults,.c-trace,.c-harvest{grid-column:span 12}.c-learn,.c-tickets,.c-cover{grid-column:span 6}}
+@media (max-width:760px){.c-learn,.c-tickets,.c-cover{grid-column:span 12}.clock b{font-size:24px}}
+
+/* ---------- fleet ---------- */
+.fleet{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fcol h4{margin:0 0 6px;font:600 11px var(--mono);color:var(--muted);display:flex;gap:6px;align-items:center}
+.fcol h4 svg{width:14px;height:14px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:7px 8px;margin-bottom:6px;background:var(--panel2);transition:border-color .3s,box-shadow .3s}
+.tile b{display:block;font:600 11.5px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile span{display:block;font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .pips{display:flex;gap:3px;margin-top:5px}
+.pip{width:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);transition:background .2s}
+.pip.ok{background:var(--ghost)}.pip.bad{background:var(--blood)}
+.tile em{display:block;font-style:normal;font:600 10px var(--mono);margin-top:4px;color:var(--dim);letter-spacing:.04em}
+.tile.healthy em{color:var(--ghost)}
+.tile.blip{border-color:rgba(255,194,74,.55)}.tile.blip em{color:var(--amber)}
+.tile.confirmed{border-color:var(--blood);box-shadow:0 0 0 1px rgba(255,77,100,.3)}.tile.confirmed em{color:var(--blood)}
+.tile.fixed{border-color:var(--ghost);box-shadow:0 0 0 1px rgba(78,230,160,.35)}.tile.fixed em{color:var(--ghost)}
+.tile.maintenance{border-color:rgba(124,138,166,.7);opacity:.85}.tile.maintenance em{color:var(--slate)}
+.tile.upstream{border-color:var(--violet);box-shadow:0 0 0 1px rgba(139,92,246,.35)}.tile.upstream em{color:#b79bff}
+.tile.probing{border-color:rgba(108,182,255,.45)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- chips / tables ---------- */
+.chip{display:inline-flex;align-items:center;gap:4px;font:600 11px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid var(--line2);white-space:nowrap}
+.k-ok{color:var(--ghost);border-color:rgba(78,230,160,.45)}.k-bad{color:var(--blood);border-color:rgba(255,77,100,.5)}
+.k-warn{color:var(--amber);border-color:rgba(255,194,74,.5)}.k-info{color:var(--sky);border-color:rgba(108,182,255,.45)}
+.k-up{color:#b79bff;border-color:rgba(139,92,246,.55)}.k-mute{color:var(--slate);border-color:rgba(124,138,166,.5)}
+.k-ember{color:var(--ember);border-color:rgba(255,122,26,.5)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.new{animation:rise .35s ease both}
+td.mono,.mono{font-family:var(--mono);font-size:12px}
+.empty{color:var(--dim);font-size:13px;padding:6px 0}
+.human{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:rgba(108,182,255,.07);border:1px solid rgba(108,182,255,.25);font-size:13px}
+.human+.human{margin-top:-4px}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}}
+
+/* ---------- trace ---------- */
+.tr{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;background:var(--panel2);animation:rise .3s ease both}
+.tr .th{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.tr .th b{font:600 13px var(--mono)}
+.ev{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 8px}
+.ev .chip{font-weight:500}
+.step{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px dashed var(--line);animation:rise .3s ease both}
+.step .nm{font-size:13px}
+.step .meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.step .meta .chip{font-size:10px;padding:1px 6px}
+.bar{width:64px;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ember),var(--amber))}
+.out{margin-top:8px;padding:8px 10px;border-radius:9px;font-size:13px;animation:rise .3s ease both}
+.out.ok{background:rgba(78,230,160,.08);border:1px solid rgba(78,230,160,.35)}
+.out.bad{background:rgba(255,77,100,.08);border:1px solid rgba(255,77,100,.35)}
+.out ul{margin:4px 0 0;padding-left:18px}
+
+/* ---------- harvest ---------- */
+.srcs{display:grid;grid-template-columns:1fr repeat(5,auto);gap:4px 10px;font-size:12.5px;align-items:center}
+.srcs .h{font:600 10px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.srcs .n{font-family:var(--mono);text-align:right}
+.libnum{display:flex;gap:16px;margin:10px 0 6px;font-size:12.5px;color:var(--muted)}
+.libnum b{font:700 20px var(--mono);color:var(--text);margin-right:4px}
+.kc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;background:var(--panel2);font-size:12.5px;animation:rise .3s ease both}
+.kc q{display:block;color:var(--text);margin:4px 0;quotes:"“" "”"}
+.kc.rej{border-color:rgba(255,77,100,.45);background:rgba(255,77,100,.06)}
+.kc .sub{color:var(--dim);font-size:11.5px}
+
+/* ---------- learn / tickets / cover ---------- */
+.lrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.lrow.flash{animation:flash 1.4s ease}
+@keyframes flash{0%{background:rgba(255,122,26,.18)}100%{background:transparent}}
+.tk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;text-decoration:none;color:inherit}
+.tk:hover b{color:var(--sky)}
+.tk b{font:600 12.5px var(--mono)}
+.tk .sub{color:var(--dim);font-size:11.5px}
+.cov{display:grid;grid-template-columns:18px 1fr auto;gap:6px;align-items:start;padding:4px 0;font-size:12.5px;color:var(--dim)}
+.cov.on{color:var(--text)}
+.cov .ck{width:15px;height:15px;border-radius:4px;border:1px solid var(--line2);display:grid;place-items:center;font-size:10px;margin-top:2px}
+.cov.on .ck{background:var(--ghost);border-color:var(--ghost);color:#062b1b}
+.cov.fresh{animation:flash 1.6s ease}
+.cov .cy{font:600 10.5px var(--mono);color:var(--dim)}
+.covhead{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.covhead b{font:700 22px var(--mono)}
+.donebar{display:none;margin:0 22px 10px;padding:10px 14px;border-radius:12px;background:rgba(78,230,160,.08);border:1px solid rgba(78,230,160,.4);font-size:13.5px}
+.donebar.on{display:block}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Incident <em>Skeleton</em><small data-i18n="console"></small></div>
+  <div class="clock"><b id="clock">09:00</b><span id="cyc"></span></div>
+  <div class="ctrl">
+    <button class="btn on" id="play" aria-label="Pause"></button>
+    <div class="seg" id="speed" role="group" aria-label="Speed"><button data-s="1" aria-pressed="true">1×</button><button data-s="2" aria-pressed="false">2×</button><button data-s="4" aria-pressed="false">4×</button></div>
+    <button class="btn" id="restart" data-i18n="restart"></button>
+    <div class="seg" id="lang" role="group" aria-label="Language / 语言"><button data-l="zh" aria-pressed="false">中文</button><button data-l="en" aria-pressed="false">EN</button></div>
+    <a class="lnk" id="snlink" href="servicenow.html" target="_blank" rel="noopener" data-i18n="open_sn"></a>
+    <a class="lnk" href="index.html" data-i18n="open_skel"></a>
+  </div>
+</header>
+<div class="banner" data-i18n="banner"></div>
+<nav class="timeline" id="timeline" aria-label="Patrols"></nav>
+<div class="caption" id="caption" aria-live="polite"></div>
+<div class="donebar" id="donebar"></div>
+
+<main class="grid">
+  <section class="card c-fleet"><h2><span data-i18n="h_fleet"></span><span class="r" id="fleetsum"></span></h2>
+    <div class="body"><div class="fleet" id="fleet"></div><div class="legend" id="legend"></div></div></section>
+  <section class="card c-faults"><h2><span data-i18n="h_faults"></span><span class="r" id="faultsum"></span></h2>
+    <div class="body"><div id="humans"></div><div id="faults"></div></div></section>
+  <section class="card c-trace"><h2><span data-i18n="h_trace"></span><span class="r" data-i18n="trace_hint"></span></h2>
+    <div class="body" id="trace"></div></section>
+  <section class="card c-harvest"><h2><span data-i18n="h_harvest"></span><span class="r" id="harvsum"></span></h2>
+    <div class="body" id="harvest"></div></section>
+  <section class="card c-learn"><h2><span data-i18n="h_learn"></span><span class="r" data-i18n="learn_hint"></span></h2>
+    <div class="body" id="learn"></div></section>
+  <section class="card c-tickets"><h2><span data-i18n="h_tickets"></span><span class="r" data-i18n="sim_tag"></span></h2>
+    <div class="body" id="tickets"></div></section>
+  <section class="card c-cover"><h2><span data-i18n="h_cover"></span></h2>
+    <div class="body" id="cover"></div></section>
+  <section class="card c-history"><h2><span data-i18n="h_history"></span></h2>
+    <div class="body" id="history"></div></section>
+</main>
+
+<script src="data/sim.js"></script>
+<script>
+const D = window.SIM;
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hhmm = ts => ts ? ts.slice(11,16) : '';
+
+const I = {
+ zh:{console:'运维控制台 · 自动演示', restart:'↺ 从头播放', open_sn:'打开 ServiceNow（模拟）↗', open_skel:'骨架图 ↗',
+  banner:'演示：场景是写好的（哪台坏、哪种修法有效、工程师何时处理），但每个判断都由真实引擎做出。演练模式：没有改动任何设备，也没有发到真实 ServiceNow。',
+  h_fleet:'设备 · 13 台', h_faults:'本轮报错（单独列出）', h_trace:'修复过程', trace_hint:'先软后硬 · 按权限 · 按成功率',
+  h_harvest:'病例库 · 主动收集', h_learn:'学习成绩', learn_hint:'成功 / 尝试', h_tickets:'ServiceNow 工单', sim_tag:'模拟',
+  h_cover:'演示到的场景', h_history:'巡检记录', patrol:'第 %n / %t 轮巡检', pause:'⏸ 暂停', play:'▶ 播放',
+  probing:'探测中', healthy:'正常', blip:'偶发', confirmed:'故障', fixed:'已修好', maintenance:'维护中', upstream:'上游故障',
+  probes:'探测', device:'设备', symptom:'症状', verdict:'判断', outcome:'结果',
+  no_fault:'本轮没有报错。', no_trace:'本轮没有要修的设备。', faults_n:'%n 项', fleet_n:'%a 正常 · %b 异常',
+  v_blip:'只失败 1 次，忽略', v_confirmed:'确认故障', v_maintenance:'维护窗口，静默', v_upstream:'上游故障，合并',
+  o_fixed:'自动修好：%a', o_created:'修不好 → 开单 %t', o_updated:'已有工单 %t，追加记录', o_reopened:'复发 → 重开 %t',
+  o_closed:'修好并关闭 %t', o_up:'合并到上游单 %t', o_blip:'不开单', o_mw:'%r', approved_by:'批准人：%a',
+  d_run_ok:'✓ 恢复', d_run_bad:'✗ 没恢复', d_approval:'需批准', d_needs_human:'需人工', d_demoted:'已降级，跳过', d_cooldown:'冷却中，跳过', d_denied:'不允许', d_cap:'达到次数上限',
+  t_auto:'自动', t_notify_then_act:'先通知再修', t_approval:'已批准', r_low:'低风险', r_medium:'中风险', r_high:'高风险',
+  s_builtin:'内置手册', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信',
+  st_builtin:'内置', st_candidate:'候选', st_promoted:'已晋升', st_demoted:'已降级',
+  evidence:'证据', esc_title:'告警：自动修复失败', esc_tried:'已做', esc_left:'还没做 / 需人工', esc_wait:'等待批准', esc_kb:'给工程师的参考', none:'无',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限',
+  harv_last:'上次收集 %t', harv_now:'本轮收集中…', harv_none:'还没收集。', src:'来源', scanned:'扫描', verified:'已验证', unverified:'未确认', failed:'无效', rejected:'拦截',
+  lib_size:'条', lib_ver:'已验证', new_in_lib:'本次新进病例库', rej_title:'拦截：夹带指令，不使用', advice:'工程师参考（不自动执行）',
+  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'历史工单', src_own_tickets:'我们的已结工单', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'企业微信', src_email:'邮件',
+  rr_override:'想改写规则', rr_pipe_shell:'下载脚本并直接执行', rr_destructive:'破坏性命令', rr_disable_safeguard:'要求关闭保护', rr_credential:'含密码',
+  h_ack:'👷 %a 接单 %t：%x', h_resolve:'👷 %a 处理完并关闭 %t：%x', h_approve:'✅ %a 批准：%x',
+  no_learn:'还没有修复记录。', no_tk:'还没有工单。', tk_open:'未关 %n', st_New:'新建', st_In_Progress:'处理中', st_On_Hold:'挂起·等批准', st_Resolved:'已解决',
+  cov_n:'/ %t 种场景', hist_time:'时间', hist_ok:'正常', hist_bad:'异常', hist_fix:'自动修好', hist_tk:'工单动作', hist_tags:'本轮演示',
+  done:'演示完成：%n / %t 种场景都由引擎真的跑出来了。8 秒后从头再播。', this_shows:'本轮演示：',
+  types:{printer:'打印机', signage:'数字标牌', av:'会议室音视频', wifiap:'无线 AP'}, sym:{jam:'卡纸', offline:'离线', down:'黑屏/不更新', hung:'卡死/进不了会', generic:'其他'},
+  tags:{quiet:'全部正常', blip:'偶发一次：忽略，不开单', library_reordered:'病例库里验证过的修法排到最前', notify:'中风险：先通知再修', library_grows:'定期收集：病例库变大',
+   new_knowledge:'用群聊里刚学到的新修法修好', blast:'批量掉线：只开一张上游单，不逐台重启', duplicate:'已有未关单：追加记录，不重复开', escalated:'修不好：写清做了什么并开单',
+   upstream_resolved:'上游恢复：工单自动关闭', cooldown:'冷却中：不重复折腾', maintenance:'维护窗口：静默', approval_wait:'需批准：工单挂起等人批', approved_fix:'批准后自动修好',
+   auto_resolved:'自动修好后关单', engineer_learned:'工程师的处理被收进病例库', injection:'夹带指令的消息被拦截', reopened:'72 小时内复发：重开工单', demoted:'总失败的修法被降级跳过'}},
+ en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
+  banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow.',
+  h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
+  h_harvest:'Case library · harvest', h_learn:'Learning', learn_hint:'successes / attempts', h_tickets:'ServiceNow tickets', sim_tag:'simulated',
+  h_cover:'Scenarios shown', h_history:'Patrol log', patrol:'patrol %n / %t', pause:'⏸ Pause', play:'▶ Play',
+  probing:'probing', healthy:'healthy', blip:'blip', confirmed:'fault', fixed:'fixed', maintenance:'maintenance', upstream:'upstream',
+  probes:'probes', device:'device', symptom:'symptom', verdict:'verdict', outcome:'outcome',
+  no_fault:'No faults this patrol.', no_trace:'Nothing to repair this patrol.', faults_n:'%n items', fleet_n:'%a healthy · %b not',
+  v_blip:'one miss only, ignored', v_confirmed:'confirmed fault', v_maintenance:'maintenance window, silenced', v_upstream:'upstream fault, grouped',
+  o_fixed:'auto-fixed: %a', o_created:'not fixed → ticket %t', o_updated:'ticket %t open, note added', o_reopened:'came back → reopened %t',
+  o_closed:'fixed, closed %t', o_up:'grouped into upstream ticket %t', o_blip:'no ticket', o_mw:'%r', approved_by:'approved by %a',
+  d_run_ok:'✓ recovered', d_run_bad:'✗ not recovered', d_approval:'needs approval', d_needs_human:'needs a human', d_demoted:'demoted, skipped', d_cooldown:'cooling down, skipped', d_denied:'not permitted', d_cap:'attempt cap',
+  t_auto:'auto', t_notify_then_act:'notify, then act', t_approval:'approved', r_low:'low risk', r_medium:'medium risk', r_high:'high risk',
+  s_builtin:'runbook', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work',
+  st_builtin:'builtin', st_candidate:'candidate', st_promoted:'promoted', st_demoted:'demoted',
+  evidence:'evidence', esc_title:'ALERT: automatic repair failed', esc_tried:'What was done', esc_left:'Not done / needs a human', esc_wait:'Waiting for approval', esc_kb:'For the engineer', none:'none',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap',
+  harv_last:'last harvest %t', harv_now:'harvesting this patrol…', harv_none:'Not harvested yet.', src:'source', scanned:'scanned', verified:'verified', unverified:'unconfirmed', failed:'failed', rejected:'rejected',
+  lib_size:'entries', lib_ver:'verified', new_in_lib:'New in the case library', rej_title:'Rejected: contains orders, never used', advice:'engineer advice (never automatic)',
+  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'Closed incidents', src_own_tickets:'Our resolved tickets', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'WeChat Work', src_email:'Email',
+  rr_override:'tries to override the rules', rr_pipe_shell:'pipes a download into a shell', rr_destructive:'destructive command', rr_disable_safeguard:'asks to switch off a safeguard', rr_credential:'contains a credential',
+  h_ack:'👷 %a picked up %t: %x', h_resolve:'👷 %a fixed and closed %t: %x', h_approve:'✅ %a approved: %x',
+  no_learn:'No repairs recorded yet.', no_tk:'No tickets yet.', tk_open:'%n open', st_New:'New', st_In_Progress:'In Progress', st_On_Hold:'On Hold · approval', st_Resolved:'Resolved',
+  cov_n:'/ %t scenarios', hist_time:'time', hist_ok:'healthy', hist_bad:'not', hist_fix:'auto-fixed', hist_tk:'ticket actions', hist_tags:'shows',
+  done:'Demo complete: all %n / %t scenarios were produced by the engine. Replaying in 8 s.', this_shows:'This patrol shows:',
+  types:{printer:'Printer', signage:'Digital signage', av:'Meeting-room AV', wifiap:'Wireless AP'}, sym:{jam:'paper jam', offline:'offline', down:'black / not updating', hung:'frozen / cannot join', generic:'other'},
+  tags:{quiet:'Quiet patrol, all healthy', blip:'One-off miss ignored, no ticket', library_reordered:'Verified case-library fix tried first', notify:'Medium risk: notify, then act', library_grows:'Periodic harvest grows the library',
+   new_knowledge:'Fixed with a fix just learned from chat', blast:'Mass outage: one upstream ticket, no per-device reboots', duplicate:'Open ticket exists: note added, no duplicate', escalated:'Repair failed: says what it did, opens a ticket',
+   upstream_resolved:'Upstream recovered, ticket auto-resolved', cooldown:'Cooldown: no repeated retries', maintenance:'Silenced in a maintenance window', approval_wait:'Needs approval: ticket on hold', approved_fix:'Approved, then fixed automatically',
+   auto_resolved:'Ticket closed after the automatic fix', engineer_learned:"Engineer's fix harvested into the library", injection:'Message with embedded orders rejected', reopened:'Came back within 72 h, ticket reopened', demoted:'Repeatedly failing fix demoted and skipped'}}
+};
+let lang = 'en';
+try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
+  lang = (q==='zh'||q==='en') ? q : (s==='zh'||s==='en') ? s : ((navigator.language||'').toLowerCase().startsWith('zh') ? 'zh' : 'en'); } catch(e) {}
+const t = (k, m) => { let s = I[lang][k] ?? I.en[k] ?? k; if (m) for (const [a,b] of Object.entries(m)) s = s.split('%'+a).join(b); return s; };
+const L = x => (x && typeof x === 'object') ? (x[lang] || x.en || '') : (x ?? '');
+const act = id => L(D.catalogue[id] || {en:id}) ;
+const DEV = Object.fromEntries(D.devices.map(d => [d.id, d]));
+const LIB = Object.fromEntries((D.library.entries||[]).map(e => [e.id, e]));
+const TK = D.tickets;
+const N = D.cycles.length;
+
+const ICON = {
+ printer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>',
+ signage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+ av:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>',
+ wifiap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg>'};
+
+/* ================= playback engine ================= */
+const ABORT = {};
+let token = 0, paused = false, speed = 1, cur = -1;
+async function wait(ms, tk){ let e = 0; while (e < ms){ await sleep(40); if (tk !== token) throw ABORT; if (!paused) e += 40*speed; } }
+
+function ticketAt(tk, ts){
+  const notes = tk.work_notes.filter(n => n.ts <= ts);
+  if (tk.opened_at > ts || !notes.length) return null;
+  return {state: notes[notes.length-1].state, notes};
+}
+
+/* ================= static renderers ================= */
+function renderTimeline(){
+  $('#timeline').innerHTML = D.cycles.map((c,i) => {
+    const bad = c.rows.some(r => r.status !== 'healthy');
+    return `<button class="dot${i<cur?' past':''}${i===cur?' cur':''}${bad?' has-bad':''}" data-i="${i}">C${c.n}<i>${hhmm(c.ts)}</i></button>`;
+  }).join('');
+}
+$('#timeline').addEventListener('click', e => { const b = e.target.closest('.dot'); if (b) jump(+b.dataset.i); });
+
+function rowFinal(r){
+  if (r.status === 'confirmed') return r.resolved ? 'fixed' : 'confirmed';
+  return r.status;
+}
+function renderFleet(c, phase){
+  // phase: 'probe:k' shows k probes; 'final' shows statuses
+  const cyc = D.cycles[c];
+  const rows = Object.fromEntries(cyc.rows.map(r => [r.id, r]));
+  const k = phase.startsWith('probe') ? +phase.split(':')[1] : 3;
+  const types = ['printer','signage','av','wifiap'];
+  $('#fleet').innerHTML = types.map(ty => `<div class="fcol"><h4>${ICON[ty]}${esc(I[lang].types[ty])}</h4>` +
+    D.devices.filter(d => d.type === ty).map(d => {
+      const r = rows[d.id];
+      const st = phase === 'final' ? rowFinal(r) : 'probing';
+      const pips = r.probes.map((p,i) => `<i class="pip${i<k?(p?' ok':' bad'):''}"></i>`).join('');
+      return `<div class="tile ${st}" title="${esc(d.model)} · ${esc(d.upstream)}"><b>${esc(d.id)}</b><span>${esc(L(d.loc))}</span><div class="pips">${pips}</div><em>${esc(t(st))}</em></div>`;
+    }).join('') + '</div>').join('');
+  if (phase === 'final'){
+    const ok = cyc.rows.filter(r => r.status === 'healthy').length;
+    $('#fleetsum').textContent = t('fleet_n', {a: ok, b: cyc.rows.length - ok});
+  } else $('#fleetsum').textContent = t('probing') + '…';
+}
+function renderLegend(){
+  const items = [['healthy','var(--ghost)'],['blip','var(--amber)'],['confirmed','var(--blood)'],['fixed','var(--ghost)'],['maintenance','var(--slate)'],['upstream','var(--violet)']];
+  $('#legend').innerHTML = items.map(([k,c]) => `<span><i style="background:${c}"></i>${esc(t(k))}</span>`).join('');
+}
+
+function resultFor(c, id){ return D.cycles[c].results.find(r => r.ci === id); }
+function outcomeHTML(c, r){
+  const res = resultFor(c, r.id);
+  if (r.status === 'blip') return `<span class="chip k-mute">${esc(t('o_blip'))}</span>`;
+  if (r.status === 'maintenance') return `<span class="chip k-mute">${esc(L(r.window && r.window.reason))}</span>`;
+  if (r.status === 'upstream') return `<span class="chip k-up">${esc(t('o_up', {t: r.ticket}))}</span>`;
+  if (!res) return '';
+  const tk = res.ticket || {};
+  if (res.resolved){
+    const fx = res.trace.filter(x => x.decision === 'run').pop();
+    let s = `<span class="chip k-ok">${esc(t('o_fixed', {a: act(fx.action)}))}</span>`;
+    if (tk.event === 'resolved') s += ` <span class="chip k-ok">${esc(t('o_closed', {t: tk.number}))}</span>`;
+    return s;
+  }
+  const map = {created:['o_created','k-bad'], updated:['o_updated','k-warn'], reopened:['o_reopened','k-bad']};
+  const [key, cls] = map[tk.event] || ['o_created','k-bad'];
+  return `<span class="chip ${cls}">${esc(t(key, {t: tk.number}))}</span>`;
+}
+function verdictHTML(r){
+  const m = {blip:['v_blip','k-warn'], confirmed:['v_confirmed','k-bad'], maintenance:['v_maintenance','k-mute'], upstream:['v_upstream','k-up']};
+  const [k, c] = m[r.status]; return `<span class="chip ${c}">${esc(t(k))}</span>`;
+}
+function symptomOf(c, r){
+  const res = resultFor(c, r.id);
+  if (res) return L({en: res.message, zh: res.message_zh || res.message});
+  if (r.status === 'upstream') return lang === 'zh' ? `${r.upstream} 下多台同时掉线` : `several devices behind ${r.upstream} down`;
+  if (r.status === 'blip') return lang === 'zh' ? '3 次探测中 1 次失败' : '1 of 3 probes failed';
+  return lang === 'zh' ? '探测不通' : 'probes failed';
+}
+function faultRow(c, r, anim){
+  const pips = r.probes.map(p => `<i class="pip ${p?'ok':'bad'}"></i>`).join('');
+  return `<tr class="${anim?'new':''}"><td class="mono">${esc(r.id)}<div style="color:var(--dim);font-size:11px">${esc(I[lang].types[r.type])}</div></td>
+    <td>${esc(symptomOf(c, r))}</td><td><div class="pips" style="display:flex;gap:3px">${pips}</div></td><td>${verdictHTML(r)}</td><td>${outcomeHTML(c, r)}</td></tr>`;
+}
+const faultHead = () => `<table><thead><tr><th>${esc(t('device'))}</th><th>${esc(t('symptom'))}</th><th>${esc(t('probes'))}</th><th>${esc(t('verdict'))}</th><th>${esc(t('outcome'))}</th></tr></thead><tbody id="fbody"></tbody></table>`;
+function humanHTML(h){
+  const who = L(h.author);
+  if (h.kind === 'approve') return `<div class="human">${esc(t('h_approve', {a: who, x: act(h.action)}))}</div>`;
+  return `<div class="human">${esc(t(h.kind === 'ack' ? 'h_ack' : 'h_resolve', {a: who, t: h.ticket, x: L(h.text)}))}</div>`;
+}
+
+function srcChips(tr){
+  const out = [];
+  for (const s of tr.sources){
+    if (s === 'lib'){
+      const types = new Set();
+      for (const id of tr.lib){ for (const x of (LIB[id]||{}).sources||[]) if (x.verdict === 'verified') types.add(x.platform || x.type); }
+      for (const ty of types) out.push(`<span class="chip k-info">${esc(t('s_'+ty))}</span>`);
+    } else out.push(`<span class="chip">${esc(t('s_'+s))}</span>`);
+  }
+  return out.join('');
+}
+function stepHTML(tr){
+  let d;
+  if (tr.decision === 'run') d = tr.recovered ? `<span class="chip k-ok">${esc(t('d_run_ok'))}</span>` : `<span class="chip k-bad">${esc(t('d_run_bad'))}</span>`;
+  else d = `<span class="chip ${tr.decision==='approval'?'k-warn':tr.decision==='demoted'?'k-bad':'k-mute'}">${esc(t('d_'+tr.decision))}</span>`;
+  const tier = tr.decision === 'run' ? `<span class="chip k-ember">${esc(t('t_'+tr.tier))}</span>` : '';
+  const appr = tr.approved_by ? `<span class="chip k-ok">${esc(t('approved_by', {a: tr.approved_by}))}</span>` : '';
+  const hist = `${tr.hist.successes}/${tr.hist.attempts}`;
+  return `<div class="step"><div><div class="nm">${esc(act(tr.action))}</div>
+    <div class="meta"><span class="chip">${esc(t('r_'+tr.risk))}</span>${srcChips(tr)}<span class="chip k-mute">${esc(t('st_'+tr.state))}</span>${tier}${appr}</div></div>
+    <div style="text-align:right">${d}<div style="margin-top:4px;font:11px var(--mono);color:var(--dim)"><span class="bar"><i style="width:${Math.round(tr.score*100)}%"></i></span> ${Math.round(tr.score*100)}% · ${hist}</div></div></div>`;
+}
+function escalHTML(res){
+  const tk = res.ticket || {};
+  const tried = res.attempts.map(a => `<li>${esc(act(a.action))} → ${esc(a.recovered ? t('d_run_ok') : t('d_run_bad'))}</li>`).join('') || `<li>${esc(t('none'))}${res.cooldown.length ? ' · ' + esc(t('d_cooldown')) + ': ' + res.cooldown.map(act).map(esc).join(', ') : ''}</li>`;
+  const left = res.left.map(x => `<li>${esc(act(x.action))} <span class="chip k-mute">${esc(t('why_'+x.why))}</span></li>`).join('') || `<li>${esc(t('none'))}</li>`;
+  const ticket = TK.find(x => x.number === tk.number);
+  const kb = ((ticket && ticket.knowledge) || []).filter(k => k.kind === 'engineer').slice(0,3)
+    .map(k => `<li>${esc(k.text)} <span class="chip ${k.status==='verified'?'k-ok':'k-mute'}">${esc(t(k.status === 'verified' ? 'verified' : k.status === 'contradicted' ? 'failed' : 'unverified'))}</span></li>`).join('');
+  const key = {created:'o_created', updated:'o_updated', reopened:'o_reopened'}[tk.event] || 'o_created';
+  return `<div class="out bad"><b>🔴 ${esc(t('esc_title'))}</b> — <a href="servicenow.html?at=${cur}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener">${esc(t(key, {t: tk.number}))}</a> · ${esc(tk.group)}
+    <div style="margin-top:6px"><b>${esc(t('esc_tried'))}</b><ul>${tried}</ul></div>
+    <div><b>${esc(t('esc_left'))}</b><ul>${left}</ul></div>
+    ${kb ? `<div><b>${esc(t('esc_kb'))}</b><ul>${kb}</ul></div>` : ''}</div>`;
+}
+function okHTML(res){
+  const fx = res.trace.filter(x => x.decision === 'run').pop();
+  const tk = res.ticket;
+  return `<div class="out ok"><b>✅ ${esc(t('o_fixed', {a: act(fx.action)}))}</b>${tk && tk.event === 'resolved' ? ' · ' + esc(t('o_closed', {t: tk.number})) : ''}</div>`;
+}
+function traceHead(res){
+  const ev = res.evidence.map(e => `<span class="chip ${e.status==='err'?'k-bad':e.status==='ok'?'k-ok':'k-warn'}">${esc(L(e.check))}: ${esc(L(e.result))}</span>`).join('');
+  return `<div class="th"><b>${esc(res.ci)}</b><span class="chip">${esc(I[lang].types[res.device])}</span><span class="chip k-bad">${esc(L({en: res.message, zh: res.message_zh || res.message}))}</span></div><div class="ev">${ev}</div>`;
+}
+
+function harvestIndex(c){ for (let i = c; i >= 0; i--) if (D.cycles[i].harvest) return i; return -1; }
+function renderHarvestStatic(c){
+  const hi = harvestIndex(c);
+  if (hi < 0){ $('#harvest').innerHTML = `<div class="empty">${esc(t('harv_none'))}</div>`; $('#harvsum').textContent=''; return; }
+  const h = D.cycles[hi].harvest;
+  $('#harvsum').textContent = hi === c ? t('harv_now') : t('harv_last', {t: hhmm(h.ts)});
+  $('#harvest').innerHTML = harvestTop(h) + harvestRows(h).join('') + '</div>' + libNums(c) +
+    h.new.map(id => newEntryHTML(id)).join('') + h.rejected_new.map(rejHTML).join('');
+}
+const harvestTop = h => `<div class="srcs"><span class="h">${esc(t('src'))}</span><span class="h">${esc(t('scanned'))}</span><span class="h">✓</span><span class="h">?</span><span class="h">✗</span><span class="h">⛔</span>`;
+const harvestRows = h => Object.entries(h.stats).map(([k,s]) => `<span>${esc(t('src_'+k))}</span><span class="n">${s.scanned}</span><span class="n" style="color:var(--ghost)">${s.verified}</span><span class="n" style="color:var(--amber)">${s.unverified}</span><span class="n" style="color:var(--blood)">${s.failed}</span><span class="n" style="color:var(--blood)">${s.rejected}</span>`);
+const libNums = c => `<div class="libnum"><span><b>${D.cycles[c].library_size}</b>${esc(t('lib_size'))}</span><span><b style="color:var(--ghost)">${D.cycles[c].library_verified}</b>${esc(t('lib_ver'))}</span></div>`;
+function newEntryHTML(id){
+  const e = LIB[id]; if (!e) return '';
+  const what = e.action ? act(e.action) : t('advice');
+  const src = e.sources.map(s => `<span class="chip ${s.verdict==='verified'?'k-ok':s.verdict==='failed'?'k-bad':'k-mute'}">${esc(t('s_'+(s.platform||s.type)))} · ${esc(s.how)}</span>`).join(' ');
+  const st = e.status === 'verified' ? 'k-ok' : e.status === 'contradicted' ? 'k-bad' : 'k-mute';
+  return `<div class="kc"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><b class="mono">${esc(e.id)}</b><span>${esc(I[lang].types[e.device])}</span><b>${esc(what)}</b><span class="chip ${st}">${esc(t(e.status==='verified'?'verified':e.status==='contradicted'?'failed':'unverified'))}</span></div><q>${esc(e.text)}</q><div>${src}</div></div>`;
+}
+const rejHTML = r => `<div class="kc rej"><b>⛔ ${esc(t('rej_title'))}</b><div class="sub">${esc(r.where)} · ${esc(r.author)} · ${esc(hhmm(r.ts))} · ${esc(t('rr_'+r.reason))}</div><q>${esc(r.text)}</q></div>`;
+
+let prevScore = {};
+function renderLearn(c, flash){
+  const rows = D.cycles[c].scoreboard;
+  if (!rows.length){ $('#learn').innerHTML = `<div class="empty">${esc(t('no_learn'))}</div>`; return; }
+  const now = {};
+  $('#learn').innerHTML = rows.map(r => {
+    const k = r.device+'|'+r.symptom+'|'+r.action; now[k] = r.successes+'/'+r.attempts+r.state;
+    const changed = flash && prevScore[k] !== now[k];
+    const rate = r.attempts ? r.successes / r.attempts : 0;
+    const cls = r.state === 'demoted' ? 'k-bad' : r.state === 'promoted' ? 'k-ok' : 'k-mute';
+    return `<div class="lrow${changed?' flash':''}"><div><div>${esc(act(r.action))}</div><div style="font-size:11px;color:var(--dim)">${esc(I[lang].types[r.device])} · ${esc(I[lang].sym[r.symptom]||r.symptom)}</div></div>
+      <div class="mono"><span class="bar"><i style="width:${Math.round(rate*100)}%;background:${rate>=.5?'var(--ghost)':'var(--blood)'}"></i></span> ${r.successes}/${r.attempts}</div><span class="chip ${cls}">${esc(t('st_'+r.state))}</span></div>`;
+  }).join('');
+  prevScore = now;
+}
+function renderTickets(c){
+  const ts = D.cycles[c].ts;
+  const vis = TK.map(tk => [tk, ticketAt(tk, ts)]).filter(x => x[1]);
+  if (!vis.length){ $('#tickets').innerHTML = `<div class="empty">${esc(t('no_tk'))}</div>`; return; }
+  $('#tickets').innerHTML = vis.map(([tk, s]) => {
+    const cls = s.state === 'Resolved' ? 'k-ok' : s.state === 'On Hold' ? 'k-warn' : 'k-bad';
+    const sd = tk.kind === 'upstream' ? L({en: tk.message, zh: tk.message_zh}) : `${tk.cmdb_ci} · ${L({en: tk.message, zh: tk.message_zh || tk.message})}`;
+    return `<a class="tk" href="servicenow.html?at=${c}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener"><b>${esc(tk.number)}</b><div><div>${esc(sd)}</div><div class="sub">${esc(tk.assignment_group)} · ${s.notes.length} ${lang==='zh'?'条记录':'notes'}${s.notes.some(n=>n.type==='reopened')?(lang==='zh'?' · 已重开':' · reopened'):''}</div></div><span class="chip ${cls}">${esc(t('st_'+s.state.replace(' ','_')))}</span></a>`;
+  }).join('');
+}
+function renderCover(c, fresh){
+  const on = D.tags.filter(g => D.coverage[g] && D.coverage[g] <= c+1);
+  $('#cover').innerHTML = `<div class="covhead"><b>${on.length}</b><span>${esc(t('cov_n', {t: D.tags.length}))}</span></div>` + D.tags.map(g => {
+    const n = D.coverage[g], isOn = n && n <= c+1;
+    return `<div class="cov${isOn?' on':''}${isOn && fresh && n === c+1 ? ' fresh':''}"><span class="ck">${isOn?'✓':''}</span><span>${esc(I[lang].tags[g])}</span><span class="cy">${isOn ? 'C'+n : ''}</span></div>`;
+  }).join('');
+}
+function renderHistory(c){
+  const rows = D.cycles.slice(0, c+1).map(cy => {
+    const ok = cy.rows.filter(r => r.status === 'healthy').length;
+    const fixed = cy.results.filter(r => r.resolved).length;
+    const tks = cy.results.filter(r => r.ticket).map(r => r.ticket.number + ' ' + r.ticket.event).concat(cy.events.map(e => e.ticket + ' ' + (e.event || 'resolved')));
+    return `<tr><td class="mono">C${cy.n} ${hhmm(cy.ts)}</td><td>${ok}</td><td>${cy.rows.length-ok}</td><td>${fixed}</td><td class="mono">${esc(tks.join(', ') || '—')}</td><td>${cy.tags.map(g => `<span class="chip" style="margin:1px">${esc(I[lang].tags[g])}</span>`).join('')}</td></tr>`;
+  }).reverse().join('');
+  $('#history').innerHTML = `<table><thead><tr><th>${esc(t('hist_time'))}</th><th>${esc(t('hist_ok'))}</th><th>${esc(t('hist_bad'))}</th><th>${esc(t('hist_fix'))}</th><th>${esc(t('hist_tk'))}</th><th>${esc(t('hist_tags'))}</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderCaption(c){
+  const tags = D.cycles[c].tags;
+  $('#caption').innerHTML = tags.length ? `<span>${esc(t('this_shows'))}</span>` + tags.map(g => `<span class="chip k-ember">${esc(I[lang].tags[g])}</span>`).join('') : '';
+}
+function header(c){
+  $('#clock').textContent = hhmm(D.cycles[c].ts);
+  $('#cyc').textContent = t('patrol', {n: c+1, t: N});
+  $('#snlink').href = `servicenow.html?at=${c}&lang=${lang}`;
+}
+
+/* ================= one patrol: static or animated ================= */
+function renderStatic(c){
+  cur = c; header(c); renderTimeline(); renderCaption(c);
+  renderFleet(c, 'final'); renderHarvestStatic(c); renderLearn(c, false); renderTickets(c); renderCover(c, false); renderHistory(c);
+  const cyc = D.cycles[c];
+  $('#humans').innerHTML = cyc.human.map(humanHTML).join('');
+  const bad = cyc.rows.filter(r => r.status !== 'healthy');
+  $('#faultsum').textContent = t('faults_n', {n: bad.length});
+  $('#faults').innerHTML = bad.length ? faultHead() : `<div class="empty">${esc(t('no_fault'))}</div>`;
+  if (bad.length) $('#fbody').innerHTML = bad.map(r => faultRow(c, r, false)).join('');
+  $('#trace').innerHTML = cyc.results.length ? cyc.results.map(res => `<div class="tr">${traceHead(res)}${res.trace.map(stepHTML).join('')}${res.resolved ? okHTML(res) : escalHTML(res)}</div>`).join('') : `<div class="empty">${esc(t('no_trace'))}</div>`;
+  $('#donebar').classList.remove('on');
+}
+
+async function animate(c, tk){
+  cur = c; header(c); renderTimeline(); $('#caption').innerHTML = ''; $('#donebar').classList.remove('on');
+  const cyc = D.cycles[c];
+  $('#humans').innerHTML = ''; $('#faults').innerHTML = ''; $('#trace').innerHTML = ''; $('#faultsum').textContent = '';
+  await wait(300, tk);
+  for (const h of cyc.human){ $('#humans').insertAdjacentHTML('beforeend', humanHTML(h)); await wait(700, tk); }
+  if (cyc.harvest){
+    const h = cyc.harvest;
+    $('#harvsum').textContent = t('harv_now');
+    $('#harvest').innerHTML = harvestTop(h) + '</div>';
+    const grid = $('#harvest .srcs');
+    for (const row of harvestRows(h)){ grid.insertAdjacentHTML('beforeend', row); await wait(230, tk); }
+    $('#harvest').insertAdjacentHTML('beforeend', libNums(c));
+    for (const id of h.new){ $('#harvest').insertAdjacentHTML('beforeend', newEntryHTML(id)); await wait(c === 0 ? 160 : 650, tk); }
+    for (const r of h.rejected_new){ $('#harvest').insertAdjacentHTML('beforeend', rejHTML(r)); await wait(1100, tk); }
+  } else renderHarvestStatic(c);
+  for (let k = 0; k <= 3; k++){ renderFleet(c, 'probe:' + k); await wait(360, tk); }
+  renderFleet(c, 'final');
+  const bad = cyc.rows.filter(r => r.status !== 'healthy');
+  $('#faultsum').textContent = t('faults_n', {n: bad.length});
+  $('#faults').innerHTML = bad.length ? faultHead() : `<div class="empty">${esc(t('no_fault'))}</div>`;
+  await wait(300, tk);
+  for (const r of bad){ $('#fbody').insertAdjacentHTML('beforeend', faultRow(c, r, true)); await wait(380, tk); }
+  if (!cyc.results.length) $('#trace').innerHTML = `<div class="empty">${esc(t('no_trace'))}</div>`;
+  for (const res of cyc.results){
+    const box = document.createElement('div'); box.className = 'tr'; box.innerHTML = traceHead(res);
+    $('#trace').appendChild(box); await wait(450, tk);
+    for (const tr of res.trace){ box.insertAdjacentHTML('beforeend', stepHTML(tr)); await wait(tr.decision === 'run' ? 650 : 380, tk); }
+    box.insertAdjacentHTML('beforeend', res.resolved ? okHTML(res) : escalHTML(res)); await wait(700, tk);
+  }
+  renderLearn(c, true); renderTickets(c); renderCover(c, true); renderHistory(c); renderCaption(c);
+}
+
+async function playFrom(i){
+  const tk = ++token;
+  try {
+    for (let c = i; c < N; c++){ await animate(c, tk); await wait(2600, tk); }
+    const n = Object.keys(D.coverage).length;
+    $('#donebar').textContent = t('done', {n, t: D.tags.length}); $('#donebar').classList.add('on');
+    await wait(8000, tk); prevScore = {}; playFrom(0);
+  } catch (e) { if (e !== ABORT) throw e; }
+}
+function jump(i){
+  token++; prevScore = {};
+  if (i > 0) renderLearn(i-1, false);
+  renderStatic(i);
+  if (!paused) { const tk = ++token; wait(2600, tk).then(() => playFrom(i+1)).catch(e => { if (e !== ABORT) throw e; }); }
+}
+
+/* ================= controls ================= */
+function applyLang(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = 'Incident Skeleton · ' + t('console');
+  document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll('#lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === lang)));
+  $('#play').textContent = paused ? t('play') : t('pause');
+  renderLegend();
+}
+$('#lang').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  lang = b.dataset.l; try { localStorage.setItem('lang', lang); } catch (err) {}
+  applyLang(); const c = Math.max(cur, 0); jump(c);
+});
+$('#play').addEventListener('click', () => { paused = !paused; $('#play').textContent = paused ? t('play') : t('pause'); $('#play').classList.toggle('on', !paused); });
+$('#speed').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; speed = +b.dataset.s;
+  document.querySelectorAll('#speed button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
+$('#restart').addEventListener('click', () => { prevScore = {}; playFrom(0); });
+addEventListener('keydown', e => { if (e.code === 'Space' && e.target === document.body){ e.preventDefault(); $('#play').click(); } });
+
+applyLang();
+const q = new URLSearchParams(location.search);
+const at = q.has('at') ? Math.min(Math.max(+q.get('at'), 0), N-1) : null;
+if (q.get('speed')) { speed = +q.get('speed') || 1; document.querySelectorAll('#speed button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.s === speed))); }
+if (at !== null){ paused = q.get('play') !== '1'; applyLang(); if (at > 0) renderLearn(at-1, false); renderStatic(at); if (!paused) playFrom(at+1); }
+else playFrom(0);
+</script>
+</body>
+</html>

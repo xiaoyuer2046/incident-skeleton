@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incidents · ServiceNow (simulated)</title>
+<style>
+:root{
+  --bar:#1b2b2f; --bar2:#25393e; --nav:#f4f6f7; --bg:#ffffff; --line:#d9dfe2; --line2:#e9eef0; --text:#1d2b30; --muted:#5e6f75; --dim:#8a989d;
+  --accent:#2e6f73; --accent2:#e8f2f2; --red:#c8344a; --redbg:#fbeaec; --amber:#a86b00; --amberbg:#fdf3df; --green:#21804f; --greenbg:#e6f4ec;
+  --blue:#2463b3; --bluebg:#e8f0fb; --violet:#6a46c2; --violetbg:#efe9fb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.5 -apple-system,"PingFang SC","Segoe UI",system-ui,sans-serif}
+button{font:inherit;color:inherit}
+a{color:var(--blue)}
+.simbar{background:#7a1f2b;color:#fff;font-size:12.5px;padding:6px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.simbar b{letter-spacing:.06em}
+.top{background:var(--bar);color:#e9f1f2;display:flex;align-items:center;gap:16px;padding:0 16px;height:50px}
+.logo{font:600 17px -apple-system,sans-serif;letter-spacing:.01em;white-space:nowrap}
+.logo span{color:#81c8a8}
+.logo small{font:500 11px -apple-system,sans-serif;color:#9fb5b9;margin-left:8px}
+.search{flex:1;max-width:420px;background:var(--bar2);border:1px solid #3a5157;border-radius:4px;padding:6px 10px;color:#9fb5b9;font-size:13px}
+.tr{margin-left:auto;display:flex;gap:10px;align-items:center}
+.seg{display:inline-flex;border:1px solid #3a5157;border-radius:4px;overflow:hidden}
+.seg button{border:0;background:transparent;color:#c9d8db;padding:5px 10px;cursor:pointer;font-size:12px}
+.seg button[aria-pressed=true]{background:#3a5157;color:#fff}
+.avatar{width:30px;height:30px;border-radius:50%;background:#3a5157;display:grid;place-items:center;font-size:12px;font-weight:600}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 80px)}
+nav.side{background:var(--nav);border-right:1px solid var(--line);padding:12px 0}
+nav.side h4{margin:14px 16px 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+nav.side a{display:flex;justify-content:space-between;padding:7px 16px 7px 24px;color:var(--text);text-decoration:none;font-size:13.5px;border-left:3px solid transparent}
+nav.side a:hover{background:#e9edef}
+nav.side a.on{background:var(--accent2);border-left-color:var(--accent);font-weight:600}
+nav.side a span{color:var(--dim);font-size:12px}
+main{padding:0;min-width:0}
+.asof{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line);background:#fafbfb;font-size:13px}
+.asof input{width:260px;accent-color:var(--accent)}
+.asof b{font-family:ui-monospace,Menlo,monospace}
+.btn{border:1px solid var(--line);background:#fff;border-radius:4px;padding:5px 12px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,.seg button:focus-visible,nav.side a:focus-visible,tr.row:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.listhead{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.listhead h1{margin:0;font-size:18px;font-weight:600}
+.listhead .crumb{color:var(--dim);font-size:12.5px}
+table{width:100%;border-collapse:collapse}
+th{background:#f4f6f7;text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:top;font-size:13px}
+tr.row{cursor:pointer}
+tr.row:hover td{background:#f6f9f9}
+tr.row.flash td{animation:flash 1.6s ease}
+@keyframes flash{0%{background:#fff4c2}100%{background:transparent}}
+td a.num{font-weight:600;text-decoration:none}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap}
+.p-new{background:var(--bluebg);color:var(--blue)}.p-prog{background:var(--redbg);color:var(--red)}.p-hold{background:var(--amberbg);color:var(--amber)}.p-res{background:var(--greenbg);color:var(--green)}
+.p-up{background:var(--violetbg);color:var(--violet)}.p-mute{background:#eef1f2;color:var(--muted)}
+.empty{padding:40px 18px;color:var(--dim)}
+/* form */
+.formbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line);background:#fafbfb}
+.formbar h1{margin:0;font-size:17px;font-weight:600}
+.formbar .sp{margin-left:auto;display:flex;gap:8px}
+.steps{display:flex;padding:10px 18px;gap:0;border-bottom:1px solid var(--line);overflow-x:auto}
+.steps span{padding:6px 16px 6px 22px;background:#eef1f2;color:var(--muted);font-size:12.5px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%,10px 50%);white-space:nowrap}
+.steps span:first-child{clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%);padding-left:14px}
+.steps span.done{background:#cfe3e3;color:var(--accent)}.steps span.cur{background:var(--accent);color:#fff}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;padding:14px 18px}
+.f{display:grid;grid-template-columns:150px 1fr;gap:8px;padding:5px 0;align-items:center}
+.f label{color:var(--muted);font-size:12.5px;text-align:right}
+.f .v{border:1px solid var(--line);border-radius:3px;padding:5px 8px;min-height:30px;background:#fff;font-size:13px}
+.f .v.ro{background:#f6f8f8}
+.wide{padding:0 18px 6px}
+.wide .f{grid-template-columns:150px 1fr}
+.desc{white-space:pre-wrap}
+.tabs{display:flex;gap:2px;padding:0 18px;border-bottom:1px solid var(--line);margin-top:8px}
+.tabs button{border:1px solid transparent;border-bottom:0;background:transparent;padding:8px 14px;cursor:pointer;color:var(--muted);border-radius:4px 4px 0 0;font-size:13px}
+.tabs button[aria-selected=true]{background:#fff;border-color:var(--line);color:var(--text);font-weight:600;margin-bottom:-1px}
+.pane{padding:14px 18px 30px}
+.note{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2)}
+.note .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:var(--accent)}
+.note .av.bot{background:#5a3d8a}
+.note .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.note .hd b{color:var(--text)}
+.note .bd{margin-top:4px;background:#fffbea;border:1px solid #f0e2a8;border-radius:4px;padding:8px 10px}
+.note .bd.c{background:#f4f8ff;border-color:#d4e2fa}
+.note ul{margin:4px 0 0;padding-left:18px}
+.note.new{animation:flash 1.6s ease}
+.kb{border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-bottom:10px}
+.kb .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kb q{display:block;margin:6px 0;quotes:"“" "”"}
+.srcs{display:flex;flex-wrap:wrap;gap:6px}
+.lib td q{quotes:"“" "”"}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}nav.side{display:none}.fields{grid-template-columns:1fr}.f{grid-template-columns:120px 1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="simbar"><b data-i18n="sim_b"></b><span data-i18n="sim_t"></span></div>
+<header class="top">
+  <div class="logo">service<span>now</span><small data-i18n="sim_small"></small></div>
+  <div class="search" data-i18n="search"></div>
+  <div class="tr">
+    <div class="seg" id="lang" role="group" aria-label="Language / 语言"><button data-l="zh" aria-pressed="false">中文</button><button data-l="en" aria-pressed="false">EN</button></div>
+    <a href="console.html" style="color:#c9d8db;font-size:12.5px" data-i18n="back"></a>
+    <div class="avatar">LY</div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="side" id="nav"></nav>
+  <main>
+    <div class="asof"><span data-i18n="asof"></span><input type="range" id="at" min="0" step="1" aria-label="as of"><b id="attime"></b>
+      <button class="btn" id="replay" data-i18n="replay"></button><span id="rstate" style="color:var(--dim)"></span></div>
+    <div id="view"></div>
+  </main>
+</div>
+<script src="data/sim.js"></script>
+<script>
+const D = window.SIM;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const N = D.cycles.length;
+const LIB = Object.fromEntries((D.library.entries||[]).map(e => [e.id, e]));
+const DEV = Object.fromEntries(D.devices.map(d => [d.id, d]));
+const fmt = ts => ts ? ts.replace('T', ' ') : '';
+
+const I = {
+ zh:{sim_b:'模拟', sim_t:'这是演示用的模拟页面，不是真实的 ServiceNow 实例。数据由 Incident Skeleton 的模拟脚本生成，没有发送到任何地方。', sim_small:'· 模拟实例',
+  search:'搜索（演示中不可用）', back:'← 回控制台', asof:'查看时间点：', replay:'▶ 回放', replaying:'回放中…',
+  n_inc:'事件', n_open:'未关闭', n_hold:'挂起（等批准）', n_res:'已解决', n_all:'全部', n_kb:'知识', n_lib:'病例库', n_rej:'被拦截的来源',
+  incidents:'事件', crumb:'事件 > %s', number:'编号', opened:'创建时间', short:'简述', ci:'配置项', priority:'优先级', state:'状态', group:'分配组', assigned:'处理人', updated:'更新时间',
+  none_yet:'这个时间点还没有工单。', not_yet:'这个时间点该工单还不存在。', caller:'报告人', category:'类别', impact:'影响', urgency:'紧急度', resolved:'解决时间', close_code:'关闭代码', close_notes:'关闭说明', reopen:'重开次数', hold:'挂起原因', desc:'描述',
+  tab_act:'活动', tab_auto:'自动化做了什么', tab_kb:'相关知识（病例库）', st_New:'新建', st_In_Progress:'处理中', st_On_Hold:'挂起', st_Resolved:'已解决', st_Closed:'已关闭',
+  wn:'工作备注', cm:'评论', k_created:'自动开单', k_updated:'故障仍在，追加记录（没有重复开单）', k_reopened:'72 小时内复发，重新打开', k_resolved:'已解决',
+  sym:'症状', cause:'可能的原因', tried:'自动化已做', left:'还没做 / 需人工', wait:'等待批准', cool:'冷却中跳过', kbref:'给工程师的参考', devices:'受影响设备', held:'逐台修复已暂停，先查上游。',
+  fixed_by:'自动化修好：%a', appr:'批准人：%a', up_rec:'上游下的设备全部恢复，自动解决。', rec:'✓ 恢复', notrec:'✗ 没恢复', nothing:'（无）',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限',
+  lib_title:'病例库（自动收集）', lib_sub:'来源：ServiceNow KB、历史工单、我们的已结工单、Teams、Slack、企业微信、邮件。只有验证过的修法才会被自动化使用，并且仍受权限限制。',
+  id:'ID', device:'设备', symptom:'症状', fix:'修法', kind:'类型', status:'状态', sources:'来源', text:'原文', auto:'可自动', engineer:'工程师参考',
+  verified:'已验证', unverified:'未确认', contradicted:'有反例', failed:'无效', rej_title:'被拦截的来源', rej_sub:'这些消息想下命令（改规则、执行下载的脚本、关保护）。只当数据看，从不执行，留给人审查。',
+  where:'位置', author:'作者', time:'时间', reason:'原因', rr_override:'想改写规则', rr_pipe_shell:'下载脚本并直接执行', rr_destructive:'破坏性命令', rr_disable_safeguard:'要求关闭保护', rr_credential:'含密码',
+  s_kb:'ServiceNow KB', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信', no_kb:'没有相关知识。',
+  types:{printer:'打印机', signage:'数字标牌', av:'会议室音视频', wifiap:'无线 AP', upstream:'上游'}, syms:{jam:'卡纸', offline:'离线', down:'黑屏', hung:'卡死', generic:'通用'},
+  t_auto:'自动', t_notify_then_act:'先通知再修', t_approval:'批准后'},
+ en:{sim_b:'SIMULATED', sim_t:'Demo page, not a real ServiceNow instance. Generated by the Incident Skeleton simulation; nothing was sent anywhere.', sim_small:'· simulated instance',
+  search:'Search (disabled in the demo)', back:'← Back to console', asof:'As of:', replay:'▶ Replay', replaying:'replaying…',
+  n_inc:'Incident', n_open:'Open', n_hold:'On hold (approval)', n_res:'Resolved', n_all:'All', n_kb:'Knowledge', n_lib:'Case library', n_rej:'Rejected sources',
+  incidents:'Incidents', crumb:'Incidents > %s', number:'Number', opened:'Opened', short:'Short description', ci:'Configuration item', priority:'Priority', state:'State', group:'Assignment group', assigned:'Assigned to', updated:'Updated',
+  none_yet:'No incidents at this point in time.', not_yet:'This incident did not exist yet at this point in time.', caller:'Caller', category:'Category', impact:'Impact', urgency:'Urgency', resolved:'Resolved', close_code:'Resolution code', close_notes:'Resolution notes', reopen:'Reopen count', hold:'On hold reason', desc:'Description',
+  tab_act:'Activity', tab_auto:'What automation did', tab_kb:'Related knowledge (case library)', st_New:'New', st_In_Progress:'In Progress', st_On_Hold:'On Hold', st_Resolved:'Resolved', st_Closed:'Closed',
+  wn:'Work notes', cm:'Comments', k_created:'Opened by automation', k_updated:'Fault still present, note added (no duplicate ticket)', k_reopened:'Came back within 72 h, reopened', k_resolved:'Resolved',
+  sym:'Symptom', cause:'Likely cause', tried:'Automation tried', left:'Not done / needs a human', wait:'Waiting for approval', cool:'Skipped (cooling down)', kbref:'For the engineer', devices:'Affected devices', held:'Per-device repairs held back; check upstream first.',
+  fixed_by:'Fixed by automation: %a', appr:'Approved by %a', up_rec:'All devices behind the switch recovered; resolved automatically.', rec:'✓ recovered', notrec:'✗ not recovered', nothing:'(none)',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap',
+  lib_title:'Case library (harvested automatically)', lib_sub:'Sources: ServiceNow KB, past incidents, our resolved tickets, Teams, Slack, WeChat Work, email. Only verified fixes are used by automation, and the policy still applies.',
+  id:'ID', device:'Device', symptom:'Symptom', fix:'Fix', kind:'Kind', status:'Status', sources:'Sources', text:'Original text', auto:'automatable', engineer:'engineer advice',
+  verified:'verified', unverified:'unconfirmed', contradicted:'contradicted', failed:'failed', rej_title:'Rejected sources', rej_sub:'These messages tried to give orders (override rules, run a downloaded script, switch off a safeguard). Kept as data for review, never executed.',
+  where:'Where', author:'Author', time:'Time', reason:'Reason', rr_override:'tries to override the rules', rr_pipe_shell:'pipes a download into a shell', rr_destructive:'destructive command', rr_disable_safeguard:'asks to switch off a safeguard', rr_credential:'contains a credential',
+  s_kb:'ServiceNow KB', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work', no_kb:'No related knowledge.',
+  types:{printer:'Printer', signage:'Digital signage', av:'Meeting-room AV', wifiap:'Wireless AP', upstream:'Upstream'}, syms:{jam:'paper jam', offline:'offline', down:'black screen', hung:'frozen', generic:'general'},
+  t_auto:'auto', t_notify_then_act:'notify, then act', t_approval:'after approval'}
+};
+let lang = 'en';
+try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
+  lang = (q==='zh'||q==='en') ? q : (s==='zh'||s==='en') ? s : ((navigator.language||'').toLowerCase().startsWith('zh') ? 'zh' : 'en'); } catch(e) {}
+const t = (k, a) => { const s = I[lang][k] ?? I.en[k] ?? k; return a === undefined ? s : s.replace('%s', a).replace('%a', a); };
+const L = x => (x && typeof x === 'object') ? (x[lang] || x.en || '') : (x ?? '');
+const act = id => id ? L(D.catalogue[id] || {en: id}) : '';
+
+let at = N - 1, tab = 'act';
+function tsAt(){ return D.cycles[at].ts; }
+function snap(tk){
+  const ts = tsAt();
+  if (tk.opened_at > ts) return null;
+  const notes = tk.work_notes.filter(n => n.ts <= ts);
+  if (!notes.length) return null;
+  const last = notes[notes.length-1];
+  const resolvedNote = [...notes].reverse().find(n => n.type === 'resolved');
+  const reopenN = notes.filter(n => n.type === 'reopened').length;
+  return {state: last.state, notes, updated: last.ts, resolved_at: last.state === 'Resolved' && resolvedNote ? resolvedNote.ts : '',
+          reopen: reopenN, assigned: (notes.find(n => n.kind === 'engineer_ack') || {}).author || ''};
+}
+const stPill = s => `<span class="pill ${{'New':'p-new','In Progress':'p-prog','On Hold':'p-hold','Resolved':'p-res'}[s] || 'p-mute'}">${esc(t('st_' + s.replace(' ','_')))}</span>`;
+function shortDesc(tk){
+  if (tk.kind === 'upstream') return (lang === 'zh' ? '[自动] ' : '[Auto] ') + L({en: tk.message, zh: tk.message_zh}) + (lang === 'zh' ? ' - 疑似上游故障' : ' - suspected upstream fault');
+  return (lang === 'zh' ? `[自动] ${tk.cmdb_ci}：自动修复失败 - ` : `[Auto] ${tk.cmdb_ci}: automatic repair failed - `) + L({en: tk.message, zh: tk.message_zh || tk.message});
+}
+
+function counts(){
+  const s = D.tickets.map(snap).filter(Boolean);
+  return {all: s.length, open: s.filter(x => x.state !== 'Resolved').length, hold: s.filter(x => x.state === 'On Hold').length, res: s.filter(x => x.state === 'Resolved').length};
+}
+function renderNav(){
+  const c = counts(), h = location.hash || '#open';
+  const a = (href, k, n) => `<a href="${href}" class="${h === href ? 'on' : ''}">${esc(t(k))}<span>${n ?? ''}</span></a>`;
+  $('#nav').innerHTML = `<h4>${esc(t('n_inc'))}</h4>${a('#open','n_open',c.open)}${a('#hold','n_hold',c.hold)}${a('#resolved','n_res',c.res)}${a('#all','n_all',c.all)}
+    <h4>${esc(t('n_kb'))}</h4>${a('#library','n_lib',(D.library.entries||[]).filter(e => e.first_seen <= tsAt()).length)}${a('#rejected','n_rej',(D.library.rejected||[]).filter(r => r.ts <= tsAt()).length)}`;
+}
+
+let lastSeen = {};
+function renderList(filter){
+  const rows = D.tickets.map(tk => [tk, snap(tk)]).filter(([tk, s]) => s && (filter === 'all' || (filter === 'open' && s.state !== 'Resolved') || (filter === 'hold' && s.state === 'On Hold') || (filter === 'resolved' && s.state === 'Resolved')));
+  const title = {all:'n_all', open:'n_open', hold:'n_hold', resolved:'n_res'}[filter];
+  const now = {};
+  const body = rows.map(([tk, s]) => {
+    now[tk.number] = s.updated; const fl = lastSeen[tk.number] && lastSeen[tk.number] !== s.updated || (!lastSeen[tk.number] && Object.keys(lastSeen).length);
+    return `<tr class="row${fl ? ' flash' : ''}" tabindex="0" data-n="${esc(tk.number)}"><td><a class="num" href="#${esc(tk.number)}">${esc(tk.number)}</a></td><td class="mono">${esc(fmt(tk.opened_at).slice(5,16))}</td>
+      <td>${esc(shortDesc(tk))}</td><td class="mono">${esc(tk.cmdb_ci)}</td><td>${tk.kind === 'upstream' ? '<span class="pill p-up">' : '<span class="pill p-mute">'}${esc(tk.priority)}</span></td>
+      <td>${stPill(s.state)}</td><td>${esc(tk.assignment_group)}</td><td>${esc(s.assigned)}</td><td class="mono">${esc(fmt(s.updated).slice(5,16))}</td></tr>`;
+  }).join('');
+  lastSeen = now;
+  $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('incidents'))}</h1><span class="crumb">${esc(t('crumb', t(title)))}</span></div>` +
+    (rows.length ? `<table><thead><tr><th>${esc(t('number'))}</th><th>${esc(t('opened'))}</th><th>${esc(t('short'))}</th><th>${esc(t('ci'))}</th><th>${esc(t('priority'))}</th><th>${esc(t('state'))}</th><th>${esc(t('group'))}</th><th>${esc(t('assigned'))}</th><th>${esc(t('updated'))}</th></tr></thead><tbody>${body}</tbody></table>`
+                 : `<div class="empty">${esc(t('none_yet'))}</div>`);
+}
+$('#view').addEventListener('click', e => { const r = e.target.closest('tr.row'); if (r && !e.target.closest('a')) location.hash = '#' + r.dataset.n; });
+$('#view').addEventListener('keydown', e => { const r = e.target.closest('tr.row'); if (r && e.key === 'Enter') location.hash = '#' + r.dataset.n; });
+
+function field(label, v, ro){ return `<div class="f"><label>${esc(label)}</label><div class="v${ro ? ' ro' : ''}">${v}</div></div>`; }
+function triedList(d){
+  const tried = (d.tried || []).map(a => `<li>${esc(act(a.action))} <span class="pill p-mute">${esc(t('t_' + a.tier))}</span> → ${esc(a.recovered ? t('rec') : t('notrec'))}</li>`).join('');
+  return tried || `<li>${esc(t('nothing'))}</li>`;
+}
+function noteBody(n, tk){
+  const d = n.data || {};
+  if (n.kind === 'auto_failed'){
+    const head = {created:'k_created', updated:'k_updated', reopened:'k_reopened'}[n.type] || 'k_created';
+    const bad = (d.evidence || []).filter(e => e.status === 'err').map(e => `${L(e.check)}: ${L(e.result)}`).join('; ');
+    const left = (d.left || []).map(x => `<li>${esc(act(x.action))} <span class="pill p-mute">${esc(t('why_' + x.why))}</span></li>`).join('') || `<li>${esc(t('nothing'))}</li>`;
+    const cool = (d.cooldown || []).length ? `<div>${esc(t('cool'))}: ${d.cooldown.map(act).map(esc).join(', ')}</div>` : '';
+    const wait = (d.awaiting || []).length ? `<div><b>${esc(t('wait'))}:</b> ${d.awaiting.map(act).map(esc).join(', ')}</div>` : '';
+    const kb = (d.knowledge || []).map(id => LIB[id]).filter(e => e && e.kind === 'engineer').map(e => `<li>${esc(e.text)} <span class="pill ${e.status === 'verified' ? 'p-res' : 'p-mute'}">${esc(t(e.status))}</span> <span class="mono">${esc(e.id)}</span></li>`).join('');
+    return `<b>${esc(t(head))}</b><div>${esc(t('sym'))}: ${esc(L({en: tk.message, zh: tk.message_zh || tk.message}))}</div><div>${esc(t('cause'))}: ${esc(bad || t('nothing'))}</div>
+      <div><b>${esc(t('tried'))}</b><ul>${triedList(d)}</ul></div>${cool}<div><b>${esc(t('left'))}</b><ul>${left}</ul></div>${wait}${kb ? `<div><b>${esc(t('kbref'))}</b><ul>${kb}</ul></div>` : ''}`;
+  }
+  if (n.kind === 'upstream'){
+    const head = n.type === 'created' ? 'k_created' : 'k_updated';
+    return `<b>${esc(t(head))}</b><div>${esc(t('devices'))}: <span class="mono">${esc((d.devices || []).join(', '))}</span></div><div>${esc(t('held'))}</div>`;
+  }
+  if (n.kind === 'upstream_recovered') return `<b>${esc(t('k_resolved'))}</b><div>${esc(t('up_rec'))}</div>`;
+  if (n.kind === 'auto_fixed') return `<b>${esc(t('k_resolved'))}</b><div>${esc(t('fixed_by', act(d.action)))}</div>${d.approved_by ? `<div>${esc(t('appr', d.approved_by))}</div>` : ''}`;
+  if (n.kind === 'engineer_ack') return esc(L(d.text));
+  if (n.kind === 'engineer_resolved') return `<b>${esc(t('k_resolved'))}</b><div>${esc(d.close_notes)}</div>`;
+  return esc(JSON.stringify(d));
+}
+function renderForm(num){
+  const tk = D.tickets.find(x => x.number === num);
+  if (!tk){ $('#view').innerHTML = `<div class="empty">${esc(num)}?</div>`; return; }
+  const s = snap(tk);
+  if (!s){ $('#view').innerHTML = `<div class="formbar"><h1>${esc(t('n_inc'))} ${esc(num)}</h1></div><div class="empty">${esc(t('not_yet'))}</div>`; return; }
+  const order = ['New','In Progress','On Hold','Resolved','Closed'];
+  const ci = order.indexOf(s.state);
+  const steps = order.map((x,i) => `<span class="${i < ci ? 'done' : i === ci ? 'cur' : ''}">${esc(t('st_' + x.replace(' ','_')))}</span>`).join('');
+  const dev = DEV[tk.cmdb_ci];
+  const ciTxt = esc(tk.cmdb_ci) + (dev ? ` <span style="color:var(--dim)">· ${esc(dev.model)} · ${esc(L(dev.loc))}</span>` : '');
+  const notes = [...s.notes].reverse().map((n, i) => {
+    const bot = n.author.startsWith('Incident Skeleton');
+    const ini = bot ? 'IS' : n.author.split(' ').map(w => w[0]).join('').slice(0,2);
+    const isC = n.kind === 'engineer_ack';
+    return `<div class="note${i === 0 && playing ? ' new' : ''}"><div class="av${bot ? ' bot' : ''}">${esc(ini)}</div><div><div class="hd"><b>${esc(n.author)}</b><span>${esc(fmt(n.ts))}</span><span class="pill ${isC ? 'p-new' : 'p-hold'}">${esc(t(isC ? 'cm' : 'wn'))}</span>${stPill(n.state)}</div><div class="bd${isC ? ' c' : ''}">${noteBody(n, tk)}</div></div></div>`;
+  }).join('');
+  const lastAuto = [...s.notes].reverse().find(n => n.kind === 'auto_failed');
+  const autoPane = lastAuto ? `<div class="note"><div class="av bot">IS</div><div><div class="hd"><b>${esc(lastAuto.author)}</b><span>${esc(fmt(lastAuto.ts))}</span></div><div class="bd">${noteBody(lastAuto, tk)}</div></div></div>`
+                            : `<div class="empty">${esc(tk.kind === 'upstream' ? t('held') : t('nothing'))}</div>`;
+  const kn = (tk.knowledge || []).filter(k => (LIB[k.id] || {}).first_seen <= tsAt());
+  const kbPane = kn.length ? kn.map(k => {
+    const e = LIB[k.id] || k;
+    const srcs = (e.sources || []).map(x => `<span class="pill ${x.verdict === 'verified' ? 'p-res' : x.verdict === 'failed' ? 'p-prog' : 'p-mute'}">${esc(t('s_' + (x.platform || x.type)))} · ${esc(x.ref)} · ${esc(x.how)}</span>`).join('');
+    return `<div class="kb"><div class="hd"><b class="mono">${esc(e.id)}</b><b>${esc(e.action ? act(e.action) : t('engineer'))}</b><span class="pill ${e.status === 'verified' ? 'p-res' : 'p-mute'}">${esc(t(e.status))}</span></div><q>${esc(e.text)}</q><div class="srcs">${srcs}</div></div>`;
+  }).join('') : `<div class="empty">${esc(t('no_kb'))}</div>`;
+  const descTxt = tk.kind === 'upstream' ? `${t('devices')}: ${(tk.devices || []).join(', ')}\n${t('held')}` : tk.description;
+  $('#view').innerHTML = `<div class="formbar"><h1>${esc(t('n_inc'))} ${esc(tk.number)}</h1>${stPill(s.state)}${s.reopen ? `<span class="pill p-prog">${esc(t('reopen'))}: ${s.reopen}</span>` : ''}
+      <div class="sp"><a class="btn" href="#${s.state === 'Resolved' ? 'resolved' : 'open'}">← ${esc(t('incidents'))}</a></div></div>
+    <div class="steps">${steps}</div>
+    <div class="fields">
+      <div>${field(t('number'), esc(tk.number), true)}${field(t('caller'), esc(tk.caller), true)}${field(t('category'), esc(tk.category))}${field(t('ci'), ciTxt)}${field(t('impact'), esc(tk.impact))}${field(t('urgency'), esc(tk.urgency))}${field(t('priority'), esc(tk.priority), true)}</div>
+      <div>${field(t('state'), stPill(s.state))}${s.state === 'On Hold' ? field(t('hold'), esc(lang === 'zh' ? '等待批准' : 'Awaiting approval')) : ''}${field(t('group'), esc(tk.assignment_group))}${field(t('assigned'), esc(s.assigned))}
+        ${field(t('opened'), esc(fmt(tk.opened_at)), true)}${field(t('resolved'), esc(fmt(s.resolved_at)), true)}${s.state === 'Resolved' ? field(t('close_code'), esc(tk.close_code || 'Solved (Permanently)')) : ''}</div>
+    </div>
+    <div class="wide">${field(t('short'), esc(shortDesc(tk)))}${field(t('desc'), `<div class="desc">${esc(descTxt)}</div>`)}${s.state === 'Resolved' && tk.close_notes && tk.state === 'Resolved' ? field(t('close_notes'), esc(tk.close_notes)) : ''}</div>
+    <div class="tabs" role="tablist">${['act','auto','kb'].map(k => `<button role="tab" data-tab="${k}" aria-selected="${tab === k}">${esc(t('tab_' + k))}</button>`).join('')}</div>
+    <div class="pane">${tab === 'act' ? notes : tab === 'auto' ? autoPane : kbPane}</div>`;
+}
+$('#view').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b){ tab = b.dataset.tab; render(); } });
+
+function renderLibrary(){
+  const ts = tsAt();
+  const rows = (D.library.entries || []).filter(e => e.first_seen <= ts).map(e => {
+    const srcs = e.sources.filter(s => s.ts <= ts || e.first_seen <= ts).map(s => `<span class="pill ${s.verdict === 'verified' ? 'p-res' : s.verdict === 'failed' ? 'p-prog' : 'p-mute'}">${esc(t('s_' + (s.platform || s.type)))} · ${esc(s.how)}</span>`).join(' ');
+    return `<tr><td class="mono">${esc(e.id)}</td><td>${esc(I[lang].types[e.device])}</td><td>${esc(I[lang].syms[e.symptom] || e.symptom)}</td><td>${esc(e.action ? act(e.action) : '—')}</td>
+      <td><span class="pill ${e.kind === 'auto' ? 'p-new' : 'p-mute'}">${esc(t(e.kind === 'auto' ? 'auto' : 'engineer'))}</span></td><td><span class="pill ${e.status === 'verified' ? 'p-res' : e.status === 'contradicted' ? 'p-prog' : 'p-mute'}">${esc(t(e.status))}</span></td>
+      <td><div class="srcs">${srcs}</div></td><td><q>${esc(e.text)}</q></td></tr>`;
+  }).join('');
+  $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('lib_title'))}</h1></div><div style="padding:8px 18px;color:var(--muted)">${esc(t('lib_sub'))}</div>
+    <table class="lib"><thead><tr><th>${esc(t('id'))}</th><th>${esc(t('device'))}</th><th>${esc(t('symptom'))}</th><th>${esc(t('fix'))}</th><th>${esc(t('kind'))}</th><th>${esc(t('status'))}</th><th>${esc(t('sources'))}</th><th>${esc(t('text'))}</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderRejected(){
+  const rows = (D.library.rejected || []).filter(r => r.ts <= tsAt()).map(r => `<tr><td>${esc(r.where)}</td><td>${esc(r.author)}</td><td class="mono">${esc(fmt(r.ts))}</td><td><span class="pill p-prog">${esc(t('rr_' + r.reason))}</span></td><td><q>${esc(r.text)}</q></td></tr>`).join('');
+  $('#view').innerHTML = `<div class="listhead"><h1>${esc(t('rej_title'))}</h1></div><div style="padding:8px 18px;color:var(--muted)">${esc(t('rej_sub'))}</div>` +
+    (rows ? `<table class="lib"><thead><tr><th>${esc(t('where'))}</th><th>${esc(t('author'))}</th><th>${esc(t('time'))}</th><th>${esc(t('reason'))}</th><th>${esc(t('text'))}</th></tr></thead><tbody>${rows}</tbody></table>` : `<div class="empty">—</div>`);
+}
+
+function render(){
+  $('#attime').textContent = 'C' + (at + 1) + ' · ' + fmt(tsAt()).slice(11, 16);
+  $('#at').value = at;
+  renderNav();
+  const h = (location.hash || '#open').slice(1);
+  if (['open','hold','resolved','all'].includes(h)) renderList(h);
+  else if (h === 'library') renderLibrary();
+  else if (h === 'rejected') renderRejected();
+  else renderForm(h);
+}
+addEventListener('hashchange', () => { tab = 'act'; render(); });
+$('#at').max = N - 1;
+$('#at').addEventListener('input', e => { playing = false; at = +e.target.value; render(); });
+
+let playing = false;
+async function replay(){
+  playing = true; $('#rstate').textContent = t('replaying');
+  for (at = 0; at < N && playing; at++){ render(); await sleep(1800); }
+  at = Math.min(at, N - 1); playing = false; $('#rstate').textContent = ''; render();
+}
+$('#replay').addEventListener('click', () => { if (!playing) replay(); else playing = false; });
+
+function applyLang(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll('#lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === lang)));
+}
+$('#lang').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; lang = b.dataset.l; try { localStorage.setItem('lang', lang); } catch (err) {} applyLang(); render(); });
+
+const q = new URLSearchParams(location.search);
+if (q.has('at')) at = Math.min(Math.max(+q.get('at'), 0), N - 1);
+applyLang(); render();
+if (q.get('replay') === '1') replay();
+</script>
+</body>
+</html>

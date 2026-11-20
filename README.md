@@ -32,10 +32,27 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 | Parallel patrol with a failure threshold | real |
 | Permission policy, risk tiers, cooldown, audit log | real |
 | Success-rate ranking, promotion and demotion | real, but statistics, not model training |
+| Case-library harvest (KB, incidents, chat, email) | real logic on **sample source files**; live ServiceNow KB fetch is written but untested; Teams/Slack/WeChat/email connectors are not wired |
 | Fix executors (controller API, CMS, MDM, PoE switch) | **not wired**: only `clear-queue` has a command. Live mode reports "no executor" and hands the step to a person |
 | ServiceNow ticket + KB | payload, de-duplication and REST code are written; **not run against a real instance**. Default is dry run with a sample KB file |
 | AI advisor | a hook only (`INCIDENT_AI_CMD`); suggestions can only pick known actions and stay under the policy |
 | Demo page | simulated data, for the story |
+
+## The autoplay demo (no clicks needed)
+
+Open `demo/console.html`. It plays one simulated morning, 12 patrols from 09:00 to 10:50, by itself and loops.
+Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
+harvest, learning, ServiceNow tickets, and a checklist of the 19 scenarios as they happen. EN / 中文 switch top right;
+`?at=5` jumps to a patrol, `?speed=2` speeds it up.
+
+`demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
+"what automation did", related knowledge from the case library, the case library itself, and rejected sources.
+Its time slider and **Replay** show the tickets as they were at any patrol.
+
+How it is made: `python3 skill/remediation/simulate.py` scripts the *world* (which device fails, which fix would work,
+when an engineer acts, who approves) and runs the *real engine* on it. The threshold, maintenance silence, blast-radius
+grouping, harvest verdicts, ranking, permissions, cooldown, learning and ticket lifecycle are all real decisions. The
+scenario tags are detected from what the engine did, then written to `demo/data/sim.js` for the pages to replay.
 
 ## Files
 
@@ -48,15 +65,26 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 | `skill/remediation/remediate.py` | the repair loop, learning and escalation |
 | `skill/remediation/policy.json` | **the permissions**: risk tiers, allow-list per device, caps, escalation groups |
 | `skill/remediation/actions.json`, `runbooks.json` | the action catalogue and the built-in runbooks (zh/en) |
-| `skill/remediation/kb_servicenow_sample.json` | sample KB used when no ServiceNow is configured |
+| `skill/remediation/harvest.py` | the case library collects fixes itself: ServiceNow KB, closed incidents, our resolved tickets, Teams / Slack / WeChat Work, email; verdicts verified / failed / unverified / rejected |
+| `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
+| `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
+| `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
 | `skill/mcp/incident_kb_server.py` | a real stdio MCP server: route, recall a fix, record a case |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/index.html` | the visual demo: the skeleton drawn as a spine, EN/中文 switch |
+| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, 19 scenarios |
+| `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
+| `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |
 
 ## Run it
 
 ```bash
+# the scripted morning (real engine) → demo/data/sim.js, then open demo/console.html
+python3 skill/remediation/simulate.py
+
+# harvest the case library from the sources
+python3 skill/remediation/harvest.py --data-dir /tmp/kb --lang en
+
 # one alert through the skeleton (add --lang zh for Chinese)
 python3 skill/scripts/run_incident.py --type printer --target 10.0.4.21 --message "PAPER JAM (13.20)" --lang en
 

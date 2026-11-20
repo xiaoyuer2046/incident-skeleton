@@ -1,0 +1,11 @@
+[
+  {"id": "mail-5f502", "subject": "Room 5F-502 panel frozen, cannot join Teams", "device": "av", "messages": [
+    {"ts": "2026-11-19T08:40:00", "from": "facilities@corp.example", "text": "Room 5F-502 panel is frozen again and nobody can join Teams."},
+    {"ts": "2026-11-19T09:05:00", "from": "support@av-vendor.example", "text": "Please reset the room controller profile from the admin portal. Firmware 2.3 corrupts it after a power blip."},
+    {"ts": "2026-11-19T09:40:00", "from": "facilities@corp.example", "text": "Confirmed fixed after the profile reset. Thank you."}
+  ]},
+  {"id": "mail-ap3f", "subject": "3 楼 AP 经常掉线", "device": "wifiap", "messages": [
+    {"ts": "2026-11-17T11:00:00", "from": "network-oncall@corp.example", "text": "3 楼东边的 AP 这周掉了两次。"},
+    {"ts": "2026-11-17T11:20:00", "from": "senior-net@corp.example", "text": "检查交换机端口的 PoE 预算，必要时把 AP 移到 PoE+ 端口。"}
+  ]}
+]

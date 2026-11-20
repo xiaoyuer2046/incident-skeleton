@@ -1,0 +1,11 @@
+[
+  {"number": "INC0009812", "device": "wifiap", "short_description": "AP-3F-11 offline, clients dropping", "close_code": "Solved (Permanently)",
+   "close_notes": "Replaced the PoE injector; the switch port PoE budget was exceeded. Moved the AP to a PoE+ port.",
+   "resolved_by": "Zhang Min (Network)", "resolved_at": "2026-10-28T15:40:00", "reopened": false},
+  {"number": "INC0009840", "device": "printer", "short_description": "PRN-4F-01 13.20 jam with an empty tray", "close_code": "Solved (Permanently)",
+   "close_notes": "Cleared the stuck jobs from the queue; printer recovered.",
+   "resolved_by": "Liu Yang (Print)", "resolved_at": "2026-11-05T10:12:00", "reopened": false},
+  {"number": "INC0009901", "device": "signage", "short_description": "Lobby signage black after CMS update", "close_code": "Solved (Workaround)",
+   "close_notes": "Swapped in a spare player for now.",
+   "resolved_by": "Marco Ruiz (AV)", "resolved_at": "2026-11-09T17:05:00", "reopened": true}
+]

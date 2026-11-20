@@ -1,8 +1,0 @@
-[
-  {"number": "KB0010231", "short_description": "Printer shows 13.20 paper jam but no paper is stuck",
-   "text": "If the 13.20 jam persists after the tray is clear, clear the stuck print jobs from the queue, then restart the print spooler."},
-  {"number": "KB0010377", "short_description": "Meeting room cannot join Zoom, panel frozen",
-   "text": "Restart the room app first. If the panel is still frozen, reboot the codec."},
-  {"number": "KB0010402", "short_description": "Access point offline, clients dropping",
-   "text": "Reboot the AP through the controller. If it does not come back, power-cycle the PoE port."}
-]

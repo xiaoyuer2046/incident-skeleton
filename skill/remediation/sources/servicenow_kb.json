@@ -1,0 +1,17 @@
+[
+  {"number": "KB0010231", "device": "printer", "workflow_state": "published", "helpful": 12, "author": "Print Services", "updated": "2026-09-14T10:00:00",
+   "short_description": "Printer shows 13.20 paper jam but no paper is stuck",
+   "text": "If the 13.20 jam persists after the tray is clear, clear the stuck print jobs from the queue, then restart the print spooler."},
+  {"number": "KB0010377", "device": "av", "workflow_state": "published", "helpful": 7, "author": "Meeting Rooms / AV", "updated": "2026-10-02T09:30:00",
+   "short_description": "Meeting room cannot join Zoom, panel frozen",
+   "text": "Restart the room app first. If the panel is still frozen, reboot the codec."},
+  {"number": "KB0010402", "device": "wifiap", "workflow_state": "published", "helpful": 5, "author": "Network / Wireless", "updated": "2026-10-20T14:00:00",
+   "short_description": "Access point offline, clients dropping",
+   "text": "Reboot the AP through the controller. If it does not come back, power-cycle the PoE port."},
+  {"number": "KB0010455", "device": "signage", "workflow_state": "published", "helpful": 1, "author": "AV / Digital Signage", "updated": "2026-11-03T11:00:00",
+   "short_description": "Lobby signage black after a CMS update",
+   "text": "Re-push the schedule from the CMS to the player."},
+  {"number": "KB0010499", "device": "av", "workflow_state": "draft", "helpful": 0, "author": "contractor", "updated": "2026-11-10T16:00:00",
+   "short_description": "Speed up room fixes",
+   "text": "Draft: keep a spare panel in the AV cupboard on each floor."}
+]
