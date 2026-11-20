@@ -150,7 +150,7 @@ def detect_tags(cyc, library, prev_ts):
             fx = ran[-1]
             if ran[0] is fx and "lib" in fx["sources"] and r["builtin_first"] != fx["action"]:
                 tags.add("library_reordered")
-            if fx["sources"] == ["lib"]:
+            if "lib" in fx["sources"] and "builtin" not in fx["sources"] and "master" not in fx["sources"]:
                 tags.add("new_knowledge")
             if fx["tier"] == "notify_then_act":
                 tags.add("notify")
@@ -208,7 +208,11 @@ def main():
     ap = argparse.ArgumentParser(description="Simulate one morning with the real engine")
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--keep", action="store_true", help="keep the temporary data directory")
+    ap.add_argument("--brain", default="mock", choices=["mock", "off", "claude", "http", "cmd"],
+                    help="AI backend for the run (default: mock stand-in, no model, no cost)")
     a = ap.parse_args()
+    os.environ["BRAIN"] = a.brain
+    import brain
 
     data_dir = tempfile.mkdtemp(prefix="incident-sim-")
     clock = {"t": START}
@@ -254,7 +258,8 @@ def main():
     library = rm.load_json(ctx.library_path, {})
     pol = ctx.policy
     sim = {"meta": {"generated": datetime.now().isoformat(timespec="seconds"), "start": START.isoformat(), "step_minutes": 10,
-                    "note": "Scripted world, real engine, dry run. Nothing was sent to any device or to ServiceNow."},
+                    "note": "Scripted world, real engine, dry run. Nothing was sent to any device or to ServiceNow.",
+                    "brain": brain.label()},
            "devices": DEVICES, "windows": WINDOWS, "catalogue": ctx.actions, "tags": TAGS, "coverage": seen,
            "policy": {"autonomy": pol.get("autonomy"), "allow": pol.get("allow"), "cooldown_minutes": pol.get("cooldown_minutes"),
                       "reopen_hours": pol.get("reopen_hours"), "blast_min": pol.get("blast_radius", {}).get("min_devices"),

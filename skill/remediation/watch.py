@@ -188,23 +188,27 @@ def after(ctx, rows, results):
             b["status"] = "recovering"
         else:
             b["status"] = "open"
-        b["summary"] = summarize(b)
+        b["summary"] = summarize(b, ctx)
         b["timeline"].sort(key=lambda i: i["ts"])
     rm.save_json(_board_path(ctx), board)
     return board
 
 
-def summarize(b):
-    cmd = os.environ.get("INCIDENT_AI_CMD")
-    if cmd:
-        try:
-            p = subprocess.run(shlex.split(cmd), input=json.dumps({"task": "summarize_outage_board", "board": b}),
-                               capture_output=True, text=True, timeout=60)
-            s = json.loads(p.stdout or "{}").get("summary")
-            if isinstance(s, dict) and s.get("en"):
-                return s
-        except Exception:
-            pass
+def summarize(b, ctx=None):
+    """Template draft; the brain (brain.py) may rewrite it. The template is the fallback."""
+    draft = _template(b)
+    import brain
+    compact = {k: b.get(k) for k in ("upstream", "devices", "device_status", "status", "master", "our_ticket")}
+    compact["timeline"] = [{"ts": t["ts"], "source": t["source"], "text": t["text"]} for t in b["timeline"][-8:]]
+    ans = brain.ask(ctx, "summarize_outage_board", {"board": compact, "draft": draft, "allowed_actions": []})
+    if ans:
+        b["summary_by"] = ans.get("by")
+        return ans["summary"]
+    b["summary_by"] = None
+    return draft
+
+
+def _template(b):
     up, devs = b["upstream"], b["devices"]
     st = b.get("device_status", {})
     healthy = sum(1 for v in st.values() if v == "healthy")

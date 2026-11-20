@@ -35,8 +35,28 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 | Case-library harvest (KB, incidents, chat, email) | real logic on **sample source files**; live ServiceNow KB fetch is written but untested; Teams/Slack/WeChat/email connectors are not wired |
 | Fix executors (controller API, CMS, MDM, PoE switch) | **not wired**: only `clear-queue` has a command. Live mode reports "no executor" and hands the step to a person |
 | ServiceNow ticket + KB | payload, de-duplication and REST code are written; **not run against a real instance**. Default is dry run with a sample KB file |
-| AI advisor | a hook only (`INCIDENT_AI_CMD`); suggestions can only pick known actions and stay under the policy |
+| AI brain | interface, guardrails and tests are real; the demo uses a **mock stand-in**; real-model backends are written but untested |
 | Demo page | simulated data, for the story |
+
+## The AI brain (`skill/remediation/brain.py`)
+
+One interface where an AI plugs in. The engine asks; the AI advises; the rules decide.
+
+| Task | Used by | What the AI does |
+|---|---|---|
+| `suggest_actions` | repair loop | names known actions that fit the evidence (shown as 🧠 on the trace) |
+| `map_fix_text` | case-library harvest | maps a free-text reply to a known action when keywords miss |
+| `diagnose` | escalation | likely cause and next step, written on the ticket for the engineer |
+| `summarize_outage_board` | outage board | one plain status line for everyone |
+
+Guardrails enforced in code, whatever the AI says: only action ids from `actions.json` for that device; never changes the
+policy (an AI pick still goes through allow-list, risk tier, approval and the physical-step rule); KB, chat, email and ticket text
+is passed as data; JSON only, text capped; errors, timeouts or the call budget fall back to the rules; every call is audited
+(no payload text); answers are cached. `skill/tests/test_brain_guardrails.py` checks these with a deliberately bad "AI".
+
+Backends: `BRAIN=off` (default), `mock` (deterministic stand-in used by the demo, **not a model**), `claude` (local Claude Code CLI,
+uses your Claude credits), `http` (OpenAI-compatible endpoint: `BRAIN_URL`, `BRAIN_MODEL`, key in `BRAIN_API_KEY`), `cmd`
+(any command in `INCIDENT_AI_CMD`). The `claude` and `http` backends are written but **not tested** here.
 
 ## Mass outages: one shared status board
 
@@ -77,6 +97,8 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/actions.json`, `runbooks.json` | the action catalogue and the built-in runbooks (zh/en) |
 | `skill/remediation/harvest.py` | the case library collects fixes itself: ServiceNow KB, closed incidents, our resolved tickets, Teams / Slack / WeChat Work, email; verdicts verified / failed / unverified / rejected |
 | `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
+| `skill/remediation/brain.py` | the AI interface: four tasks, guardrails, backends off / mock / claude / http / cmd |
+| `skill/tests/test_brain_guardrails.py` | a badly behaved AI must not change what the engine does |
 | `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
 | `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |

@@ -174,17 +174,14 @@ def library_for(ctx, device, skey):
 
 
 def ai_actions(ctx, device, packet):
-    cmd = os.environ.get("INCIDENT_AI_CMD")
-    if not cmd:
-        return [], False
-    try:
-        p = subprocess.run(shlex.split(cmd), input=json.dumps(packet), capture_output=True, text=True, timeout=60)
-        data = json.loads(p.stdout or "{}")
-    except Exception:
-        return [], True
-    # an AI may only pick from the known catalogue; the policy still decides
-    return [(s.get("action_id"), "ai") for s in data.get("suggestions", [])
-            if ctx.actions.get(s.get("action_id"), {}).get("device") == device], True
+    """Ask the brain (brain.py) which known actions fit. Advisory only: the policy still decides."""
+    import brain
+    if brain.backend() == "off":
+        return [], False, {}
+    packet = dict(packet, allowed_actions=[a for a, v in ctx.actions.items() if v.get("device") == device])
+    out = brain.ask(ctx, "suggest_actions", packet) or {"suggestions": []}
+    why = {s["action_id"]: s["why"] for s in out["suggestions"]}
+    return [(a, "ai") for a in why], True, why
 
 
 # ---------------------------------------------------------------- learning
@@ -300,7 +297,7 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
         if e.get("action") and e.get("status") == "verified":
             add(e["action"], "lib")
     packet = {"device": device, "target": target, "symptom": skey, "message": ns.message, "evidence": evidence}
-    ai, ai_on = ai_actions(ctx, device, packet)
+    ai, ai_on, ai_why = ai_actions(ctx, device, packet)
     for aid, src in ai:
         add(aid, src)
     hints = hints or {}
@@ -341,6 +338,8 @@ def remediate(ns, ctx, scenario=None, approvals=None, use_cooldown=True, quiet=F
         a = ctx.actions[aid]
         d, tier = decide(ctx, device, aid, r["state"], recent)
         tr = {k: r[k] for k in ("sources", "state", "score", "hist", "lib", "hint")}
+        if aid in ai_why:
+            tr["ai_why"] = ai_why[aid]
         tr.update({"action": aid, "risk": a["risk"], "decision": d, "tier": tier})
         label = "%s  [%s · %s]" % (ctx.desc(aid), a["risk"], ",".join(r["sources"]))
         if d != "run":
@@ -525,9 +524,14 @@ def escalate(ns, ctx, result, quiet=False):
                               "text": e.get("text", ""), "verified": e.get("verified", 0), "failed": e.get("failed", 0),
                               "sources": [{k: s.get(k) for k in ("type", "ref", "where", "author", "verdict", "how")} for s in e.get("sources", [])][:4]})
     awaiting = [x["action"] for x in result["left"] if x["why"] == "approval"]
+    import brain
+    ai = brain.ask(ctx, "diagnose", {"device": ns.type, "ci": result["ci"], "message": ns.message, "evidence": result["evidence"],
+                   "tried": [{"action": a["action"], "recovered": a["recovered"]} for a in result["attempts"]],
+                   "left_for_human": [{"en": ctx.actions[x["action"]]["en"], "zh": ctx.actions[x["action"]]["zh"]} for x in result["left"]],
+                   "allowed_actions": []})
     data = {"tried": [{k: a[k] for k in ("action", "tier", "ran", "recovered")} for a in result["attempts"]],
             "left": result["left"], "cooldown": result["cooldown"], "evidence": result["evidence"],
-            "awaiting": awaiting, "knowledge": [k["id"] for k in knowledge]}
+            "awaiting": awaiting, "knowledge": [k["id"] for k in knowledge], "ai": ai}
     desc = "Symptom: %s\nLikely cause: %s\nTried: %s\nNot done: %s" % (
         ns.message, explain(ctx, result["evidence"]),
         ", ".join("%s (%s)" % (ctx.actions[a["action"]]["en"], "recovered" if a["recovered"] else "not recovered") for a in result["attempts"]) or "-",

@@ -212,7 +212,7 @@ const hhmm = ts => ts ? ts.slice(11,16) : '';
 
 const I = {
  zh:{console:'运维控制台 · 自动演示', restart:'↺ 从头播放', open_sn:'打开 ServiceNow（模拟）↗', open_skel:'骨架图 ↗',
-  banner:'演示：场景是写好的（哪台坏、哪种修法有效、工程师何时处理），但每个判断都由真实引擎做出。演练模式：没有改动任何设备，也没有发到真实 ServiceNow。',
+  banner:'演示：场景是写好的（哪台坏、哪种修法有效、工程师何时处理），但每个判断都由真实引擎做出。演练模式：没有改动任何设备，也没有发到真实 ServiceNow。🧠 标记的 AI 建议来自“模拟替身”，不是真模型；接真模型见 brain.py。',
   h_fleet:'设备 · 13 台', h_faults:'本轮报错（单独列出）', h_trace:'修复过程', trace_hint:'先软后硬 · 按权限 · 按成功率',
   h_harvest:'病例库 · 主动收集', h_learn:'学习成绩', learn_hint:'成功 / 尝试', h_tickets:'ServiceNow 工单', sim_tag:'模拟',
   h_cover:'演示到的场景', h_history:'巡检记录', patrol:'第 %n / %t 轮巡检', pause:'⏸ 暂停', play:'▶ 播放',
@@ -248,7 +248,7 @@ const I = {
    auto_resolved:'自动修好后关单', engineer_learned:'工程师的处理被收进病例库', injection:'夹带指令的消息被拦截', reopened:'72 小时内复发：重开工单', demoted:'总失败的修法被降级跳过',
    master_linked:'主动找到总单，挂成子单', comms_detected:'主动发现故障邮件，更新面板', master_hint:'用总单给的修法在权限内修好', progress_posted:'把我们的进度写回总单', board_closed:'总单关闭且巡检确认后，面板关闭'}},
  en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
-  banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow.',
+  banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow. 🧠 AI advice here comes from a mock stand-in, not a model; see brain.py to plug in a real one.',
   h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
   h_harvest:'Case library · harvest', h_learn:'Learning', learn_hint:'successes / attempts', h_tickets:'ServiceNow tickets', sim_tag:'simulated',
   h_cover:'Scenarios shown', h_history:'Patrol log', patrol:'patrol %n / %t', pause:'⏸ Pause', play:'▶ Play',
@@ -396,7 +396,8 @@ function srcChips(tr){
       const types = new Set();
       for (const id of tr.lib){ for (const x of (LIB[id]||{}).sources||[]) if (x.verdict === 'verified') types.add(x.platform || x.type); }
       for (const ty of types) out.push(`<span class="chip k-info">${esc(t('s_'+ty))}</span>`);
-    } else if (s === 'master') out.push(`<span class="chip k-up">${esc(t('hint', {h: tr.hint}))}</span>`);
+    } else if (s === 'ai') out.push(`<span class="chip k-up" title="${esc(tr.ai_why || '')}">🧠 ${esc(brainLabel(D.meta.brain))}</span>`);
+    else if (s === 'master') out.push(`<span class="chip k-up">${esc(t('hint', {h: tr.hint}))}</span>`);
     else out.push(`<span class="chip">${esc(t('s_'+s))}</span>`);
   }
   return out.join('');
@@ -417,13 +418,18 @@ function escalHTML(res){
   const tried = res.attempts.map(a => `<li>${esc(act(a.action))} → ${esc(a.recovered ? t('d_run_ok') : t('d_run_bad'))}</li>`).join('') || `<li>${esc(t('none'))}${res.cooldown.length ? ' · ' + esc(t('d_cooldown')) + ': ' + res.cooldown.map(act).map(esc).join(', ') : ''}</li>`;
   const left = res.left.map(x => `<li>${esc(act(x.action))} <span class="chip k-mute">${esc(t('why_'+x.why))}</span></li>`).join('') || `<li>${esc(t('none'))}</li>`;
   const ticket = TK.find(x => x.number === tk.number);
-  const kb = ((ticket && ticket.knowledge) || []).filter(k => k.kind === 'engineer').slice(0,3)
+  // knowledge as it stood at this patrol: the ids written on that note, and only entries already harvested
+  const nowTs = D.cycles[cur].ts;
+  const note = ticket && ticket.work_notes.filter(n => n.kind === 'auto_failed' && n.ts <= nowTs).pop();
+  const kb = ((note && note.data.knowledge) || []).map(id => LIB[id]).filter(e => e && e.kind === 'engineer' && e.first_seen <= nowTs).slice(0,3)
     .map(k => `<li>${esc(k.text)} <span class="chip ${k.status==='verified'?'k-ok':'k-mute'}">${esc(t(k.status === 'verified' ? 'verified' : k.status === 'contradicted' ? 'failed' : 'unverified'))}</span></li>`).join('');
   const key = {created:'o_created', updated:'o_updated', reopened:'o_reopened'}[tk.event] || 'o_created';
+  const ai = note && note.data.ai;
+  const aiHTML = ai ? `<div style="margin-top:4px"><b>🧠 ${esc(brainLabel(ai.by))}</b> · ${esc(L(ai.cause))}. ${esc(L(ai.next))} <span class="chip k-mute">${esc(ai.confidence)}</span></div>` : '';
   return `<div class="out bad"><b>🔴 ${esc(t('esc_title'))}</b> — <a href="servicenow.html?at=${cur}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener">${esc(t(key, {t: tk.number}))}</a> · ${esc(tk.group)}
     <div style="margin-top:6px"><b>${esc(t('esc_tried'))}</b><ul>${tried}</ul></div>
     <div><b>${esc(t('esc_left'))}</b><ul>${left}</ul></div>
-    ${kb ? `<div><b>${esc(t('esc_kb'))}</b><ul>${kb}</ul></div>` : ''}</div>`;
+    ${kb ? `<div><b>${esc(t('esc_kb'))}</b><ul>${kb}</ul></div>` : ''}${aiHTML}</div>`;
 }
 function okHTML(res){
   const fx = res.trace.filter(x => x.decision === 'run').pop();
@@ -436,6 +442,7 @@ function traceHead(res){
 }
 
 /* ================= mass-outage status board ================= */
+const brainLabel = s => (lang === 'zh' && /mock/.test(s || '')) ? 'AI（模拟替身）' : (s || 'AI');
 const prevTs = c => c > 0 ? D.cycles[c-1].ts : '';
 const isAfter = it => !!(it.device || it.kind === 'post' || it.kind === 'close');
 function tlHTML(it, fresh){
@@ -463,7 +470,7 @@ function boardShell(c, b){
                  : `<span class="chip k-mute">${esc(t('b_nomaster'))}</span>`;
   return `<div class="bd-top"><span class="chip ${stCls}">${esc(t('b_' + b.status))}</span><span class="ttl">${esc(t('b_title').replace('%u', b.upstream))}</span>${mtxt}
       <span class="mfield">${esc(t('b_ours'))}: <a href="servicenow.html?at=${c}&lang=${lang}#${esc(b.our_ticket)}" target="_blank" rel="noopener"><b>${esc(b.our_ticket)}</b></a></span></div>
-    <div class="bd-sum">${esc(L(b.summary))}</div>
+    <div class="bd-sum">${esc(L(b.summary))}${b.summary_by ? ` <span class="chip k-up">🧠 ${esc(brainLabel(b.summary_by))}</span>` : ''}</div>
     <div class="bd-sub">${esc(t('b_devs'))}</div><div class="devs">${devs}</div>
     <div class="bd-grid"><div><div class="bd-sub">${esc(t('b_tl'))}</div><div class="tlbox"></div></div><div><div class="bd-sub">${esc(t('b_sol'))}</div><div class="solbox">${b.solutions.map(solHTML).join('') || `<div class="empty">—</div>`}</div></div></div>`;
 }

@@ -234,8 +234,9 @@ function noteBody(n, tk){
     const left = (d.left || []).map(x => `<li>${esc(act(x.action))} <span class="pill p-mute">${esc(t('why_' + x.why))}</span></li>`).join('') || `<li>${esc(t('nothing'))}</li>`;
     const cool = (d.cooldown || []).length ? `<div>${esc(t('cool'))}: ${d.cooldown.map(act).map(esc).join(', ')}</div>` : '';
     const wait = (d.awaiting || []).length ? `<div><b>${esc(t('wait'))}:</b> ${d.awaiting.map(act).map(esc).join(', ')}</div>` : '';
-    const kb = (d.knowledge || []).map(id => LIB[id]).filter(e => e && e.kind === 'engineer').map(e => `<li>${esc(e.text)} <span class="pill ${e.status === 'verified' ? 'p-res' : 'p-mute'}">${esc(t(e.status))}</span> <span class="mono">${esc(e.id)}</span></li>`).join('');
-    return `<b>${esc(t(head))}</b><div>${esc(t('sym'))}: ${esc(L({en: tk.message, zh: tk.message_zh || tk.message}))}</div><div>${esc(t('cause'))}: ${esc(bad || t('nothing'))}</div>
+    const kb = (d.knowledge || []).map(id => LIB[id]).filter(e => e && e.kind === 'engineer' && e.first_seen <= n.ts).map(e => `<li>${esc(e.text)} <span class="pill ${e.status === 'verified' ? 'p-res' : 'p-mute'}">${esc(t(e.status))}</span> <span class="mono">${esc(e.id)}</span></li>`).join('');
+    const aiN = d.ai ? `<div><b>🧠 ${esc(d.ai.by)}:</b> ${esc(L(d.ai.cause))}. ${esc(L(d.ai.next))} (${esc(d.ai.confidence)})</div>` : '';
+    return aiN + `<b>${esc(t(head))}</b><div>${esc(t('sym'))}: ${esc(L({en: tk.message, zh: tk.message_zh || tk.message}))}</div><div>${esc(t('cause'))}: ${esc(bad || t('nothing'))}</div>
       <div><b>${esc(t('tried'))}</b><ul>${triedList(d)}</ul></div>${cool}<div><b>${esc(t('left'))}</b><ul>${left}</ul></div>${wait}${kb ? `<div><b>${esc(t('kbref'))}</b><ul>${kb}</ul></div>` : ''}`;
   }
   if (n.kind === 'upstream'){

@@ -216,6 +216,13 @@ def harvest(ctx):
             acts = map_actions(m.get("text", ""))
             if not acts and not re.search(ADVICE, m.get("text", ""), re.I):
                 continue
+            mapped_by = "keywords"
+            if not acts and dev:
+                import brain
+                ans = brain.ask(ctx, "map_fix_text", {"device": dev, "text": m.get("text", ""),
+                                "allowed_actions": [a for a, v in ctx.actions.items() if v.get("device") == dev and not v.get("physical")]})
+                if ans and ans["actions"]:
+                    acts, mapped_by = ans["actions"], ans.get("by") or "ai"
             follow = next((x for x in clean[i + 1:] if x["author"] == asker), None)
             likes = int((m.get("reactions") or {}).get("👍", 0))
             if follow and re.search(NEG, follow.get("text", ""), re.I):
@@ -228,7 +235,7 @@ def harvest(ctx):
                 verdict, how = "unverified", "no confirmation"
             confirmed = map_actions(follow.get("text", "")) if (follow and verdict == "verified") else []
             src = {"type": "email" if kind == "email" else "chat", "ref": "%s@%s" % (m["author"], m["ts"]), "where": where,
-                   "platform": kind, "author": m["author"], "ts": m["ts"], "how": how}
+                   "platform": kind, "author": m["author"], "ts": m["ts"], "how": how, "mapped_by": mapped_by}
             for act in acts or [None]:
                 v = verdict
                 if verdict == "verified" and confirmed and act not in confirmed:
