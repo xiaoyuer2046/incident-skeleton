@@ -40,6 +40,16 @@ For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page ha
 | AI brain | interface, guardrails and tests are real; the demo uses a **mock stand-in**; real-model backends are written but untested |
 | Demo page | simulated data, for the story |
 
+## Meetings, KB drafts and chat
+
+| Part | What it does | Where |
+|---|---|---|
+| Pre-meeting check | 30 min before a meeting, checks the room. Down: ticket to High, organizer told, plan B room named; 15 min out, recommends moving | `skill/remediation/premeeting.py`, calendar in `sources/calendar.json` |
+| KB drafts | a fix that held at the re-check at least twice gets a ServiceNow KB draft (steps, what not to try, evidence) for a person to review | `skill/remediation/kbdraft.py` |
+| Chat with the crew | ask status in plain words; approvers approve a waiting step for one device (used once) or pause / resume; others are refused | `skill/remediation/chatops.py`, approvers in `policy.json` `chatops` |
+
+`skill/tests/test_meetings_kb_chat.py` covers these (7 tests). The calendar and chat are sample data; Graph / Teams connectors are not wired.
+
 ## Safety and staying in touch
 
 | Part | What it does | How to use it |
@@ -87,7 +97,7 @@ Sources are sample files; the live ServiceNow and mailbox connectors are not wir
 
 Open `demo/console.html`. It plays one simulated morning, 14 patrols from 09:00 to 11:10, by itself and loops.
 Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 29 scenarios as they happen. EN / 中文 switch top right;
+harvest, learning, ServiceNow tickets, and a checklist of the 38 scenarios as they happen. EN / 中文 switch top right;
 `?at=5` jumps to a patrol, `?speed=2` speeds it up.
 
 `demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
@@ -121,7 +131,7 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
 | `skill/mcp/incident_kb_server.py` | a real stdio MCP server: route, recall a fix, record a case |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, 29 scenarios |
+| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, meetings, chat, 38 scenarios |
 | `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
 | `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |
