@@ -88,6 +88,10 @@ def device_status(ctx, d, last):
             if tried:
                 en.append("Tried: %s (not recovered)." % ", ".join(A[x["action"]]["en"] for x in tried))
                 zh.append("已试：%s（没恢复）。" % "、".join(A[x["action"]]["zh"] for x in tried))
+        ss = next((n for n in reversed(tk["work_notes"]) if n["kind"] == "status_summary"), None)
+        if ss and (ss["data"].get("waiting") or ss["data"].get("eta")):
+            en.append("Engineer side: waiting for %s%s." % (ss["data"].get("waiting") or "an update", (", ETA " + ss["data"]["eta"]) if ss["data"].get("eta") else ""))
+            zh.append("工程师那边：在等 %s%s。" % (ss["data"].get("waiting") or "进展", ("，预计 " + ss["data"]["eta"]) if ss["data"].get("eta") else ""))
         if tk.get("awaiting_approval"):
             en.append("Waiting for approval: %s." % ", ".join(A[x]["en"] for x in tk["awaiting_approval"]))
             zh.append("等待批准：%s。" % "、".join(A[x]["zh"] for x in tk["awaiting_approval"]))

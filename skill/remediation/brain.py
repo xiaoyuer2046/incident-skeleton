@@ -27,7 +27,7 @@ BRAIN_MAX_CALLS caps calls per process (default 40).
 import hashlib, json, os, re, shlex, subprocess, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MAX_TEXT = 400
+MAX_TEXT = 600
 _cache, _calls = {}, {"n": 0}
 
 SYSTEM = (
@@ -44,6 +44,7 @@ SHAPES = {
     "summarize_outage_board": '{"summary":{"en":"...","zh":"..."}}',
     "draft_kb": '{"draft":{"title":{"en":"...","zh":"..."},"steps":{"en":["..."],"zh":["..."]}}}',
     "answer_chat": '{"reply":{"en":"...","zh":"..."}}',
+    "summarize_ticket": '{"summary":{"en":"...","zh":"..."}}',
 }
 
 
@@ -131,7 +132,7 @@ def _validate(task, out, payload):
         if not c or not n:
             return None
         return {"cause": c, "next": n, "confidence": out.get("confidence") if out.get("confidence") in ("low", "medium", "high") else "low"}
-    if task == "summarize_outage_board":
+    if task in ("summarize_outage_board", "summarize_ticket"):
         s = _clip(out.get("summary"))
         return {"summary": s} if s and s.get("en") else None
     if task == "answer_chat":
@@ -200,7 +201,7 @@ def _mock(task, p):
         n_en = ("Automatic fixes did not recover it. Next: %s." % left[0]["en"]) if left else "Check on site."
         n_zh = ("自动修法都没恢复。下一步：%s。" % left[0]["zh"]) if left else "请到场检查。"
         return {"cause": {"en": "Most likely " + c_en, "zh": "最可能是" + c_zh}, "next": {"en": n_en, "zh": n_zh}, "confidence": "medium"}
-    if task == "summarize_outage_board":
+    if task in ("summarize_outage_board", "summarize_ticket"):
         return {"summary": p.get("draft")}
     if task == "answer_chat":
         return {"reply": p.get("draft")}

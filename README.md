@@ -14,6 +14,17 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 
 For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page has three skins: Day, Night edition, and Auto (follows the system). Full documentation (Chinese): [系统说明](docs/系统说明.md) · [技术说明](docs/技术说明.md)
 
+## The skeleton is small on purpose
+
+| Layer | Where | Size |
+|---|---|---|
+| Skeleton: six states, shared helpers, postmortem | `skill/scripts/run_incident.py` | ~280 lines |
+| Crews: printer, signage, meeting-room AV, wireless AP | one `investigate_<type>()` + one `MITIGATE` list each, same file; runbooks and actions in JSON | ~15 code lines each |
+| Plug-ins: patrol, repair loop, harvest, outage watch, tracker, meetings, KB drafts, chat, notify, AI | `skill/remediation/*.py` | around the skeleton, never inside it |
+| Policy: every permission | `skill/remediation/policy.json` | people edit it |
+
+A fifth device type is one function, one runbook and a few catalogue entries. See [SPEC.md](SPEC.md).
+
 ## What it does
 
 1. **Patrol** four device types in parallel. One failed probe is a blip; only a fault
@@ -34,7 +45,7 @@ For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page ha
 | Parallel patrol with a failure threshold | real |
 | Permission policy, risk tiers, cooldown, audit log | real |
 | Success-rate ranking, promotion and demotion | real, but statistics, not model training |
-| Case-library harvest (KB, incidents, chat, email) | real logic on **sample source files**; live ServiceNow KB fetch is written but untested; Teams/Slack/WeChat/email connectors are not wired |
+| Case-library harvest (KB, incidents, chat, email, shared drive) | real logic on **sample source files**; live ServiceNow KB fetch is written but untested; Teams/Slack/WeChat/email connectors are not wired |
 | Fix executors (controller API, CMS, MDM, PoE switch) | **not wired**: only `clear-queue` has a command. Live mode reports "no executor" and hands the step to a person |
 | ServiceNow ticket + KB | payload, de-duplication and REST code are written; **not run against a real instance**. Default is dry run with a sample KB file |
 | AI brain | interface, guardrails and tests are real; the demo uses a **mock stand-in**; real-model backends are written but untested |
@@ -97,7 +108,7 @@ Sources are sample files; the live ServiceNow and mailbox connectors are not wir
 
 Open `demo/console.html`. It plays one simulated morning, 14 patrols from 09:00 to 11:10, by itself and loops.
 Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 38 scenarios as they happen. EN / 中文 switch top right;
+harvest, learning, ServiceNow tickets, and a checklist of the 41 scenarios as they happen. EN / 中文 switch top right;
 `?at=5` jumps to a patrol, `?speed=2` speeds it up.
 
 `demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
@@ -124,14 +135,17 @@ scenario tags are detected from what the engine did, then written to `demo/data/
 | `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
 | `skill/remediation/brain.py` | the AI interface: four tasks, guardrails, backends off / mock / claude / http / cmd |
 | `skill/tests/test_brain_guardrails.py` | a badly behaved AI must not change what the engine does |
+| `skill/remediation/tracker.py` | status summary for every open ticket from work notes, chat and email (owner, latest news, ETA, waiting for) |
+| `skill/remediation/sources/shared_drive/` | sample shared-drive runbooks; point `INCIDENT_SHARED_DRIVE` at a mounted folder to read a real one |
+| `skill/tests/test_tracker_drive_mcp.py` | tracker, shared drive, MCP read-only |
 | `skill/remediation/notify.py` | pushes the right news to Teams / Slack once (dry run by default) |
 | `skill/tests/test_safety.py` | kill switch, daily limit, re-check, self-heal, notifications |
 | `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
 | `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
 | `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
-| `skill/mcp/incident_kb_server.py` | a real stdio MCP server: route, recall a fix, record a case |
+| `skill/mcp/incident_kb_server.py` | MCP server on the crew's own data: crew_status, list_open_tickets, recall_fix, lookup_support_group, record_case; read-only for approvals |
 | `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, meetings, chat, 38 scenarios |
+| `demo/console.html` | autoplay ops console: 12 patrols, faults listed separately, outage board, notifications, meetings, chat, 41 scenarios |
 | `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
 | `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
 | `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |

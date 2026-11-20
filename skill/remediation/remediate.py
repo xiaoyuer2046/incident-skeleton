@@ -502,14 +502,14 @@ def ticket_upsert(ctx, key, fields, kind, data, knowledge=None, awaiting=None, e
     return num, event
 
 
-def ticket_update(ctx, key, author, kind, data, **fields):
+def ticket_update(ctx, key, author, kind, data, keep_state=False, **fields):
     d = tickets_load(ctx)
     num = d["by_key"].get(key)
     tk = d["tickets"].get(num) if num else None
     if not tk:
         return None
     tk.update(fields)
-    if tk["state"] == "New":
+    if tk["state"] == "New" and not keep_state:
         tk["state"] = "In Progress"
     _note(ctx, tk, author, "comment", kind, data)
     save_json(ctx.tickets_path, d)

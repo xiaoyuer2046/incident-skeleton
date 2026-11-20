@@ -1,1 +1,0 @@
-{"device_type": "printer", "symptom": "paper jam 13.20", "root_cause": "fuser jam", "fix": "cleared jam + restarted spooler", "success": true, "_ts": "2026-11-17T23:11:05"}

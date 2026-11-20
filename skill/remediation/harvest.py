@@ -42,6 +42,7 @@ KEYWORDS = [
     ("reboot the codec", "reboot-codec"), ("重启编解码器", "reboot-codec"),
     ("reboot the room controller", "reboot-controller"), ("重启控制器", "reboot-controller"),
     ("controller profile", "reset-room-profile"), ("重置房间", "reset-room-profile"),
+    ("power-cycle the printer", "power-cycle-printer"), ("bounce the poe", "poe-cycle"),
     ("reboot the ap", "controller-reboot-ap"), ("through the controller", "controller-reboot-ap"),
     ("power-cycle the poe", "poe-cycle"), ("bounce the poe", "poe-cycle"),
 ]
@@ -243,6 +244,41 @@ def harvest(ctx):
                 s[v] += 1
                 add(dev, m.get("text", ""), act, src, v, clean[0].get("text", ""))
 
+    # 5. shared drive: runbooks and manuals as .md / .txt. Point INCIDENT_SHARED_DRIVE at a mounted
+    #    SMB / SharePoint-synced folder to read a real one; the sample folder is used otherwise.
+    drive = os.environ.get("INCIDENT_SHARED_DRIVE") or os.path.join(SRC, "shared_drive")
+    for fn in (sorted(os.listdir(drive)) if os.path.isdir(drive) else []):
+        if not fn.lower().endswith((".md", ".txt")):
+            continue
+        with open(os.path.join(drive, fn), encoding="utf-8", errors="replace") as f:
+            doc = f.read(20000)
+        head = lambda k: (re.search(r"^%s:\s*(.+)$" % k, doc, re.I | re.M) or [None, ""])[1].strip()
+        upd = head("Updated") or "1970-01-01"
+        ts = upd if "T" in upd else upd + "T00:00:00"
+        if not vis(ts):
+            continue
+        s = st("shared_drive")
+        s["scanned"] += 1
+        code = injection_reason(doc)
+        if code:
+            reject("shared_drive", "Shared drive: " + fn, head("Owner"), ts, doc, code)
+            continue
+        verdict = "verified" if re.search(r"^status:\s*(approved|已审核|已批准)", doc, re.I | re.M) else "unverified"
+        s[verdict] += 1
+        dev = detect_device(doc)
+        src = {"type": "drive", "ref": fn, "where": "Shared drive: " + fn, "platform": "shared_drive", "author": head("Owner"), "ts": ts,
+               "how": "document status: %s" % (head("Status") or "none")}
+        for sec in re.split(r"\n\s*\n", doc):
+            if re.match(r"^\s*\w+:\s", sec) and "\n" not in sec.strip():
+                continue
+            body = re.sub(r"^#+.*$", "", sec, flags=re.M).strip()
+            if not body or re.match(r"^(title|owner|status|updated):", body, re.I):
+                continue
+            acts = map_actions(body)
+            if not acts and not re.search(ADVICE, body, re.I):
+                continue
+            for act in acts or [None]:
+                add(dev, body, act, src, verdict, head("Title"))
     return merge(ctx, found, rejected, stats, origin)
 
 

@@ -265,7 +265,7 @@ const I = {
   o_closed:'修好并关闭 %t', o_up:'合并到上游单 %t', o_blip:'不开单', o_mw:'%r', approved_by:'批准人：%a',
   d_run_ok:'✓ 恢复', d_run_bad:'✗ 没恢复', d_approval:'需批准', d_needs_human:'需人工', d_demoted:'已降级，跳过', d_cooldown:'冷却中，跳过', d_denied:'不允许', d_cap:'达到次数上限',
   t_auto:'自动', t_notify_then_act:'先通知再修', t_approval:'已批准', r_low:'低风险', r_medium:'中风险', r_high:'高风险',
-  s_builtin:'内置手册', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信',
+  s_builtin:'内置手册', s_ai:'AI', s_kb:'ServiceNow KB', s_drive:'公盘', s_shared_drive:'公盘', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信',
   st_builtin:'内置', st_candidate:'候选', st_promoted:'已晋升', st_demoted:'已降级',
   evidence:'证据', esc_title:'告警：自动修复失败', esc_tried:'已做', esc_left:'还没做 / 需人工', esc_wait:'等待批准', esc_kb:'给工程师的参考', none:'无',
   why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'不允许', why_attempt_cap:'次数上限', h_meet:'会议 · 会前体检', meet_hint:'会前 30 分钟检查房间', h_chat:'和值班员对话 · Teams', chat_hint:'提问 · 批准 · 暂停', no_chat:'还没有对话。',
@@ -275,7 +275,7 @@ const I = {
   rc_held:'🔁 复查 %d · %x（%t 修的）：稳住了 ✓', rc_back:'🔁 复查 %d · %x（%t 修的）：又坏了 ✗ 这次修复记为失败', h_notify:'通知 · Teams / Slack', notify_hint:'演练：未真正发送', no_notify:'还没有通知。',
   harv_last:'上次收集 %t', harv_now:'本轮收集中…', harv_none:'还没收集。', src:'来源', scanned:'扫描', verified:'已验证', unverified:'未确认', failed:'无效', rejected:'拦截',
   lib_size:'条', lib_ver:'已验证', new_in_lib:'本次新进病例库', rej_title:'拦截：夹带指令，不使用', advice:'工程师参考（不自动执行）',
-  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'历史工单', src_own_tickets:'我们的已结工单', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'企业微信', src_email:'邮件',
+  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'历史工单', src_shared_drive:'公盘', src_own_tickets:'我们的已结工单', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'企业微信', src_email:'邮件',
   rr_override:'想改写规则', rr_pipe_shell:'下载脚本并直接执行', rr_destructive:'破坏性命令', rr_disable_safeguard:'要求关闭保护', rr_credential:'含密码',
   h_ack:'👷 %a 接单 %t：%x', h_resolve:'👷 %a 处理完并关闭 %t：%x', h_approve:'✅ %a 批准：%x',
   no_learn:'还没有修复记录。', no_tk:'还没有工单。', tk_open:'未关 %n', st_New:'新建', st_In_Progress:'处理中', st_On_Hold:'挂起·等批准', st_Resolved:'已解决',
@@ -294,7 +294,7 @@ const I = {
    master_linked:'主动找到总单，挂成子单', comms_detected:'主动发现故障邮件，更新面板', master_hint:'用总单给的修法在权限内修好', progress_posted:'把我们的进度写回总单', board_closed:'总单关闭且巡检确认后，面板关闭',
    self_healed:'探测时自己恢复：不修，不算功劳', recheck_held:'修完 10 分钟后复查：稳住了', regressed:'复查发现又坏了：这次修复记为失败', kill_switch:'紧急开关：一键暂停全部自动修复', notified:'主动推送到 Teams / Slack',
    meeting_ready:'会前体检：房间正常', meeting_saved:'会前发现故障，开会前修好', meeting_at_risk:'会议有风险：提高优先级，通知组织者并给备选房间', room_moved:'快开会还修不好：建议换房间', kb_drafted:'修好两次以上：自动起草 KB',
-   chat_status:'在 Teams 里问进展，直接回答', chat_denied:'没权限的人批准：被拒绝', chat_approved:'在 Teams 里批准，下一轮执行', chat_resume:'在 Teams 里恢复自动修复'}},
+   chat_status:'在 Teams 里问进展，直接回答', chat_denied:'没权限的人批准：被拒绝', chat_approved:'在 Teams 里批准，下一轮执行', chat_resume:'在 Teams 里恢复自动修复', drive_harvested:'从公盘收集运维手册', ticket_tracked:'抓取群聊和邮件，总结未关单进展', eta_found:'从邮件里找到预计恢复时间'}},
  en:{console:'Ops console · autoplay demo', restart:'↺ Restart', open_sn:'Open ServiceNow (simulated) ↗', open_skel:'Skeleton view ↗',
   banner:'Demo: the world is scripted (which devices fail, which fix would work, when an engineer acts), but every decision is made by the real engine. Dry run: no device was changed and nothing was sent to a real ServiceNow. 🧠 AI advice here comes from a mock stand-in, not a model; see brain.py to plug in a real one.',
   h_fleet:'Fleet · 13 devices', h_faults:'Faults this patrol (listed separately)', h_trace:'Repair trace', trace_hint:'soft first · within permissions · by success rate',
@@ -308,7 +308,7 @@ const I = {
   o_closed:'fixed, closed %t', o_up:'grouped into upstream ticket %t', o_blip:'no ticket', o_mw:'%r', approved_by:'approved by %a',
   d_run_ok:'✓ recovered', d_run_bad:'✗ not recovered', d_approval:'needs approval', d_needs_human:'needs a human', d_demoted:'demoted, skipped', d_cooldown:'cooling down, skipped', d_denied:'not permitted', d_cap:'attempt cap',
   t_auto:'auto', t_notify_then_act:'notify, then act', t_approval:'approved', r_low:'low risk', r_medium:'medium risk', r_high:'high risk',
-  s_builtin:'runbook', s_ai:'AI', s_kb:'ServiceNow KB', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work',
+  s_builtin:'runbook', s_ai:'AI', s_kb:'ServiceNow KB', s_drive:'shared drive', s_shared_drive:'shared drive', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work',
   st_builtin:'builtin', st_candidate:'candidate', st_promoted:'promoted', st_demoted:'demoted',
   evidence:'evidence', esc_title:'ALERT: automatic repair failed', esc_tried:'What was done', esc_left:'Not done / needs a human', esc_wait:'Waiting for approval', esc_kb:'For the engineer', none:'none',
   why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', h_meet:'Meetings · pre-check', meet_hint:'rooms checked 30 min ahead', h_chat:'Chat with the crew · Teams', chat_hint:'ask · approve · pause', no_chat:'No messages yet.',
@@ -318,7 +318,7 @@ const I = {
   rc_held:'🔁 Re-check %d · %x (fixed %t): held ✓', rc_back:'🔁 Re-check %d · %x (fixed %t): fault is back ✗ counted as a failure', h_notify:'Notifications · Teams / Slack', notify_hint:'dry run: not really sent', no_notify:'No notifications yet.',
   harv_last:'last harvest %t', harv_now:'harvesting this patrol…', harv_none:'Not harvested yet.', src:'source', scanned:'scanned', verified:'verified', unverified:'unconfirmed', failed:'failed', rejected:'rejected',
   lib_size:'entries', lib_ver:'verified', new_in_lib:'New in the case library', rej_title:'Rejected: contains orders, never used', advice:'engineer advice (never automatic)',
-  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'Closed incidents', src_own_tickets:'Our resolved tickets', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'WeChat Work', src_email:'Email',
+  src_kb:'ServiceNow KB', src_servicenow_kb:'ServiceNow KB', src_servicenow_incidents:'Closed incidents', src_shared_drive:'Shared drive', src_own_tickets:'Our resolved tickets', src_slack:'Slack', src_teams:'Teams', src_wechat_work:'WeChat Work', src_email:'Email',
   rr_override:'tries to override the rules', rr_pipe_shell:'pipes a download into a shell', rr_destructive:'destructive command', rr_disable_safeguard:'asks to switch off a safeguard', rr_credential:'contains a credential',
   h_ack:'👷 %a picked up %t: %x', h_resolve:'👷 %a fixed and closed %t: %x', h_approve:'✅ %a approved: %x',
   no_learn:'No repairs recorded yet.', no_tk:'No tickets yet.', tk_open:'%n open', st_New:'New', st_In_Progress:'In Progress', st_On_Hold:'On Hold · approval', st_Resolved:'Resolved',
@@ -337,7 +337,7 @@ const I = {
    master_linked:'Found the master incident, linked ours as child', comms_detected:'Picked up outage email, updated the board', master_hint:"Fixed within permissions using the master's guidance", progress_posted:'Posted our progress back to the master', board_closed:'Board closed once the master resolved and patrol confirmed',
    self_healed:'Came back on its own: no repair, no credit', recheck_held:'Re-checked 10 min after the fix: it held', regressed:'Re-check found the fault back: fix counted as failed', kill_switch:'Kill switch pauses every automatic repair', notified:'Pushed to Teams / Slack',
    meeting_ready:'Pre-meeting check: room ready', meeting_saved:'Fault found before a meeting, fixed in time', meeting_at_risk:'Meeting at risk: priority raised, organizer told, plan B given', room_moved:'Too close to start: move rooms', kb_drafted:'Fix proven twice: KB article drafted',
-   chat_status:'Asked in Teams, answered from live data', chat_denied:'Approval from a non-approver refused', chat_approved:'Approved in Teams, run next patrol', chat_resume:'Automation resumed from Teams'}}
+   chat_status:'Asked in Teams, answered from live data', chat_denied:'Approval from a non-approver refused', chat_approved:'Approved in Teams, run next patrol', chat_resume:'Automation resumed from Teams', drive_harvested:'Runbooks harvested from the shared drive', ticket_tracked:'Chat and email gathered into a ticket status summary', eta_found:'ETA picked up from a vendor email'}}
 };
 let lang = 'en';
 try { const q = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
@@ -654,7 +654,7 @@ function renderTickets(c){
   $('#tickets').innerHTML = vis.map(([tk, s]) => {
     const cls = s.state === 'Resolved' ? 'k-ok' : s.state === 'On Hold' ? 'k-warn' : 'k-bad';
     const sd = (tk.kind === 'upstream' || tk.kind === 'master') ? (tk.kind === 'master' ? '★ ' : '') + L({en: tk.message, zh: tk.message_zh}) : `${tk.cmdb_ci} · ${L({en: tk.message, zh: tk.message_zh || tk.message})}`;
-    return `<a class="tk" href="servicenow.html?at=${c}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener"><b>${esc(tk.number)}</b><div><div>${esc(sd)}</div><div class="sub">${esc(tk.assignment_group)} · ${s.notes.length} ${lang==='zh'?'条记录':'notes'}${s.notes.some(n=>n.type==='reopened')?(lang==='zh'?' · 已重开':' · reopened'):''}</div></div><span class="chip ${cls}">${esc(t('st_'+s.state.replace(' ','_')))}</span></a>`;
+    return `<a class="tk" href="servicenow.html?at=${c}&lang=${lang}#${esc(tk.number)}" target="_blank" rel="noopener"><b>${esc(tk.number)}</b><div><div>${esc(sd)}</div><div class="sub">${esc(tk.assignment_group)} · ${s.notes.length} ${lang==='zh'?'条记录':'notes'}${s.notes.some(n=>n.type==='reopened')?(lang==='zh'?' · 已重开':' · reopened'):''}</div>${(() => { const ss = s.notes.filter(n => n.kind === 'status_summary').pop(); return ss && s.state !== 'Resolved' ? `<div class="sub" style="color:var(--text);margin-top:3px">📍 ${esc(L(ss.data.summary))}</div>` : ''; })()}</div><span class="chip ${cls}">${esc(t('st_'+s.state.replace(' ','_')))}</span></a>`;
   }).join('');
 }
 function renderCover(c, fresh){

@@ -135,13 +135,13 @@ const I = {
   wn:'工作备注', cm:'评论', k_created:'自动开单', k_updated:'故障仍在，追加记录（没有重复开单）', k_reopened:'72 小时内复发，重新打开', k_resolved:'已解决',
   sym:'症状', cause:'可能的原因', tried:'自动化已做', left:'还没做 / 需人工', wait:'等待批准', cool:'冷却中跳过', kbref:'给工程师的参考', devices:'受影响设备', held:'逐台修复已暂停，先查上游。',
   fixed_by:'自动化修好：%a', appr:'批准人：%a', up_rec:'上游下的设备全部恢复，自动解决。', rec:'✓ 恢复', notrec:'✗ 没恢复', nothing:'（无）',
-  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', killed_by:'%a 按下了紧急开关：自动修复已暂停', n_kbd:'KB 草稿', kbd_title:'KB 草稿（由自动化起草，等待审核）', kbd_sub:'同一修法在本地修好并在 10 分钟复查时稳住至少 2 次，才会起草。不会自动发布。',
+  why_human:'需到场', why_approval:'需批准', why_demoted:'已降级', why_denied:'权限不允许', why_attempt_cap:'次数上限', why_killed:'紧急开关', why_rate_limited:'今日次数已满', killed_by:'%a 按下了紧急开关：自动修复已暂停', n_kbd:'KB 草稿', cur:'当前进展（自动汇总）', from:'来源', auto_upd:'自动更新于', kbd_title:'KB 草稿（由自动化起草，等待审核）', kbd_sub:'同一修法在本地修好并在 10 分钟复查时稳住至少 2 次，才会起草。不会自动发布。',
   kbd_steps:'步骤', kbd_dont:'不用试', kbd_ev:'依据', m_risk:'会议风险：%a', c_appr:'在聊天里批准：%a',
   lib_title:'病例库（自动收集）', lib_sub:'来源：ServiceNow KB、历史工单、我们的已结工单、Teams、Slack、企业微信、邮件。只有验证过的修法才会被自动化使用，并且仍受权限限制。',
   id:'ID', device:'设备', symptom:'症状', fix:'修法', kind:'类型', status:'状态', sources:'来源', text:'原文', auto:'可自动', engineer:'工程师参考',
   verified:'已验证', unverified:'未确认', contradicted:'有反例', failed:'无效', rej_title:'被拦截的来源', rej_sub:'这些消息想下命令（改规则、执行下载的脚本、关保护）。只当数据看，从不执行，留给人审查。',
   where:'位置', author:'作者', time:'时间', reason:'原因', rr_override:'想改写规则', rr_pipe_shell:'下载脚本并直接执行', rr_destructive:'破坏性命令', rr_disable_safeguard:'要求关闭保护', rr_credential:'含密码',
-  s_kb:'ServiceNow KB', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信', no_kb:'没有相关知识。',
+  s_kb:'ServiceNow KB', s_drive:'公盘', s_incident:'历史工单', s_ticket:'工程师结单', s_email:'邮件', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'企业微信', no_kb:'没有相关知识。',
   types:{printer:'打印机', signage:'数字标牌', av:'会议室音视频', wifiap:'无线 AP', upstream:'上游'}, syms:{jam:'卡纸', offline:'离线', down:'黑屏', hung:'卡死', generic:'通用'},
   t_auto:'自动', t_notify_then_act:'先通知再修', t_approval:'批准后', n_major:'重大事件（总单）', major:'重大事件', parent:'父事件（总单）', children:'子事件',
   linked:'自动化找到总单 %a，把本单挂成子单，只查一次。', progress:'子单进度（自动化写入）', eng_step:'人工步骤', needed:'其中需要自动化修复：%a', eta:'预计恢复'},
@@ -154,13 +154,13 @@ const I = {
   wn:'Work notes', cm:'Comments', k_created:'Opened by automation', k_updated:'Fault still present, note added (no duplicate ticket)', k_reopened:'Came back within 72 h, reopened', k_resolved:'Resolved',
   sym:'Symptom', cause:'Likely cause', tried:'Automation tried', left:'Not done / needs a human', wait:'Waiting for approval', cool:'Skipped (cooling down)', kbref:'For the engineer', devices:'Affected devices', held:'Per-device repairs held back; check upstream first.',
   fixed_by:'Fixed by automation: %a', appr:'Approved by %a', up_rec:'All devices behind the switch recovered; resolved automatically.', rec:'✓ recovered', notrec:'✗ not recovered', nothing:'(none)',
-  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', killed_by:'%a pressed the kill switch: automatic repairs are paused', n_kbd:'KB drafts', kbd_title:'KB drafts (written by automation, awaiting review)', kbd_sub:'Drafted only after a fix worked here and held at the 10-minute re-check at least twice. Never published automatically.',
+  why_human:'on site', why_approval:'approval', why_demoted:'demoted', why_denied:'not permitted', why_attempt_cap:'attempt cap', why_killed:'kill switch', why_rate_limited:'daily limit', killed_by:'%a pressed the kill switch: automatic repairs are paused', n_kbd:'KB drafts', cur:'Current status (auto summary)', from:'From', auto_upd:'auto-updated', kbd_title:'KB drafts (written by automation, awaiting review)', kbd_sub:'Drafted only after a fix worked here and held at the 10-minute re-check at least twice. Never published automatically.',
   kbd_steps:'Steps', kbd_dont:'Do not bother', kbd_ev:'Evidence', m_risk:'Meeting at risk: %a', c_appr:'Approved in chat: %a',
   lib_title:'Case library (harvested automatically)', lib_sub:'Sources: ServiceNow KB, past incidents, our resolved tickets, Teams, Slack, WeChat Work, email. Only verified fixes are used by automation, and the policy still applies.',
   id:'ID', device:'Device', symptom:'Symptom', fix:'Fix', kind:'Kind', status:'Status', sources:'Sources', text:'Original text', auto:'automatable', engineer:'engineer advice',
   verified:'verified', unverified:'unconfirmed', contradicted:'contradicted', failed:'failed', rej_title:'Rejected sources', rej_sub:'These messages tried to give orders (override rules, run a downloaded script, switch off a safeguard). Kept as data for review, never executed.',
   where:'Where', author:'Author', time:'Time', reason:'Reason', rr_override:'tries to override the rules', rr_pipe_shell:'pipes a download into a shell', rr_destructive:'destructive command', rr_disable_safeguard:'asks to switch off a safeguard', rr_credential:'contains a credential',
-  s_kb:'ServiceNow KB', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work', no_kb:'No related knowledge.',
+  s_kb:'ServiceNow KB', s_drive:'shared drive', s_incident:'past incident', s_ticket:'engineer close note', s_email:'email', s_slack:'Slack', s_teams:'Teams', s_wechat_work:'WeChat Work', no_kb:'No related knowledge.',
   types:{printer:'Printer', signage:'Digital signage', av:'Meeting-room AV', wifiap:'Wireless AP', upstream:'Upstream'}, syms:{jam:'paper jam', offline:'offline', down:'black screen', hung:'frozen', generic:'general'},
   t_auto:'auto', t_notify_then_act:'notify, then act', t_approval:'after approval', n_major:'Major incidents', major:'Major incident', parent:'Parent incident', children:'Child incidents',
   linked:'Automation found master %a and linked this ticket as its child, so there is one investigation.', progress:'Child progress (written by automation)', eng_step:'Manual step', needed:'Needed an automatic fix: %a', eta:'ETA'}
@@ -247,6 +247,7 @@ function noteBody(n, tk){
     return `<b>${esc(t(head))}</b><div>${esc(t('devices'))}: <span class="mono">${esc((d.devices || []).join(', '))}</span></div><div>${esc(t('held'))}</div>`;
   }
   if (n.kind === 'upstream_recovered') return `<b>${esc(t('k_resolved'))}</b><div>${esc(t('up_rec'))}</div>${(d.needed_fix||[]).length ? `<div>${esc(t('needed', d.needed_fix.join(', ')))}</div>` : ''}`;
+  if (n.kind === 'status_summary') return `<b>📍 ${esc(t('cur'))}</b><div>${esc(L(d.summary))}</div><div style="color:var(--muted);font-size:12px">${esc(t('from'))}: ${(d.sources||[]).map(x => esc(x.where + ' ' + x.ts.slice(11,16))).join(' · ')}</div>`;
   if (n.kind === 'meeting_risk') return `<b>${esc(t('m_risk', d.meeting + ' ' + d.start + ' · ' + d.attendees))}</b>${d.alternative ? `<div>${esc(d.move ? '→ ' : 'Plan B: ')}${esc(d.alternative)}</div>` : ''}<div>Priority → 2 - High</div>`;
   if (n.kind === 'chat_approval') return esc(t('c_appr', act(d.action)));
   if (n.kind === 'linked_master') return esc(t('linked', d.master));
@@ -291,7 +292,7 @@ function renderForm(num){
       <div>${tk.kind === 'master' ? field(t('major'), '<span class="pill p-prog">★ ' + esc(t('major')) + '</span>') : ''}${tk.parent_incident && s.notes.some(n => n.kind === 'linked_master') ? field(t('parent'), `<a href="#${esc(tk.parent_incident)}">${esc(tk.parent_incident)}</a>`) : ''}${tk.kind === 'master' ? field(t('children'), (tk.children||[]).filter(x => { const c = D.tickets.find(z => z.number === x); return c && c.work_notes.some(n => n.kind === 'linked_master' && n.ts <= tsAt()); }).map(x => `<a href="#${esc(x)}">${esc(x)}</a>`).join(', ') || '—') : ''}${field(t('state'), stPill(s.state))}${s.state === 'On Hold' ? field(t('hold'), esc(lang === 'zh' ? '等待批准' : 'Awaiting approval')) : ''}${field(t('group'), esc(tk.assignment_group))}${field(t('assigned'), esc(s.assigned))}
         ${field(t('opened'), esc(fmt(tk.opened_at)), true)}${field(t('resolved'), esc(fmt(s.resolved_at)), true)}${s.state === 'Resolved' ? field(t('close_code'), esc(tk.close_code || 'Solved (Permanently)')) : ''}</div>
     </div>
-    <div class="wide">${field(t('short'), esc(shortDesc(tk)))}${field(t('desc'), `<div class="desc">${esc(descTxt)}</div>`)}${s.state === 'Resolved' && tk.close_notes && tk.state === 'Resolved' ? field(t('close_notes'), esc(tk.close_notes)) : ''}</div>
+    <div class="wide">${(() => { const ss = s.notes.filter(n => n.kind === 'status_summary').pop(); return ss && s.state !== 'Resolved' ? field('📍 ' + t('cur'), esc(L(ss.data.summary)) + `<div style="color:var(--muted);font-size:12px;margin-top:4px">${esc(t('auto_upd'))} ${esc(fmt(ss.ts).slice(11,16))}</div>`) : ''; })()}${field(t('short'), esc(shortDesc(tk)))}${field(t('desc'), `<div class="desc">${esc(descTxt)}</div>`)}${s.state === 'Resolved' && tk.close_notes && tk.state === 'Resolved' ? field(t('close_notes'), esc(tk.close_notes)) : ''}</div>
     <div class="tabs" role="tablist">${['act','auto','kb'].map(k => `<button role="tab" data-tab="${k}" aria-selected="${tab === k}">${esc(t('tab_' + k))}</button>`).join('')}</div>
     <div class="pane">${tab === 'act' ? notes : tab === 'auto' ? autoPane : kbPane}</div>`;
 }

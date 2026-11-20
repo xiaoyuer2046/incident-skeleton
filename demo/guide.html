@@ -242,8 +242,8 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
     <div class="stats">
       <div class="stat rv"><b class="g">4</b><span><span class="en">device crews on one skeleton</span><span class="zh">套设备班底，共用一副骨架</span></span></div>
       <div class="stat rv"><b>6</b><span><span class="en">steps, 4 shared and 2 per crew</span><span class="zh">步流程：4 步共享，2 步各自不同</span></span></div>
-      <div class="stat rv"><b>38</b><span><span class="en">scenarios played by the real engine</span><span class="zh">种场景，由真实引擎跑出</span></span></div>
-      <div class="stat rv"><b>19</b><span><span class="en">guardrail and safety tests, all passing</span><span class="zh">项保护与安全测试，全部通过</span></span></div>
+      <div class="stat rv"><b>41</b><span><span class="en">scenarios played by the real engine</span><span class="zh">种场景，由真实引擎跑出</span></span></div>
+      <div class="stat rv"><b>24</b><span><span class="en">guardrail and safety tests, all passing</span><span class="zh">项保护与安全测试，全部通过</span></span></div>
     </div>
   </div>
 </section>
@@ -270,6 +270,15 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
       </svg>
       <div class="cap"><span class="en">Grey: shared by every device. Orange: supplied by the device crew.</span><span class="zh">灰色：所有设备共用。橙色：由设备班底提供。</span></div>
     </div>
+
+    <div class="tbl rv"><table>
+      <thead><tr><th><span class="en">Layer</span><span class="zh">层</span></th><th><span class="en">Where</span><span class="zh">在哪</span></th><th><span class="en">Size</span><span class="zh">大小</span></th></tr></thead>
+      <tbody>
+        <tr><td><b><span class="en">Skeleton</span><span class="zh">骨架</span></b></td><td class="mono">run_incident.py</td><td><span class="en">~280 lines. Never changes for a new feature.</span><span class="zh">约 280 行。加功能时不改它。</span></td></tr>
+        <tr><td><b><span class="en">Crews × 4</span><span class="zh">班底 × 4</span></b></td><td class="mono">investigate_&lt;type&gt;() · MITIGATE · runbooks.json</td><td><span class="en">~15 code lines each. A fifth device is one more.</span><span class="zh">每套约 15 行代码。第五种设备再加一套即可。</span></td></tr>
+        <tr><td><b><span class="en">Plug-ins</span><span class="zh">插件</span></b></td><td class="mono">skill/remediation/*.py</td><td><span class="en">Patrol, repair, harvest, outage watch, tracker, meetings, KB, chat, notify, AI — around the skeleton, never inside it.</span><span class="zh">巡检、修复、收集、盯盘、追踪、会议、KB、聊天、通知、AI——都在骨架外面，从不改骨架。</span></td></tr>
+        <tr><td><b><span class="en">Policy</span><span class="zh">权限</span></b></td><td class="mono">policy.json</td><td><span class="en">Every permission. People edit it; code never grants one.</span><span class="zh">所有权限。由人修改；代码从不自己授权。</span></td></tr>
+      </tbody></table></div>
 
     <div class="grid g4">
       <div class="card rv"><div class="ico i1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg></div>
@@ -337,7 +346,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Case library</span><span class="zh">病例库</span></div>
     <h2 class="rv"><span class="en">It learns from what<br>your team already knows.</span><span class="zh">它向团队已有的经验学习。</span></h2>
-    <p class="lead rv"><span class="en">On a schedule it reads ServiceNow KB, closed incidents, chat groups and email. Only replies that someone confirmed are kept as fixes. Messages that try to give orders are rejected.</span><span class="zh">它定期去读 ServiceNow KB、历史工单、各个群和邮件。只有被人确认有效的回复，才会收作修法。想下命令的消息一律拦截。</span></p>
+    <p class="lead rv"><span class="en">On a schedule it reads ServiceNow KB, closed incidents, chat groups, email and the shared drive. Only replies that someone confirmed are kept as fixes. Messages that try to give orders are rejected.</span><span class="zh">它定期去读 ServiceNow KB、历史工单、各个群、邮件和公盘。只有被人确认有效的回复，才会收作修法。想下命令的消息一律拦截。</span></p>
     <div class="fig rv">
       <svg viewBox="0 0 1000 380" role="img" aria-label="Case library harvest">
         <g id="harvest"></g>
@@ -375,7 +384,10 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
   <div class="wrap">
     <div class="eyebrow rv"><span class="en">Before the meeting, after the fix, in the chat</span><span class="zh">会前、修后、聊天里</span></div>
     <h2 class="rv"><span class="en">It works where people are.</span><span class="zh">它在人在的地方干活。</span></h2>
-    <div class="grid g3">
+    <div class="grid g4">
+      <div class="card rv"><div class="ico i4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+        <h3><span class="en">Every open ticket, summarized</span><span class="zh">每张未关单都有现状</span></h3>
+        <p><span class="en">It reads work notes, chat and email that mention the ticket, and writes who is on it, the latest news, what it waits for and the ETA, on the ticket itself.</span><span class="zh">它读工单备注、提到这张单的群聊和邮件，把谁在处理、最新进展、在等什么、预计时间写回工单。</span></p></div>
       <div class="card rv"><div class="ico i5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
         <h3><span class="en">Pre-meeting check</span><span class="zh">会前体检</span></h3>
         <p><span class="en">Rooms are checked 30 minutes before a meeting. A broken room gets a High ticket, the organizer is told, and a free healthy room is named as plan B; 15 minutes out, moving is recommended.</span><span class="zh">会前 30 分钟检查房间。房间坏了：工单提为高优先级，通知组织者，给出空闲且正常的备选房间；离开会 15 分钟还没好，就建议换房。</span></p></div>
@@ -430,7 +442,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
     <div class="grid g3">
       <div class="card rv"><div class="ico i1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></div><h3>Spec</h3><p><span class="en">SPEC.md defined the skeleton before any code. Every crew is checked against it.</span><span class="zh">SPEC.md 在写代码前定下骨架，每套班底都对照它。</span></p></div>
       <div class="card rv"><div class="ico i2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v10l-8 4-8-4V7z"/><path d="M12 12l8-5M12 12v9M12 12L4 7"/></svg></div><h3>Skill</h3><p><span class="en">skill/SKILL.md tells a Kiro agent how to run the crew and what it must never do.</span><span class="zh">skill/SKILL.md 告诉 Kiro 代理怎么用、哪些事绝不能做。</span></p></div>
-      <div class="card rv"><div class="ico i4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></div><h3>MCP</h3><p><span class="en">A stdio MCP server: route to a support group, recall a fix, record a case.</span><span class="zh">一个 stdio MCP 服务：查支持组、找修法、记病例。</span></p></div>
+      <div class="card rv"><div class="ico i4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></div><h3>MCP</h3><p><span class="en">A Kiro agent reads the crew's own data: status, open tickets, ranked fixes. Read-only for approvals.</span><span class="zh">Kiro 代理直接读值班员的同一份数据：进展、未关单、排好序的修法。审批类操作只读。</span></p></div>
       <div class="card rv"><div class="ico i3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Hook</h3><p><span class="en">A PostToolUse hook audits every postmortem. Non-blocking.</span><span class="zh">PostToolUse hook 审计每份复盘，不阻断。</span></p></div>
       <div class="card rv"><div class="ico i5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3><span class="en">Scheduled job</span><span class="zh">定时任务</span></h3><p><span class="en">A Kiro Crew command job patrols every 10 minutes, at no AI cost, and prints only new notifications.</span><span class="zh">Kiro Crew 命令型任务每 10 分钟巡检一次，不花 AI 额度，只输出新通知。</span></p></div>
       <div class="card rv"><div class="ico i6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div><h3><span class="en">Vibe-coded</span><span class="zh">对话式开发</span></h3><p><span class="en">The engine, the demo and this guide were written by talking with Kiro.</span><span class="zh">引擎、演示和这份说明书都是和 Kiro 对话写出来的。</span></p></div>
@@ -601,7 +613,7 @@ function arrow(parent, x1, y1, x2, y2, color){ el('line', {x1, y1, x2, y2, strok
 /* ---------- harvest ---------- */
 (() => {
   const g = document.getElementById('harvest');
-  const S = [['ServiceNow KB','ServiceNow KB'],['Closed incidents','历史工单'],['Our resolved tickets','我们的已结工单'],['Teams · Slack · WeChat Work','Teams · Slack · 企业微信'],['Email','邮件']];
+  const S = [['ServiceNow KB','ServiceNow KB'],['Closed incidents','历史工单'],['Teams · Slack · WeChat Work','Teams · Slack · 企业微信'],['Email','邮件'],['Shared drive','公盘']];
   S.forEach((s, i) => {
     const y = 20 + i * 70;
     box(g, 20, y, 250, 52, '#fff', '#d2d2d7', 14);

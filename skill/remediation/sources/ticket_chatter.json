@@ -1,0 +1,12 @@
+[
+ {"ts": "2026-11-21T09:56:00", "platform": "teams", "where": "Teams · #network-oncall", "author": "Zhang Min (Network)",
+  "text": "On site at 3F east for AP-3F-12 (INC0010002). Swapping the PoE injector now."},
+ {"ts": "2026-11-21T10:05:00", "platform": "email", "where": "Email: RE: AP-3F-12 RMA", "author": "tac@aruba-vendor.example",
+  "text": "RMA approved for AP-3F-12 (serial CNK7Q2). Replacement ships by 14:00 today."},
+ {"ts": "2026-11-21T10:44:00", "platform": "teams", "where": "Teams · #network-oncall", "author": "Zhang Min (Network)",
+  "text": "AP-3F-12 dropped again after the injector swap, so it is the AP itself. Waiting for the RMA unit, ETA 14:00. INC0010002"},
+ {"ts": "2026-11-21T10:56:00", "platform": "teams", "where": "Teams · #av-support", "author": "Chen Wei (AV lead)",
+  "text": "Looking at 2F-201 now. Vendor note says firmware 2.3 corrupts the controller profile; I will approve the reset after I check the panel."},
+ {"ts": "2026-11-21T11:08:00", "platform": "teams", "where": "Teams · #print", "author": "Liu Yang (Print)",
+  "text": "PRN-5F-02 jam is a torn label sheet stuck in the fuser. Clearing it by hand, about 10 minutes."}
+]

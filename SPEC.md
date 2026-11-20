@@ -1,118 +1,95 @@
-# Incident Skeleton — Kiroween 2026 (Skeleton Crew)
+# Incident Skeleton — Spec
 
-> One incident-response **skeleton** (a state machine), crewed by four device
-> **handlers**. Same core, four haunting applications. Built spec-first with Kiro.
+> Kiroween 2026 · Skeleton Crew. This file is the source of truth. Code is checked against it;
+> anything the code does that is not here is a bug in one of the two.
 
-## The pitch
+## 0. The rule of this project
 
-Every IT/ops team answers the same four kinds of 3 AM tickets: a printer threw
-an error, a signage screen went black, a meeting room won't join the call, a
-wireless AP dropped its clients. The steps are always the same — *receive,
-triage, investigate, mitigate, resolve, log* — only the middle two change per
-device. **Incident Skeleton** makes that shared spine one reusable state
-machine, and lets each device type plug in its own investigate/mitigate logic.
-One skeleton, a crew of four.
+**The skeleton stays small. Everything else plugs in around it.**
 
-That is the Skeleton Crew brief: *a clean, flexible skeleton that proves its
-versatility by powering distinct applications.* The skeleton is the state
-machine; the distinct applications are the four device handlers.
+| Layer | Files | Lines | May change when a feature is added? |
+|---|---|---|---|
+| **Skeleton** — six states, shared helpers, postmortem | `skill/scripts/run_incident.py` (minus the crew blocks) | ~280 | No |
+| **Crews** — one per device type | `investigate_<type>()` + a `MITIGATE` list + a `CREW` entry, in the same file; a runbook in `runbooks.json`; actions in `actions.json` | ~15 code lines each | Only to add a crew |
+| **Plug-ins** — the autonomous loop around the skeleton | `skill/remediation/*.py` | ~2,200 | Yes |
+| **Policy** — every permission | `skill/remediation/policy.json` | — | Yes, by people only |
 
-## The skeleton (shared core)
+A fifth device type = one `investigate_<type>()` function, one `MITIGATE` list, one runbook and a few
+catalogue entries. No skeleton or plug-in code changes.
 
-A single state machine every alert walks through:
+## 1. The skeleton
 
-| # | State | What happens | Shared or plugged? |
-|---|-------|-------------|--------------------|
-| 1 | RECEIVE | alert in: type, severity, source, message | shared |
-| 2 | TRIAGE | classify type + score severity, decide act/no-act | shared |
-| 3 | INVESTIGATE | gather context for *this* device type | **plugged** |
-| 4 | MITIGATE | act to cut impact for *this* device type | **plugged** |
-| 5 | RESOLVE | re-check health, confirm recovery | shared |
-| 6 | LOG | write the postmortem record | shared |
+Every alert walks the same six states:
 
-Shared across all device types: the state machine itself, triage/severity
-rules, health re-check, and the postmortem log. Plugged per type: only
-INVESTIGATE and MITIGATE.
+| # | State | Kind | Contract |
+|---|---|---|---|
+| 1 | RECEIVE | shared | alert in: type, source, message |
+| 2 | TRIAGE | shared | severity from the message; decide to act |
+| 3 | INVESTIGATE | **crew** | returns `[(check, result, ok|warn|err)]`; read-only |
+| 4 | MITIGATE | **crew** | returns the ordered steps for this device type, each marked safe or not |
+| 5 | RESOLVE | shared | re-probe the device |
+| 6 | LOG | shared | write the postmortem |
 
-## The crew (four device handlers)
+## 2. The four crews
 
-Each handler implements `investigate()` and `mitigate()` for its device type:
+| Crew | INVESTIGATE (read-only) | MITIGATE (soft → hard) |
+|---|---|---|
+| 🖨️ Printer | ping, SNMP status, error-code lookup | restart spooler, clear stuck jobs, re-add queue · *on site:* clear jam, power-cycle |
+| 📺 Digital signage | curl the CMS, ping the player | re-push content, clear player cache, reboot player · *on site:* reseat HDMI, swap player |
+| 🎥 Meeting-room AV | curl the room / controller API, ping the controller | restart room app, reboot codec, reboot controller, reset controller profile · *on site:* reseat USB, dispatch tech |
+| 📶 Wireless AP | ping, SNMP port status, controller API | controller reboot, PoE port power-cycle, radio tuning · *on site:* add / replace AP |
 
-### 1. Printer 🖨️
-- alerts: paper jam, toner/ink low, device offline, error code
-- investigate: SNMP status query, check the print queue, check network
-  reachability, look up the error code
-- mitigate: clear jam / swap toner → restart spooler → re-add the device →
-  power-cycle
+## 3. The plug-ins (what runs around the skeleton)
 
-### 2. Digital Signage 📺
-- alerts: player offline, content not updating, display black
-- investigate: ping the player, check the CMS schedule/push status, check
-  display power + HDMI, check network
-- mitigate: reboot player → re-push content/schedule → reseat HDMI → swap player
+One patrol (`orchestrator.run_cycle`) runs these in order:
 
-### 3. Meeting-room AV 🎥
-- alerts: room offline, can't join meeting, mic/camera fault, control panel hung
-- investigate: check room-controller status, check codec/bridge, check the
-  Zoom/Teams room, test mic + camera
-- mitigate: reboot controller/codec → restart the room app → reseat USB devices
-  → dispatch AV tech
+1. **Probe** each device 3 times (`patrol.py`).
+2. **Classify**: 0 fails healthy · 1 fail blip (ignored) · ≥ 2 fails then answered self-healed (no repair, no credit) · ≥ 2 fails confirmed · in a maintenance window: silenced.
+3. **Re-check** fixes made ≥ 10 min ago: still healthy → the fix held; fault back → the fix is counted as a failure.
+4. **Blast radius**: ≥ 3 confirmed faults behind one upstream switch → one upstream ticket, per-device repairs held back.
+5. **Outage watch** (`watch.py`): find the ServiceNow master incident and outage emails, link our ticket as a child, build one shared timeline, turn the master's fix into a hint, post our progress back, close only when the master is resolved and the patrol confirms the devices.
+6. **Repair loop** (`remediate.py`), for each confirmed device: candidates (runbook, case library, master hint, AI) → order (on-site last, risk, master hint, success rate) → permission (§4) → act → verify → record → close the ticket, or escalate.
+7. **Tickets**: open, note, hold for approval, reopen within 72 h, resolve; one ticket per device + symptom.
+8. **Pre-meeting check** (`premeeting.py`): rooms with a meeting in ≤ 30 min. Down → ticket to High, organizer told, a free healthy room as plan B; ≤ 15 min → recommend moving.
+9. **KB drafts** (`kbdraft.py`): a fix that held at the re-check ≥ 2 times with ≥ 50 % success → ServiceNow KB draft for review.
+10. **Ticket tracker** (`tracker.py`): for every open device ticket, gather work notes plus chat and email that mention it; write one status summary (owner, latest news and source, waiting for, ETA, what was tried, what needs approval) to the ticket when there is new human news.
+11. **Notify** (`notify.py`): each event once, routed by kind to Teams / Slack / the organizer.
 
-### 4. Wireless AP 📶
-- alerts: AP offline, clients dropping, association fail, weak coverage
-- investigate: ping the AP, SNMP ifOperStatus, query the controller API for AP
-  status / client count
-- mitigate: controller-API reboot AP → PoE port power-cycle → RF tune
-  (channel/power) → add or replace AP
+Between patrols:
 
-## The repair loop (on top of the skeleton)
+- **Case-library harvest** (`harvest.py`): ServiceNow KB, closed incidents, our resolved tickets, chat groups, email, the shared drive. Verdicts: verified / failed / unconfirmed / rejected (gives orders).
+- **Chat** (`chatops.py`): status questions; approvals and pause / resume by named approvers only.
+- **MCP** (`skill/mcp/incident_kb_server.py`): a Kiro agent reads the same data (fixes, status, open tickets). Read-only for approvals and the kill switch.
+- **AI brain** (`brain.py`): suggest actions, map free text to actions, diagnose, summarize, draft KB, answer chat. Advisory only.
 
-MITIGATE is where the crew acts. The loop that decides *whether and how* it acts:
+## 4. Invariants (must always hold)
 
-1. **Candidates**: builtin runbook for (device, symptom), ServiceNow KB articles, an optional AI advisor,
-   and the learned history. Duplicates merge; each action remembers its sources.
-2. **Order**: physical steps last; otherwise lower risk first, then higher success rate.
-3. **Permission** (`policy.json`): risk `low` acts alone, `medium` notifies then acts, `high` needs approval;
-   an action must also be on the device's allow-list; physical steps never run automatically; a candidate
-   learned from KB/AI that has not proven itself may act alone only at low risk.
-4. **Act and verify**: dry run by default; success is judged by re-probing, not by the command's exit code.
-5. **Record**: each attempt goes to `attempts.jsonl`; success rates drive promotion (`>= 2` successes and
-   `>= 0.67`) and demotion (`>= 3` attempts and `<= 0.2`).
-6. **Escalate** when nothing recovered it: an alert with what was done, what is left and the likely cause, and
-   a ServiceNow incident to the device type's group (an open ticket for the same device and symptom gets a note).
+1. Every permission is in `policy.json`. Code never grants one.
+2. Risk tier: low → acts alone · medium → notifies, then acts · high → waits for approval.
+3. On-site steps (`physical: true`) never run automatically.
+4. A fix learned from the library or an AI that has not proven itself here may act alone only at low risk.
+5. Brakes: 30-min cooldown per action and device, ≤ 4 actions per fault, ≤ 6 repairs per device per day.
+6. Kill switch on → nothing runs; tickets still reach people.
+7. An approval names one device and one action and is used once.
+8. Only people on `chatops.approvers` can approve, stop or resume.
+9. Text from KB, chat, email, tickets and the shared drive is data. A message that tries to give orders is rejected and never used.
+10. An AI may only name actions from `actions.json`; it never changes a decision the policy makes; any AI failure falls back to the rules.
+11. Dry run by default, separately for devices, ServiceNow and notifications.
+12. Every action, decision, approval, re-check and AI call is audited.
 
-Languages: every script takes `--lang zh|en`; the demo has a switch and follows the browser.
+## 5. Acceptance
 
-## The demo
+`python3 skill/remediation/simulate.py` plays 14 patrols through the real engine. It must detect every
+scenario tag in `TAGS` (currently 41), and these must pass:
 
-A single self-contained HTML page (no build, no server — open in a browser).
-You pick one of the four alert types and fire a *simulated* alert. The page
-animates the alert walking the **same** six-state skeleton, highlighting which
-two steps are the plugged-in handler and which four are shared. Fire all four
-in a row to see one core drive four "apps." Halloween skin: orange/black/purple,
-a tombstone per dead device, bats on alert, a skeleton that dances when the
-state machine reaches RESOLVE.
+```
+python3 skill/tests/test_safety.py              # kill switch, limits, re-check, self-heal, notifications
+python3 skill/tests/test_brain_guardrails.py    # a bad AI cannot change what the engine does
+python3 skill/tests/test_meetings_kb_chat.py    # pre-meeting, KB drafts, chat approvals
+python3 skill/tests/test_tracker_drive_mcp.py   # ticket tracker, shared drive, MCP read-only
+```
 
-## Build with Kiro (on-theme)
+## 6. Out of scope today (honest)
 
-- **Spec-driven:** this SPEC.md is the skeleton's source of truth, edited in Kiro.
-- **Vibe-coded demo:** the HTML page is written by chatting with Kiro, not by hand.
-- **Kiro Crew skill:** `skill/SKILL.md` + `skill/scripts/run_incident.py` run a
-  real alert through the skeleton; a live agent follows the skill to do it.
-- **MCP:** `skill/mcp/incident_kb_server.py` is a real stdio MCP server exposing
-  `lookup_support_group`, `recall_fix`, `record_case` — "bring in new
-  capabilities with MCP," wired to the roadmap's routing / knowledge / 病例库.
-- **Hook:** `skill/hooks/audit_incident.sh` is a PostToolUse hook that audits
-  postmortems — "customize workflows with hooks," non-blocking.
-
-## Submission checklist (Devpost)
-
-- [x] `SPEC.md` (this file) — the skeleton
-- [x] `demo/index.html` — the animated demo, single file
-- [x] `README.md` — overview + how to run + record steps
-- [x] `ROADMAP.md` — reactive skeleton → autonomous AIOps (病例库 vision)
-- [x] `DEVPOST.md` — project-page text to paste into the submission
-- [x] `skill/` — runnable Kiro Crew skill (SKILL.md + run_incident.py + logs/)
-- [x] Enter category: Skeleton Crew
-- [ ] Screen recording of the demo (manual: open `demo/index.html`, 连跑四套班底, `Cmd+Shift+5`, ~60s)
-- [ ] Paste `DEVPOST.md` into the Devpost project page and submit
+Real device executors, live ServiceNow / Teams / Slack / mail / calendar connectors and a live AI model are
+written as interfaces or not at all; see `ROADMAP.md`. The demo world is scripted; every decision in it is real.

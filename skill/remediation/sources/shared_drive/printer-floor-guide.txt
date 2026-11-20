@@ -1,0 +1,8 @@
+Title: Printer floor guide
+Owner: Print Services
+Status: Draft
+Updated: 2026-11-02
+
+For 13.20 jams with an empty tray, clear the stuck print jobs first, then check the fuser door.
+
+If the printer stays offline after that, power-cycle the printer at the wall socket.

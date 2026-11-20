@@ -71,20 +71,20 @@ python3 <skill-dir>/scripts/run_incident.py --type <printer|signage|av|wifiap> \
   controller API for AP status / client count. MITIGATE: controller-API reboot
   AP → PoE port power-cycle → RF tune (channel/power) → add/replace AP.
 
-## MCP tools (bring in new capabilities)
+## MCP tools (same data as the crew)
 
-An agent running this skill can call the `incident-kb` MCP server
-(`mcp/incident_kb_server.py`, stdio JSON-RPC) mid-flow:
+The `incident-skeleton` MCP server (`mcp/incident_kb_server.py`, stdio JSON-RPC) reads the engine's own data
+directory (`remediation/data`, or `INCIDENT_DATA_DIR`), so what you see is what the crew sees:
 
-- TRIAGE → `lookup_support_group(device_type)` to route the incident to the
-  right IT group (ServiceNow assignment_group).
-- INVESTIGATE/MITIGATE → `recall_fix(symptom)` to pull a known fix from the KB
-  before guessing.
-- LOG → `record_case(...)` to append the confirmed case to the 病例库
-  (`mcp/case_history.jsonl`).
+- `crew_status(question)` — "what's wrong with 2F-201?", "floor 4 Wi-Fi ETA?", "what's broken?"
+- `list_open_tickets()` — open tickets with the tracker's status summary (owner, latest news, ETA, waiting for)
+- `recall_fix(device_type, symptom)` — ranked fixes from the runbook, the verified case library and local
+  success rates, each with its permission tier
+- `lookup_support_group(device_type)` — from `policy.json`
+- `record_case(...)` — add a confirmed case to the history
 
-Register it under Customize → Connections → MCP Servers:
-command `python3`, args `<skill-dir>/mcp/incident_kb_server.py`.
+It is read-only for approvals and the kill switch: those need a named person (chat or CLI).
+Register it under Customize → Connections → MCP Servers: command `python3`, args `<skill-dir>/mcp/incident_kb_server.py`.
 
 ## Hook (customize the workflow)
 

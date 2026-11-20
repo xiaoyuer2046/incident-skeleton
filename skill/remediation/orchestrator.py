@@ -131,6 +131,8 @@ def run_cycle(ctx, devices, probes, faults, approvals=None, windows=(), quiet=Tr
     meetings, m_msgs = premeeting.run(ctx, rows, results, devices)
     rm.save_json(os.path.join(ctx.dir, "premeeting_last.json"), meetings)
     kb, kb_msgs = kbdraft.run(ctx)
+    import tracker
+    tracking = tracker.run(ctx)
     notes = notify.run(ctx, rows, events, results, board, rechecks, extra=m_msgs + kb_msgs)
     return {"rows": rows, "events": events, "results": results, "board": board, "rechecks": rechecks, "notifications": notes,
-            "meetings": meetings, "kb": kb}
+            "meetings": meetings, "kb": kb, "tracking": tracking}

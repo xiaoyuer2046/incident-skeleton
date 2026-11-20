@@ -124,7 +124,8 @@ TAGS = ["quiet", "blip", "library_reordered", "notify", "library_grows", "new_kn
         "engineer_learned", "injection", "reopened", "demoted",
         "self_healed", "recheck_held", "regressed", "kill_switch", "notified",
         "meeting_ready", "meeting_saved", "meeting_at_risk", "room_moved", "kb_drafted",
-        "chat_status", "chat_denied", "chat_approved", "chat_resume"]
+        "chat_status", "chat_denied", "chat_approved", "chat_resume",
+        "drive_harvested", "ticket_tracked", "eta_found"]
 
 
 def detect_tags(cyc, library, prev_ts):
@@ -146,6 +147,14 @@ def detect_tags(cyc, library, prev_ts):
             tags.add("room_moved" if m.get("action") == "move" else "meeting_at_risk")
     if cyc.get("kb"):
         tags.add("kb_drafted")
+    lib_ix = {e["id"]: e for e in library.get("entries", [])}
+    if cyc.get("harvest") and any(s["type"] == "drive" for i in cyc["harvest"]["new"] for s in lib_ix.get(i, {}).get("sources", [])):
+        tags.add("drive_harvested")
+    for x in cyc.get("tracking", []):
+        if x["changed"] and x["sources"]:
+            tags.add("ticket_tracked")
+            if x["eta"]:
+                tags.add("eta_found")
     for c in cyc.get("chat", []):
         if c["intent"] == "status":
             tags.add("chat_status")
@@ -288,7 +297,7 @@ def main():
                "library_size": len(library.get("entries", [])), "library_verified": sum(1 for e in library.get("entries", []) if e.get("status") == "verified"),
                "boards": json.loads(json.dumps(list(rep["board"].values()), ensure_ascii=False))}
         cyc["rechecks"], cyc["notifications"] = rep["rechecks"], rep["notifications"]
-        cyc["meetings"], cyc["kb"] = rep["meetings"], rep["kb"]
+        cyc["meetings"], cyc["kb"], cyc["tracking"] = rep["meetings"], rep["kb"], rep["tracking"]
         cyc["chat"] = []
         for who, text in spec.get("chat", []):
             r = chatops.handle(ctx, who, text)
