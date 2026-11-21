@@ -76,8 +76,8 @@ One cause, one parent, two applications.
 - **Steering:** `.kiro/steering/incident-skeleton.md` keeps the safety order and the "narrow only" rule in every session.
 - **Six agents:** `incident-crew-lead`, `printer-crew`, `signage-crew`, `av-crew`, `wifiap-crew` and `servicedesk-triage`, defined in `.kiro/agents/`. In a real recorded run (`docs/agent-run-v4.md`), the crew lead read the shared state through MCP and handed a Wi-Fi AP fault to `wifiap-crew` as a sub-agent, which ranked the fixes.
 - **MCP:** a local incident KB server that agents use to recall fixes and look up support groups.
-- **Hooks:** `.kiro/hooks/` is configured to run the v4 tests whenever the runtime is saved, audit postmortems after tool use, and remind the agent that permission files belong to people. These are configuration files in Kiro's documented format; we have not yet recorded them firing.
-- **Power:** `power-incident-skeleton/` packages the MCP server and a triage skill as a Kiro power, in Kiro's documented format. We have not yet recorded an install.
+- **Hooks:** `.kiro/hooks/` is configured to run the v4 tests whenever the runtime is saved, audit postmortems after tool use, and remind the agent that permission files belong to people. In Kiro IDE 1.5.11 the tests-on-save and postmortem-audit hooks fired when the agent saved `skill/skeleton_v4/plugins.py` (`docs/evidence/kiro-ide-hooks-triggered.png`). The permission-guard hook is configured but not yet shown firing.
+- **Power:** `power-incident-skeleton/` packages the MCP server and a triage skill as a Kiro power, in Kiro's documented format. It was imported from a folder into Kiro IDE 1.5.11; `incident-kb` connected with 5 tools and a dry-run chat about a meeting room called `recall_fix` (`docs/evidence/kiro-ide-mcp-connected.png`, `docs/evidence/kiro-ide-power-dryrun-chat.png`). All data is simulated.
 - **Scheduled jobs:** periodic patrol and learning cycles run as Kiro Crew cron jobs.
 - **Cross-platform hook script:** `skill/hooks/audit_incident.py` runs on Windows, macOS and Linux, next to the older shell hook.
 
