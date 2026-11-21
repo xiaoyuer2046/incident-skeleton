@@ -20,6 +20,7 @@ Everything runs as a dry run on simulated data.
 - R3.3 A report whose text gives orders is dropped and never followed.
 - R3.4 An official status page or vendor MCP report makes it "confirmed"; the v4 gate then links and holds as before.
 - R3.5 On "likely", affected people are told at once, with the sources, and local work continues. Optional holds are set by the owner (`likely_holds`).
+- R3.6 A report with no site, title or valid time is dropped as malformed, never raised. A time without a zone is read as UTC. Subdomains of one site count once.
 
 ## R4 Permission growth
 - R4.1 Learning still narrows by itself (v4).
@@ -28,6 +29,8 @@ Everything runs as a dry run on simulated data.
 - R4.4 Physical actions and actions in `never_widen` (identity and access) are refused by rule.
 - R4.5 A grant expires after `grant_days`. Every proposal, decision and revoke appends a version.
 - R4.6 Nothing writes `policy.json`, `actions.json` or `approvals.json`. A grant is passed to the v1 repair loop as its `approvals` map for one call.
+- R4.7 An expired grant is marked expired; learning may propose it again and a person decides again. A declined or revoked grant is not proposed again automatically. Only an active grant can be revoked. An unknown proposal id is refused, not raised.
+- R4.8 In this simulation the approver is a name string. A real deployment must take it from an authenticated sign-in.
 
 ## R5 Safe operation
 - R5.1 While a room is in a meeting that still works, risky actions (`defer_risks`) wait until the meeting ends; the ticket is on hold.

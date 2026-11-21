@@ -33,7 +33,7 @@ v5 is current. It adds `skill/skeleton_v5/` and reuses the v4 runtime and adapte
 | Agents / 代理 | `.kiro/agents/`, run record `docs/agent-run-v4.md` |
 | Kiro power | `power-incident-skeleton/` |
 | Skill / 技能说明 | `skill/SKILL.md` |
-| Submission / 提交 | `DEVPOST-v4.md` |
+| Submission / 提交 | `DEVPOST.md` (renamed from `DEVPOST-v4.md` in v5 / v5 起改名) |
 | Wrap-up note / 收尾说明 | `docs/v4-收尾说明.md` |
 | Recording script / 录屏脚本 | `docs/提交清单.md` |
 

@@ -1,6 +1,7 @@
 """Incident Skeleton v4: one shared six-step runtime, two apps, three plug-in slots, tiered learning.
 
-New files only. v1, v2, v3 and v3.1 stay unchanged; this package imports and calls them.
+This package imports and calls the libraries kept from earlier versions (listed in VERSIONS.md); the old versions
+themselves were removed from the tree and remain in the Git history.
 """
 import os
 import sys

@@ -69,8 +69,8 @@ Learning reads sources by tier: A vendor MCP and official status → B company s
 12. Every action, decision, approval, re-check and AI call is audited.
 13. App 2: requests for admin rights or that give orders are never automated; a report about a known incident never starts a second repair.
 14. The skeleton runs exactly six steps in fixed order. Plug-ins attach only to the three named slots.
-15. Learning may narrow permission and never widen it. A full run leaves every `policy.json`, `actions.json` and `app.json` byte-identical.
-16. Tier C and D sources need corroboration from tier A or B. A public report never promotes or demotes a method.
+15. Learning narrows permission on its own and never widens it on its own. Since v5 it may *propose* a standing approval for one approval-tier action, crew and symptom; only a listed approver grants it, and it expires. A full run leaves every `policy.json`, `actions.json` and `app.json` byte-identical.
+16. Tier C and D sources need corroboration from tier A or B. A public report never promotes or demotes a method. Since v5, enough independent public reports can mark an outage *likely*; that adds a note and tells people, and changes no permission.
 17. Safety rejection runs before any plug-in in TRIAGE.
 
 ## 5. Acceptance

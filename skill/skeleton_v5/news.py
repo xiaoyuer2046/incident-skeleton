@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from . import HERE
@@ -27,11 +27,21 @@ LEVEL = {
     "none": {"en": "no reports", "zh": "没有报道"},
 }
 DROP = {"injection": {"en": "gives orders, ignored", "zh": "文本在下命令，已忽略"}, "out_of_window": {"en": "too old", "zh": "太旧"},
-        "same_site": {"en": "same website again", "zh": "同一个网站"}, "repost": {"en": "repost of a headline already counted", "zh": "转载，已算过"}}
+        "same_site": {"en": "same website again", "zh": "同一个网站"}, "repost": {"en": "repost of a headline already counted", "zh": "转载，已算过"},
+        "malformed": {"en": "missing site, title or time", "zh": "缺少网站、标题或时间"}}
 
 
 def _t(ts: str) -> datetime:
-    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    """Parse an ISO time. A time without a zone is read as UTC."""
+    d = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+
+
+def site(domain: str) -> str:
+    """One vote per site: news.a.example and a.example are the same site. Simple last-two-labels rule; a real
+    deployment should use the public-suffix list (so bbc.co.uk is one site, not co.uk)."""
+    parts = [p for p in (domain or "").lower().strip(".").split(".") if p]
+    return ".".join(parts[-2:])
 
 
 def _norm(title: str) -> str:
@@ -50,23 +60,29 @@ def consensus(reports: List[Dict[str, Any]], provider: str, service: str, now: s
     counted: List[Dict[str, Any]] = []
     dropped: List[Dict[str, Any]] = []
     sites, titles = set(), set()
-    for rep in sorted(reports, key=lambda r: r.get("published_at", "")):
+    for rep in sorted(reports, key=lambda r: str(r.get("published_at", ""))):
         if rep.get("provider") != provider or rep.get("service") != service:
             continue
         row = {k: rep.get(k) for k in ("id", "domain", "title", "url", "published_at")}
         why: Optional[str] = None
-        if unsafe({"text": rep.get("title", "") + " " + rep.get("text", "")}):
+        try:
+            when = _t(rep["published_at"]) if isinstance(rep.get("published_at"), str) else None
+        except ValueError:
+            when = None
+        if not (when and isinstance(rep.get("domain"), str) and rep["domain"].strip() and isinstance(rep.get("title"), str)):
+            why = "malformed"
+        elif unsafe({"text": rep.get("title", "") + " " + str(rep.get("text") or "")}):
             why = "injection"
-        elif not lo <= _t(rep["published_at"]) <= hi:
+        elif not lo <= when <= hi:
             why = "out_of_window"
-        elif rep["domain"] in sites:
+        elif site(rep["domain"]) in sites:
             why = "same_site"
         elif _norm(rep["title"]) in titles:
             why = "repost"
         if why:
             dropped.append(dict(row, why=why))
             continue
-        sites.add(rep["domain"])
+        sites.add(site(rep["domain"]))
         titles.add(_norm(rep["title"]))
         counted.append(row)
     need = rule["min_independent_sources"]

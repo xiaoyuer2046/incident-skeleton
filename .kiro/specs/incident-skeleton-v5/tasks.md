@@ -10,3 +10,4 @@
 - [x] 8. Dry-run morning with numbers, EN and 中文 (R6)
 - [x] 9. Tests: `skill/tests/test_skeleton_v5.py` (27 tests)
 - [x] 10. Demo page for v5: `demo/skeleton-v5.html`, data from `skill/skeleton_v5/simulate.py`
+- [x] 11. Review fixes: expired grants re-proposable, unknown ids and inactive revokes refused, malformed or zone-less news handled, subdomains count as one site, docs aligned with v5, hook renamed version-neutral (33 v5 tests)

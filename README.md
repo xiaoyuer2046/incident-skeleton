@@ -61,7 +61,7 @@ Text that gives orders is blocked. A vendor advisory that calls a fix harmful pa
 |---|---|---|
 | Access layer | ServiceNow, AP controller, meeting-room manager, signage CMS, print manager as connectors with scopes. A new system is one JSON entry. Secrets are named, never read. A system that does not answer is skipped and the admin is told. | `skill/skeleton_v5/connectors.py`, `connectors_v5.json` |
 | Merge | Items about the same service in two or more systems, or the same device, become one parent. | `connectors.py` |
-| News check | 3+ independent sites reporting the same outage = **likely vendor outage**, even with no official word. One vote per site, reposts once, old reports ignored, text that gives orders dropped. Official status = confirmed. | `skill/skeleton_v5/news.py` |
+| News check | 3+ independent sites reporting the same outage = **likely vendor outage**, even with no official word. One vote per site, reposts once, old reports ignored, text that gives orders dropped. Official status = confirmed. Low-risk local steps continue while it is only likely; the owner can list steps to hold (`likely_holds`). | `skill/skeleton_v5/news.py` |
 | Tell people | On "likely", affected people get the sources at once. Local work continues. | `run.py` |
 | Permission growth | After enough confirmed successes, learning **proposes** a standing approval for one action, crew and symptom. Only a listed approver grants it; it expires in 30 days and can be revoked. Identity and on-site actions are refused by rule. No permission file is written. | `skill/skeleton_v5/permissions.py` |
 | Meeting window | A room in a meeting that still works: risky steps wait until it ends. | `plugins_v5.py`, `adapters_v5.py` |
@@ -73,12 +73,12 @@ In the simulated morning: four independent sites report Teams sign-in failing at
 
 | Kiro feature | Where | Evidence |
 |---|---|---|
-| Spec | `.kiro/specs/incident-skeleton-v4/` (requirements, design, tasks) | the v4 code and tests follow it |
+| Spec | `.kiro/specs/incident-skeleton-v4/`, `.kiro/specs/incident-skeleton-v5/` (requirements, design, tasks) | the v4 and v5 code and tests follow them |
 | Steering | `.kiro/steering/incident-skeleton.md` | loaded by every agent in `.kiro/agents/` |
-| Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews | **ran**: `docs/agent-run-v4.md` records the crew lead handing a fault to `wifiap-crew` |
+| Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews | **ran once**: `docs/agent-run-v4.md` records one handoff, the crew lead giving a fault to `wifiap-crew` |
 | MCP | `skill/mcp/incident_kb_server.py` | **ran**: both agents in that record called it |
-| Scheduled job | Kiro Crew cron, every 10 minutes | **ran** on the build machine (dry-run patrol) |
-| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) | **ran** in Kiro IDE 1.5.11: tests on save and postmortem audit fired on an agent file save (`docs/evidence/kiro-ide-hooks-triggered.png`); permission guard not yet shown firing |
+| Scheduled job | Kiro Crew cron, every 10 minutes | ran on the build machine (dry-run patrol); no log in the repo |
+| Hooks | `.kiro/hooks/` (skeleton tests on save, postmortem audit, permission guard) | **fired** in Kiro IDE 1.5.11: tests on save (then named "Skeleton v4 tests on save") and postmortem audit fired on an agent file save (`docs/evidence/kiro-ide-hooks-triggered.png`); the screenshot does not show test output; permission guard not yet shown firing |
 | Power | `power-incident-skeleton/` | **ran** in Kiro IDE 1.5.11: imported from a folder, `incident-kb` connected with 5 tools, and a dry-run chat called `recall_fix` (`docs/evidence/kiro-ide-mcp-connected.png`, `docs/evidence/kiro-ide-power-dryrun-chat.png`) |
 
 ## How the code fits
