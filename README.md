@@ -24,7 +24,8 @@ Both adapters call the same `skeleton.run()`. A third app is one more adapter; `
 
 1. Open **`demo/guide-v4.html`**: the product guide (EN / 中文, Day / Night / Auto).
 2. Open **`demo/skeleton-v4.html`**: both apps running through the one runtime, step by step.
-3. Read the four files below. You can ignore the rest of `skill/` on a first look.
+3. Open **`demo/skeleton-v5.html`**: v5 on the same runtime: connected systems, the news check, permission growth, numbers.
+4. Read the four files below. You can ignore the rest of `skill/` on a first look.
 
 | Read | File | Lines | What you will see |
 |---|---|---|---|

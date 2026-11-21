@@ -13,6 +13,7 @@ v5 is current. It adds `skill/skeleton_v5/` and reuses the v4 runtime and adapte
 | Permission growth / 权限进化 | `skill/skeleton_v5/permissions.py` |
 | Plug-ins and adapters / 插件与适配器 | `skill/skeleton_v5/plugins_v5.py`, `adapters_v5.py` |
 | Dry-run morning / 演练 | `skill/skeleton_v5/run.py` |
+| Demo / 演示 | `demo/skeleton-v5.html` (data: `skill/skeleton_v5/simulate.py` → `demo/data/skeleton-v5.js`) |
 | Spec / 规格 | `.kiro/specs/incident-skeleton-v5/` |
 | Tests / 测试 | `skill/tests/test_skeleton_v5.py` |
 

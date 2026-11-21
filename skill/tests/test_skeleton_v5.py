@@ -245,6 +245,15 @@ class KillSwitch(unittest.TestCase):
 
 
 class Cli(unittest.TestCase):
+    def test_demo_data_matches_a_fresh_run(self):
+        from skeleton_v5 import simulate
+        data = simulate.payload()
+        self.assertTrue(data["dry_run"] and data["simulated"])
+        self.assertEqual(len(data["items"]), 6)
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "v5.js")
+            subprocess.run([sys.executable, os.path.join(V5, "simulate.py"), "--output", out], check=True, capture_output=True)
+            self.assertEqual(read(out), read(simulate.DEFAULT_OUTPUT))
     def test_runs_in_both_languages(self):
         env = dict(os.environ, PYTHONIOENCODING="utf-8")
         for lang, word in (("en", "dry run"), ("zh", "演练")):

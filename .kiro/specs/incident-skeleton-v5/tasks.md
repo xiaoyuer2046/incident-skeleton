@@ -9,4 +9,4 @@
 - [x] 7. Meeting window hold; kill switch still works (R5)
 - [x] 8. Dry-run morning with numbers, EN and 中文 (R6)
 - [x] 9. Tests: `skill/tests/test_skeleton_v5.py` (27 tests)
-- [ ] 10. Demo page for v5
+- [x] 10. Demo page for v5: `demo/skeleton-v5.html`, data from `skill/skeleton_v5/simulate.py`
