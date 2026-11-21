@@ -97,7 +97,8 @@ def _call(task, payload):
     if b == "mock":
         return _mock(task, payload)
     if b == "cmd":
-        return _json_from(_run_cmd(shlex.split(os.environ["INCIDENT_AI_CMD"]), json.dumps(req, ensure_ascii=False), 60))
+        argv = shlex.split(os.environ["INCIDENT_AI_CMD"], posix=os.name != "nt")
+        return _json_from(_run_cmd(argv, json.dumps(req, ensure_ascii=False), 60))
     if b == "claude":
         out = _json_from(_run_cmd(["claude", "-p", "--output-format", "json"], _prompt(task, payload), 90))
         return _json_from(out.get("result")) if isinstance(out, dict) and "result" in out else out

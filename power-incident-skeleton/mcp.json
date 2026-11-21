@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "incident-kb": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${INCIDENT_SKELETON_HOME}/skill/mcp/incident_kb_server.py"],
+      "env": {
+        "INCIDENT_DATA_DIR": "${INCIDENT_SKELETON_HOME}/skill/remediation/data"
+      }
+    }
+  }
+}

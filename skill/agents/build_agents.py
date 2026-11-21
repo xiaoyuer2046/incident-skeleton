@@ -17,7 +17,7 @@ actions.json and policy.json, so the agents cannot drift from the engine. Rerun 
 Every agent mounts the incident-kb MCP server (skill/mcp/incident_kb_server.py) and the repo steering.
 Auto-approved tools are read-only; running a script still asks the user.
 """
-import json, os
+import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -200,6 +200,7 @@ def install(out, home=os.path.expanduser("~/.kiro/agents")):
     for name, (s, p) in out.items():
         s = json.loads(json.dumps(s))
         s["prompt"] = "file://incident-skeleton/%s.md" % name
+        s["mcpServers"]["incident-kb"]["command"] = sys.executable
         s["mcpServers"]["incident-kb"]["args"] = [os.path.join(ROOT, "skill", "mcp", "incident_kb_server.py")]
         s["mcpServers"]["incident-kb"]["env"] = {"INCIDENT_DATA_DIR": os.path.join(REM, "data")}
         s["resources"] = ["file://" + os.path.join(ROOT, ".kiro", "steering", "incident-skeleton.md"), "file://" + os.path.join(ROOT, "SPEC.md")]

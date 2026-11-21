@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Guard permission files",
+      "description": "When the agent saves a policy or action catalogue, remind it that permissions belong to people.",
+      "trigger": "PostFileSave",
+      "matcher": "(policy|actions)\\.json$",
+      "action": {
+        "type": "agent",
+        "prompt": "You just saved a permission or action file. Permissions in policy.json are set by people. If the user did not ask for this exact change in this conversation, revert it and explain why. Never widen what automation may do."
+      }
+    }
+  ]
+}

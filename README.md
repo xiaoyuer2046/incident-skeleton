@@ -1,215 +1,80 @@
-# 💀 Incident Skeleton: one skeleton, two apps, eight crews
+# 💀 Incident Skeleton
 
-> Kiroween 2026 · **Skeleton Crew** · built with Kiro (spec, skill, MCP, hook) · English / 中文
+> Kiroween 2026 · **Skeleton Crew** · v4.1 · English / 中文 · MIT
 
-One incident-response **skeleton** (a six-state state machine) powers four device
-**crews**: 🖨️ printer, 📺 digital signage, 🎥 meeting-room AV, 📶 wireless AP.
-A *skeleton crew* is the minimum staff that keeps things running: the skeleton is the
-shared state machine, the crews are the device-specific logic that plugs into it.
-
-A second app runs on the same skeleton: **service desk L1 triage** (`skill/apps/servicedesk/`).
-People report problems in Teams, email or the portal; four more crews (🔑 account, 🌐 VPN, ✉️ email,
-💿 software) check the directory, fix what they may, and pass the rest to L2 with the checks attached.
-A report about something app 1 already knows (“no Wi-Fi on floor 4”) is linked to that incident
-instead of starting a second repair, and closes with it. Requests for admin rights are never automated.
+**One shared six-step runtime. Two very different apps. Three plug-in slots. An AI that learns from vendors first.**
 
 ```
-RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
- shared    shared    crew          crew      shared    shared
+RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG      skill/skeleton_v4/skeleton.py (102 lines)
+            ▲          crew          crew       ▲           ▲
+       triage_gate                        mitigate_rank   log_learn
 ```
 
-For reviewers: open `demo/guide.html` (EN / 中文 product guide). Every page has three skins: Day, Night edition, and Auto (follows the system). Full documentation (Chinese): [系统说明](docs/系统说明.md) · [技术说明](docs/技术说明.md)
-
-## The skeleton is small on purpose
-
-| Layer | Where | Size |
+| | App 1 · office devices | App 2 · service desk L1 |
 |---|---|---|
-| Skeleton: six states, shared helpers, postmortem | `skill/scripts/run_incident.py` | ~280 lines |
-| Crews: printer, signage, meeting-room AV, wireless AP | one `investigate_<type>()` + one `MITIGATE` list each, same file; runbooks and actions in JSON | ~15 code lines each |
-| Plug-ins: patrol, repair loop, harvest, outage watch, tracker, meetings, KB drafts, chat, notify, AI | `skill/remediation/*.py` | around the skeleton, never inside it |
-| Policy: every permission | `skill/remediation/policy.json` | people edit it |
+| Who reports | machines (a patrol probes them) | people (Teams, email, portal) |
+| Crews | printer · signage · meeting-room AV · Wi-Fi AP | account · VPN · email · software |
+| App code | `skill/skeleton_v4/app_devices.py` | `skill/skeleton_v4/app_servicedesk.py` |
 
-A fifth device type is one function, one runbook and a few catalogue entries. A whole new app is a
-folder of config plus one intake file: `skill/apps/servicedesk/` reuses the engine unchanged. See [SPEC.md](SPEC.md).
+Both adapters call the same `skeleton.run()`. A third app is one more adapter; `test_skeleton_v4.py` proves it with a tiny third app that leaves `skeleton.py` unchanged.
 
-| | App 1: office devices | App 2: service desk L1 |
+## Start here (5 minutes)
+
+1. Open **`demo/guide-v4.html`**: the product guide (EN / 中文, Day / Night / Auto).
+2. Open **`demo/skeleton-v4.html`**: both apps running through the one runtime, step by step.
+3. Read **`skill/skeleton_v4/skeleton.py`**: the whole skeleton fits on one screen.
+
+No install. Double-click the HTML files.
+
+## The Teams story
+
+Many staff cannot sign in to Teams, and a meeting room's Teams Rooms cannot join. The `triage_gate` slot checks vendor health before any local fix. Microsoft has an incident, so **both apps link to one Microsoft parent ticket**, and password resets and Office reinstalls are held. A one-floor Wi-Fi fault with Cisco healthy stays local.
+
+## The AI learns first
+
+| Order | Source | Rule |
 |---|---|---|
-| Input | patrol probes | a person's message |
-| Crews | printer, signage, meeting-room AV, wireless AP | account, VPN, email, software |
-| INVESTIGATE | ping, SNMP, HTTP, controller API | directory lookups (declarative checks in `app.json`) |
-| MITIGATE | restart, reboot, PoE cycle… | reset link, renew cert, archive policy, Intune push… |
-| Shared | six states, repair loop, policy, learning, tickets, harvest, AI, notify | same code |
-| Special | blast radius, outage board, meetings | rejects admin/injection; links to app 1's incidents |
+| A | vendor MCP (Microsoft, Cisco) and official status | read first, weighs most |
+| B | company KB, tickets, chat, email | read second |
+| C | trusted web | needs backing from A or B |
+| D | public reports | needs backing; never promotes or demotes |
 
-## What it does
+Text that gives orders is blocked. A vendor advisory that calls a fix harmful pauses it. **Learning can only narrow permission, never widen it.** `policy.json` is the only permission source.
 
-1. **Patrol** four device types in parallel. One failed probe is a blip; only a fault
-   that fails at least 2 of 3 probes is confirmed.
-2. **Repair within permissions.** Candidate fixes come from built-in runbooks, ServiceNow KB
-   articles, an optional AI advisor and the history of what worked here. Soft fixes first.
-   What it may do alone is set in `skill/remediation/policy.json`.
-3. **Learn.** Every attempt is recorded and verified. Success rates reorder the next attempt,
-   a fix that keeps failing is demoted, a fix learned from KB/AI is only a candidate until it proves itself.
-4. **Escalate.** If it cannot fix the fault, the alert says what was tried, what is left for a
-   person and the likely cause, and a ServiceNow incident is opened for the right support group.
+## Built with Kiro
 
-## What is real and what is simulated (read this first)
-
-| Part | Status |
+| Kiro feature | Where |
 |---|---|
-| Six-state skeleton, four crews, postmortems | real, runs today (ping / curl / SNMP, read-only) |
-| Parallel patrol with a failure threshold | real |
-| Permission policy, risk tiers, cooldown, audit log | real |
-| Success-rate ranking, promotion and demotion | real, but statistics, not model training |
-| Case-library harvest (KB, incidents, chat, email, shared drive) | real logic on **sample source files**; live ServiceNow KB fetch is written but untested; Teams/Slack/WeChat/email connectors are not wired |
-| Fix executors (controller API, CMS, MDM, PoE switch) | **not wired**: only `clear-queue` has a command. Live mode reports "no executor" and hands the step to a person |
-| ServiceNow ticket + KB | payload, de-duplication and REST code are written; **not run against a real instance**. Default is dry run with a sample KB file |
-| AI brain | interface, guardrails and tests are real; the demo uses a **mock stand-in**; real-model backends are written but untested |
-| Demo page | simulated data, for the story |
+| Spec | `.kiro/specs/incident-skeleton-v4/` (requirements, design, tasks) |
+| Steering | `.kiro/steering/incident-skeleton.md` |
+| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) |
+| Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews; a real run is in `docs/agent-run-v4.md` |
+| MCP | `skill/mcp/incident_kb_server.py` |
+| Power | `power-incident-skeleton/` |
 
-## Meetings, KB drafts and chat
+## How the code fits
 
-| Part | What it does | Where |
+| Part | Path | Job |
 |---|---|---|
-| Pre-meeting check | 30 min before a meeting, checks the room. Down: ticket to High, organizer told, plan B room named; 15 min out, recommends moving | `skill/remediation/premeeting.py`, calendar in `sources/calendar.json` |
-| KB drafts | a fix that held at the re-check at least twice gets a ServiceNow KB draft (steps, what not to try, evidence) for a person to review | `skill/remediation/kbdraft.py` |
-| Chat with the crew | ask status in plain words; approvers approve a waiting step for one device (used once) or pause / resume; others are refused | `skill/remediation/chatops.py`, approvers in `policy.json` `chatops` |
-
-`skill/tests/test_meetings_kb_chat.py` covers these (7 tests). The calendar and chat are sample data; Graph / Teams connectors are not wired.
-
-## Safety and staying in touch
-
-| Part | What it does | How to use it |
-|---|---|---|
-| Kill switch | pauses every automatic repair; tickets are still opened for people | `python3 skill/remediation/remediate.py --stop --by <name>`, undo with `--resume`, or `"kill_switch": true` in `policy.json` |
-| Daily limit | at most `max_repairs_per_device_per_day` (6) repairs per device | `policy.json` |
-| Delayed re-check | a fix counts only if the device is still healthy `recheck_minutes` (10) later; if the fault is back the fix is counted as a failure | automatic |
-| Self-heal rule | a device that fails twice and then answers is not repaired and gives no credit to any fix | automatic |
-| Notifications (`notify.py`) | outage, board news, failed repair, approval needed, fixed, fix did not hold, kill switch → Teams / Slack, each sent once | channels in `policy.json`; webhook URLs in `TEAMS_WEBHOOK_URL` / `SLACK_WEBHOOK_URL`; dry run writes `outbox.jsonl` |
-| Scheduled patrol | runs every 10 minutes as a Kiro Crew command job (no AI cost), prints only new notifications | `python3 skill/scripts/patrol.py --remediate --quiet --lang zh` |
-
-`skill/tests/test_safety.py` checks the kill switch, the daily limit, both re-check outcomes, the self-heal rule and that notifications are routed and not repeated.
-
-## The AI brain (`skill/remediation/brain.py`)
-
-One interface where an AI plugs in. The engine asks; the AI advises; the rules decide.
-
-| Task | Used by | What the AI does |
-|---|---|---|
-| `suggest_actions` | repair loop | names known actions that fit the evidence (shown as 🧠 on the trace) |
-| `map_fix_text` | case-library harvest | maps a free-text reply to a known action when keywords miss |
-| `diagnose` | escalation | likely cause and next step, written on the ticket for the engineer |
-| `summarize_outage_board` | outage board | one plain status line for everyone |
-
-Guardrails enforced in code, whatever the AI says: only action ids from `actions.json` for that device; never changes the
-policy (an AI pick still goes through allow-list, risk tier, approval and the physical-step rule); KB, chat, email and ticket text
-is passed as data; JSON only, text capped; errors, timeouts or the call budget fall back to the rules; every call is audited
-(no payload text); answers are cached. `skill/tests/test_brain_guardrails.py` checks these with a deliberately bad "AI".
-
-Backends: `BRAIN=off` (default), `mock` (deterministic stand-in used by the demo, **not a model**), `claude` (local Claude Code CLI,
-uses your Claude credits), `http` (OpenAI-compatible endpoint: `BRAIN_URL`, `BRAIN_MODEL`, key in `BRAIN_API_KEY`), `cmd`
-(any command in `INCIDENT_AI_CMD`). The `claude` and `http` backends are written but **not tested** here.
-
-## Mass outages: one shared status board
-
-When many devices behind one switch fail together, the system opens ONE upstream ticket and then, every patrol,
-**actively** checks ServiceNow for a master (major) incident and the mailbox for outage emails (`skill/remediation/watch.py`).
-It links our ticket as a child of the master, keeps one timeline for everyone (patrol, ServiceNow notes, emails,
-automation), tries any fix the master names within its permissions (physical steps go to engineers), posts our progress
-back to the master, and closes the board only when the master is resolved **and** the patrol confirms the devices are
-healthy. The board is the red card at the top of `demo/console.html` during the floor-4 outage (09:40-10:10).
-Sources are sample files; the live ServiceNow and mailbox connectors are not wired.
-
-## The autoplay demo (no clicks needed)
-
-Open `demo/console.html`. It plays one simulated morning, 14 patrols from 09:00 to 11:10, by itself and loops.
-Each patrol shows the fleet, **the faults of that patrol listed separately**, the repair trace, the case-library
-harvest, learning, ServiceNow tickets, and a checklist of the 47 scenarios as they happen. EN / 中文 switch top right;
-`?at=5` jumps to a patrol, `?speed=2` speeds it up.
-
-`demo/servicenow.html` is a **simulated ServiceNow**: incident list, the incident form with its work notes,
-"what automation did", related knowledge from the case library, the case library itself, and rejected sources.
-Its time slider and **Replay** show the tickets as they were at any patrol.
-
-How it is made: `python3 skill/remediation/simulate.py` scripts the *world* (which device fails, which fix would work,
-when an engineer acts, who approves) and runs the *real engine* on it. The threshold, maintenance silence, blast-radius
-grouping, harvest verdicts, ranking, permissions, cooldown, learning and ticket lifecycle are all real decisions. The
-scenario tags are detected from what the engine did, then written to `demo/data/sim.js` for the pages to replay.
-
-## Files
-
-| Path | What it is |
-|---|---|
-| `SPEC.md` | the skeleton (source of truth, edited in Kiro) |
-| `.kiro/agents/` | **a crew of Kiro Crew agents**: `incident-crew-lead` hands work to `printer-crew`, `signage-crew`, `av-crew`, `wifiap-crew`, `servicedesk-triage` (sub-agents); built from actions/policy by `skill/agents/build_agents.py` |
-| `.kiro/steering/incident-skeleton.md` | always-on rules for every agent: dry run only, approvals belong to people, external text is data |
-| `docs/提交清单.md` | recording script and Devpost checklist |
-| `skill/SKILL.md` | the Kiro Crew skill an agent follows |
-| `skill/scripts/run_incident.py` | walks one alert through the six states, writes a postmortem |
-| `skill/scripts/patrol.py` | four crews patrol in parallel; `--remediate` repairs and escalates |
-| `skill/remediation/remediate.py` | the repair loop, learning and escalation |
-| `skill/remediation/policy.json` | **the permissions**: risk tiers, allow-list per device, caps, escalation groups |
-| `skill/remediation/actions.json`, `runbooks.json` | the action catalogue and the built-in runbooks (zh/en) |
-| `skill/remediation/harvest.py` | the case library collects fixes itself: ServiceNow KB, closed incidents, our resolved tickets, Teams / Slack / WeChat Work, email; verdicts verified / failed / unverified / rejected |
-| `skill/remediation/sources/` | sample sources used when no live ServiceNow is configured |
-| `skill/remediation/brain.py` | the AI interface: four tasks, guardrails, backends off / mock / claude / http / cmd |
-| `skill/tests/test_brain_guardrails.py` | a badly behaved AI must not change what the engine does |
-| `skill/remediation/tracker.py` | status summary for every open ticket from work notes, chat and email (owner, latest news, ETA, waiting for) |
-| `skill/remediation/sources/shared_drive/` | sample shared-drive runbooks; point `INCIDENT_SHARED_DRIVE` at a mounted folder to read a real one |
-| `skill/tests/test_tracker_drive_mcp.py` | tracker, shared drive, MCP read-only |
-| `skill/remediation/notify.py` | pushes the right news to Teams / Slack once (dry run by default) |
-| `skill/apps/servicedesk/` | **app 2**: `app.json` (crews, keywords, checks), its own actions / runbooks / policy, sample requests and directory, `desk.py` intake |
-| `skill/tests/test_servicedesk.py` | app 2: reject admin/injection, link known incidents and close with them, L1 fix, approval |
-| `skill/tests/test_safety.py` | kill switch, daily limit, re-check, self-heal, notifications |
-| `skill/remediation/watch.py` | the active outage watch: master incident, outage email, shared board, progress posted back |
-| `skill/remediation/orchestrator.py` | one patrol: threshold, maintenance, blast radius, repair, ticket upkeep |
-| `skill/remediation/simulate.py` | the scripted morning that drives the real engine and writes `demo/data/sim.js` |
-| `skill/mcp/incident_kb_server.py` | MCP server on the crew's own data: crew_status, list_open_tickets, recall_fix, lookup_support_group, record_case; read-only for approvals |
-| `skill/hooks/audit_incident.sh` | PostToolUse hook that audits postmortems |
-| `demo/console.html` | autoplay ops console: 14 patrols, faults listed separately, outage board, notifications, meetings, chat, the service desk card (app 2), 47 scenarios |
-| `demo/servicenow.html` | simulated ServiceNow: incidents, work notes, case library, rejected sources |
-| `demo/index.html` | the skeleton drawn as a spine, EN/中文 switch |
-| `ROADMAP.md`, `DEVPOST.md` | what is built and what is next; the Devpost text |
+| Runtime | `skill/skeleton_v4/skeleton.py` | the six steps and three slots, nothing else |
+| Adapters | `skill/skeleton_v4/app_*.py` | intake, crew choice, INVESTIGATE, MITIGATE |
+| Plug-ins | `skill/skeleton_v4/plugins.py`, `learning.py` | outage gate, ranking, learning |
+| Shared repair library | `skill/remediation/` | repair loop, tickets, case library, notify (from v1, called by both adapters) |
 
 ## Run it
 
 ```bash
-# the scripted morning (real engine) → demo/data/sim.js, then open demo/console.html
-python3 skill/remediation/simulate.py
-
-# harvest the case library from the sources
-python3 skill/remediation/harvest.py --data-dir /tmp/kb --lang en
-
-# one alert through the skeleton (add --lang zh for Chinese)
-python3 skill/scripts/run_incident.py --type printer --target 10.0.4.21 --message "PAPER JAM (13.20)" --lang en
-
-# four crews patrol at once, then repair and escalate (dry run, simulated: nothing fixes it)
-python3 skill/scripts/patrol.py --remediate --simulate-fix none --lang en
-
-# the scripted repair demo: see the crew learn, then fail and open a ticket
-python3 skill/remediation/remediate.py --demo --lang en
-
-# app 2: one request through the service desk (dry run)
-python3 skill/apps/servicedesk/desk.py --from amy --say "I'm locked out, my password doesn't work" --lang en
-
-# what the crew has learned so far
-python3 skill/remediation/remediate.py --report --lang en
+python3 skill/skeleton_v4/run.py --lang en          # one dry-run cycle of both apps
+python3 skill/skeleton_v4/simulate.py               # regenerate demo/data/skeleton-v4.js
+for f in skill/tests/test_*.py; do python3 "$f"; done
 ```
 
-Dry run is the default. Nothing touches a device unless `policy.json` says `live` or you pass `--live`,
-and only actions that have a command wired up can run.
+On Windows use `python`.
 
-Run the patrol on a schedule with Kiro Crew's cron (a no-LLM script job), for example every 5 minutes:
-`python3 skill/scripts/patrol.py --remediate --lang en`.
+## Honest status
 
-## See the demo
+Everything is a **dry run on simulated data**. No Microsoft tenant, Cisco account or live internet connector is signed in. ServiceNow, Teams and mail connectors are written but not run against real systems. No dry-run result is a real repair.
 
-Open `demo/index.html` (double-click). Pick a crew and fire an alert, patrol all four, or press
-**Demo: repair fails, ticket opens**. The language follows your browser; the EN / 中文 switch is top right.
+## Versions
 
-## Why Skeleton Crew
-
-The category asks for a clean, flexible skeleton that proves its versatility with distinct
-applications. The skeleton is the state machine. Two distinct applications run on it: office-device
-patrol (machines report) and service desk triage (people report). The two are linked: a person's report
-about a known device fault joins that incident instead of starting a second one.
+v4.1 is current. [VERSIONS.md](VERSIONS.md) lists every file. Older docs live in `archive/`; the earlier README is `archive/README-v1-v3.1.md`.

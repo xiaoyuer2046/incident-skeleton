@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Skeleton v3 · Global Intelligence</title>
+<script src="theme.js"></script>
+<style>
+:root{--ink:#0b0812;--panel:#161022;--panel2:#1d1530;--line:rgba(190,170,255,.14);--line2:rgba(190,170,255,.28);--text:#eee9df;--muted:#a79dbb;--dim:#8a81a0;--ember:#ff7a1a;--violet:#8b5cf6;--ghost:#4ee6a0;--blood:#ff4d64;--amber:#ffc24a;--sky:#6cb6ff;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+html[data-theme=day]{color-scheme:light;--ink:#f5f3f8;--panel:#fff;--panel2:#f7f5fa;--line:rgba(55,36,92,.12);--line2:rgba(55,36,92,.28);--text:#211c2c;--muted:#5a5269;--dim:#7a7289;--ember:#c04c00;--violet:#6941d9;--ghost:#137f50;--blood:#ca2941;--amber:#8a5700;--sky:#1d68bf}
+html[data-theme=night]{color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 460px at 80% -8%,rgba(139,92,246,.18),transparent 62%),var(--ink);color:var(--text);font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+button{font:inherit;color:inherit}
+.skip{position:fixed;left:12px;top:-60px;z-index:100;padding:8px 12px;background:var(--panel);color:var(--text);border:2px solid var(--violet);border-radius:8px}.skip:focus{top:12px}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px clamp(16px,3vw,34px);background:color-mix(in srgb,var(--ink) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font:600 18px ui-serif,Georgia,serif;white-space:nowrap}.brand em{font-style:italic;color:var(--ember)}.brand small{display:block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--amber);border-radius:999px;color:var(--amber);font:700 11px var(--mono);letter-spacing:.06em}.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ctrl{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden}.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font:600 12px var(--mono);color:var(--muted)}.seg button[aria-pressed=true]{background:rgba(255,122,26,.16);color:var(--ember)}.seg button:hover{color:var(--text)}
+.shell{width:min(1360px,100%);margin:auto;padding:clamp(16px,3vw,32px)}
+.banner{margin-bottom:14px;padding:9px 14px;border:1px dashed var(--amber);border-radius:12px;color:var(--amber);font-size:12.5px}
+.cyclebar{display:flex;align-items:center;gap:7px;overflow:auto;padding:2px 1px 12px}.cyclebar .label{flex:none;color:var(--muted);font:11px var(--mono)}.cycle{flex:none;border:1px solid var(--line2);background:var(--panel);border-radius:9px;padding:6px 11px;cursor:pointer;font:650 11px var(--mono);color:var(--muted)}.cycle[aria-pressed=true]{background:var(--ember);border-color:var(--ember);color:#1e0c00}
+.eyebrow{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hero{border:1px solid var(--line);border-left:5px solid var(--sky);border-radius:20px;background:var(--panel);padding:22px clamp(16px,2.4vw,28px);margin-bottom:16px}
+.hero.vendor{border-left-color:var(--blood)}.hero.local{border-left-color:var(--amber)}.hero.resolved{border-left-color:var(--ghost)}
+.hero h1{margin:6px 0 10px;font:650 clamp(22px,3.2vw,36px)/1.2 ui-serif,Georgia,"Songti SC",serif}
+.hero .lead{margin:0 0 16px;color:var(--muted);max-width:880px}
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.q{min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}.q span{display:block;color:var(--muted);font-size:12px}.q strong{display:block;margin-top:4px;font-size:14px;line-height:1.5;overflow-wrap:anywhere;font-weight:600}
+.q.conf{display:flex;gap:14px;align-items:center}
+.services{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}.recipients{display:flex;gap:10px;align-items:center;margin-top:10px;padding:8px 11px;border:1px solid var(--sky);border-radius:11px;background:var(--panel2);font-size:12px}.recipients span{color:var(--muted)}.recipients strong{font-weight:650}.svc{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.svc b{display:block;font-size:13px}.svc span{display:block;margin-top:3px;color:var(--muted);font-size:12px}.svc.vendor{border-color:var(--blood)}.svc.local{border-color:var(--amber)}.svc.resolved{border-color:var(--ghost)}
+.ring{--v:0;position:relative;width:70px;height:70px;flex:none;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--ghost) calc(var(--v)*1%),var(--line) 0)}.ring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--panel2)}.ring b{position:relative;z-index:1;font:750 17px var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{grid-column:span 6;min-width:0;border:1px solid var(--line);border-radius:17px;background:var(--panel);overflow:hidden}.card.wide{grid-column:span 12}
+.card h2{margin:0;padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font:650 14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}.card h2 .meta{margin-left:auto;font:500 11px var(--mono);color:var(--muted)}
+.body{padding:14px 15px}
+.map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.node{min-width:0;padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);position:relative}
+.node::after{content:"";position:absolute;left:50%;bottom:-14px;height:14px;border-left:2px solid var(--line2)}
+.node.hit{border-color:var(--blood)}.node.ok{border-color:var(--ghost)}
+.node h3{margin:0 0 4px;font-size:13px}.node .st{font:700 11px var(--mono)}.node p{margin:6px 0 0;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.hub{margin-top:14px;padding:11px 14px;text-align:center;border:2px solid var(--violet);border-radius:14px;font-weight:650}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two h3,.sec h3{margin:0 0 6px;font-size:12.5px;color:var(--muted);font-weight:650}
+ul.l{margin:0;padding:0 0 0 18px}ul.l li{margin:3px 0;overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border:1px solid var(--line2);border-radius:999px;font:650 11px var(--mono);white-space:nowrap}
+.c-ok{color:var(--ghost);border-color:var(--ghost)}.c-bad{color:var(--blood);border-color:var(--blood)}.c-warn{color:var(--amber);border-color:var(--amber)}.c-info{color:var(--sky);border-color:var(--sky)}
+.hold{border:1px solid var(--amber);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.vendors{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vc{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}.vc h3{margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}.vc p{margin:6px 0 0;color:var(--muted);font-size:12.5px}
+.stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.stg{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.stg b{display:block;font-size:13px}.stg small{color:var(--muted);font:11px var(--mono)}.stg.done{border-color:var(--ghost)}.stg.done b{color:var(--ghost)}
+.tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:1px solid var(--line2)}.tl li{position:relative;padding:6px 0 8px 14px}.tl li::before{content:"";position:absolute;left:-20px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--sky);border:2px solid var(--panel)}
+.tl li.k-confirmed::before{background:var(--blood)}.tl li.k-resolved::before{background:var(--ghost)}.tl li.k-notified::before{background:var(--amber)}
+.tl time{font:650 11px var(--mono);color:var(--muted);margin-right:8px}.tl .sub{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.empty{padding:26px 18px;text-align:center;border:1px dashed var(--line2);border-radius:12px;color:var(--muted)}.empty b{display:block;margin-bottom:4px;color:var(--text)}.empty code{font-family:var(--mono);color:var(--sky)}
+.foot{margin-top:16px;padding:12px 2px;color:var(--dim);font-size:12px}.foot strong{color:var(--amber)}
+@media(max-width:1000px){.qa{grid-template-columns:1fr 1fr}.map{grid-template-columns:1fr 1fr}.node::after{display:none}.stages{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.top{position:relative}.ctrl{width:100%;margin-left:0}.card{grid-column:span 12}.qa,.two,.vendors,.services{grid-template-columns:1fr}}
+@media(max-width:460px){.map,.stages{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip"></a>
+<header class="top">
+  <div class="brand">Incident <em>Skeleton</em><small data-i18n="product"></small></div>
+  <span class="badge" data-i18n="dry"></span>
+  <div class="ctrl">
+    <div class="seg" id="themeSeg"></div>
+    <div class="seg" id="langSeg" role="group" aria-label="Language / 语言">
+      <button type="button" data-lang="zh">中文</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+<main class="shell" id="main" tabindex="-1">
+  <div class="banner" role="note" data-i18n="banner"></div>
+  <nav class="cyclebar" id="cyclebar" aria-label="Cycles"></nav>
+  <div id="root" aria-live="polite"></div>
+  <footer class="foot"><span data-i18n="footer"></span> <strong data-i18n="dryFoot"></strong></footer>
+</main>
+<script src="data/global-intelligence-v3.js"></script>
+<script>
+(function(){
+'use strict';
+var T={
+zh:{skip:'跳到主要内容',product:'全局故障情报 v3',dry:'DRY RUN · 模拟演练',
+banner:'这是模拟数据的演练页面：没有连接真实的 Microsoft 或 Cisco 账号，不会发送真实通知，也不会执行任何本地操作。',
+footer:'v3 只给出建议，真正操作仍由安全规则和人员决定。',dryFoot:'所有通知均为演练，未真正发出。',notSent:'演练未发送',
+cycles:'轮次',
+emptyT:'还没有情报数据',emptyD:'没有找到 window.GLOBAL_INTELLIGENCE_V3。请先生成 demo/data/global-intelligence-v3.js，再刷新本页。',
+emptyCycle:'这一轮没有记录',emptyCycleD:'本轮没有信号和决策。',
+qWhat:'影响范围',qWhy:'为什么判断是厂商故障？',qConf:'把握有多大？',qImpact:'影响哪些服务？',qHold:'暂停了哪些本地动作？',qNext:'下一次检查',people:'%u 名用户 · %s 个站点',serviceSummary:'各服务判断',channel:'提醒对象',channelIT:'IT 值班人员',channelDesk:'服务台',
+none:'暂无',unknownSvc:'未识别',
+t_vendor_incident_confirmed:'厂商官方已确认故障，问题不在我们这边',
+t_global_outage_likely:'很可能是厂商或互联网范围的故障',
+t_local_issue_likely:'更像是本地问题，厂商服务正常',
+t_investigating:'还在调查，证据不完整或互相矛盾',
+t_resolved:'厂商已恢复，内部检查也已恢复',
+w_vendor_incident_confirmed:'多个站点的用户同时出现同类问题，同时厂商的服务健康信息和官方状态页都报告了故障。',
+w_global_outage_likely:'多个互相独立的外部来源都提到故障，内部也有相同的症状。',
+w_local_issue_likely:'只有一个站点受影响，厂商服务状态正常，没有找到匹配的外部故障。',
+w_investigating:'目前的证据不足以下结论，系统会继续观察。',
+w_resolved:'厂商宣布恢复，内部用户也已恢复正常。',
+y_vendor_incident_confirmed:'官方来源与内部影响吻合，所以判断为厂商故障。',
+y_global_outage_likely:'多个独立外部来源与内部影响吻合，但还没有厂商官方确认。',
+y_local_issue_likely:'这不是厂商故障：厂商状态正常，只有一个站点受影响。',
+y_investigating:'还不能判断是否为厂商故障：证据不完整或互相矛盾。',
+y_resolved:'故障已解除，厂商和内部都已确认恢复。',
+mapT:'证据图',mapMeta:'四类证据汇到同一个结论',
+n_internal:'内部故障',n_vendor:'厂商服务',n_official:'官方状态',n_web:'可信互联网',
+hub:'综合判断',signals:'条信号',noSig:'本轮没有这类信号',
+s_healthy:'正常',s_degraded:'性能下降',s_outage:'故障',s_investigating:'调查中',s_resolved:'已恢复',s_report:'有报告',
+whyT:'判断依据',support:'支持的证据',conflict:'矛盾的证据',noConflict:'没有发现矛盾证据',noSupport:'本轮没有记录支持证据',
+actT:'本地动作',actMeta:'只是建议，不改变权限',held:'暂停（建议）',running:'仍在运行',noHeld:'没有需要暂停的动作。',noRun:'没有记录。',
+defRun:['只读检查','工单合并观察','恢复监控'],
+venT:'厂商中心',venMeta:'连接状态',
+connected:'已连接',notConn:'未连接',
+notConnD:'未连接：当前没有登录或授权真实账号，下面的信息来自模拟数据，不代表真实服务状态。',
+connD:'已连接（来自数据文件的声明）。仍需单独验证权限。',
+simSig:'模拟信号',lastSig:'最近一条信号',
+msD:'Microsoft Graph 服务健康 / Microsoft MCP',ciD:'Cisco Meraki、Catalyst Center、Security Cloud Control、PSIRT OpenVuln',
+tlT:'情报时间线',tlMeta:'发现 → 确认 → 提醒 → 恢复',
+st_detected:'发现',st_confirmed:'确认',st_notified:'提醒',st_resolved:'恢复',pending:'尚未发生',
+e_detected:'发现异常信号',e_confirmed:'确认为外部故障',e_notified:'已准备提醒（演练，未发出）',e_resolved:'确认恢复',
+noteT:'提醒内容（演练）',noNotice:'本轮没有提醒。',
+conf:'置信度',updated:'数据生成于',ver:'版本'},
+en:{skip:'Skip to main content',product:'Global Intelligence v3',dry:'DRY RUN · SIMULATED',
+banner:'This is a simulated demo page: no real Microsoft or Cisco account is connected, no real notice is sent, and no local action is executed.',
+footer:'v3 only advises. Safety rules and people still decide real actions.',dryFoot:'All notices are dry runs and were not sent.',notSent:'dry run, not sent',
+cycles:'Cycle',
+emptyT:'No intelligence data yet',emptyD:'window.GLOBAL_INTELLIGENCE_V3 was not found. Generate demo/data/global-intelligence-v3.js, then reload this page.',
+emptyCycle:'Nothing recorded for this cycle',emptyCycleD:'This cycle has no signals or decisions.',
+qWhat:'Impact',qWhy:'Why is it a vendor outage?',qConf:'How sure are we?',qImpact:'Which services are affected?',qHold:'Which local actions are paused?',qNext:'Next check',people:'%u users · %s sites',serviceSummary:'Service verdicts',channel:'Recipients',channelIT:'IT on-call',channelDesk:'Service desk',
+none:'None',unknownSvc:'Unidentified',
+t_vendor_incident_confirmed:'The vendor confirmed an outage. The problem is not on our side.',
+t_global_outage_likely:'This is most likely a vendor-wide or internet-wide outage.',
+t_local_issue_likely:'This looks like a local problem. Vendor services are healthy.',
+t_investigating:'Still investigating: evidence is incomplete or conflicting.',
+t_resolved:'The vendor has recovered and internal checks have recovered too.',
+w_vendor_incident_confirmed:'Users at several sites hit the same problem, and both the vendor service health and the official status page report an incident.',
+w_global_outage_likely:'Several independent outside sources mention an outage, and the same symptoms appear inside.',
+w_local_issue_likely:'Only one site is affected, vendor status is healthy, and no matching outside outage was found.',
+w_investigating:'The evidence is not enough to decide. The system keeps watching.',
+w_resolved:'The vendor declared recovery and internal users are back to normal.',
+y_vendor_incident_confirmed:'Official sources match the internal impact, so this is judged a vendor outage.',
+y_global_outage_likely:'Several independent outside sources match the internal impact, but the vendor has not officially confirmed it.',
+y_local_issue_likely:'Not a vendor outage: vendor status is healthy and only one site is affected.',
+y_investigating:'Cannot tell yet whether it is a vendor outage: evidence is incomplete or conflicting.',
+y_resolved:'The incident is over. Vendor and internal checks both confirm recovery.',
+mapT:'Evidence map',mapMeta:'Four kinds of evidence feed one conclusion',
+n_internal:'Internal failures',n_vendor:'Vendor MCP',n_official:'Official status',n_web:'Trusted internet',
+hub:'Combined verdict',signals:' signals',noSig:'No signals of this kind this cycle',
+s_healthy:'Healthy',s_degraded:'Degraded',s_outage:'Outage',s_investigating:'Investigating',s_resolved:'Resolved',s_report:'Reported',
+whyT:'Why we decided this',support:'Supporting evidence',conflict:'Conflicting evidence',noConflict:'No conflicting evidence found',noSupport:'No supporting evidence recorded this cycle',
+actT:'Local actions',actMeta:'Advice only. No permission changes.',held:'Paused (advised)',running:'Still running',noHeld:'No actions need pausing.',noRun:'None recorded.',
+defRun:['Read-only checks','Ticket grouping watch','Recovery monitoring'],
+venT:'Vendor Center',venMeta:'Connection status',
+connected:'Connected',notConn:'Not connected',
+notConnD:'Not connected: no real account is signed in or authorized. What follows is simulated and does not reflect real service status.',
+connD:'Connected (claimed by the data file). Permissions still need separate verification.',
+simSig:'Simulated signals',lastSig:'Latest signal',
+msD:'Microsoft Graph service health / Microsoft MCP',ciD:'Cisco Meraki, Catalyst Center, Security Cloud Control, PSIRT OpenVuln',
+tlT:'Intelligence Timeline',tlMeta:'Detected → Confirmed → Notified → Resolved',
+st_detected:'Detected',st_confirmed:'Confirmed',st_notified:'Notified',st_resolved:'Resolved',pending:'Not yet',
+e_detected:'Abnormal signals detected',e_confirmed:'Confirmed as external outage',e_notified:'Notice prepared (dry run, not sent)',e_resolved:'Recovery confirmed',
+noteT:'Notices (dry run)',noNotice:'No notices this cycle.',
+conf:'Confidence',updated:'Data generated at',ver:'Version'}
+};
+var lang='zh';try{var sl=localStorage.getItem('gi3-lang');if(sl==='zh'||sl==='en')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
+var cycIdx=-1;
+function t(k){return (T[lang]&&T[lang][k]!=null)?T[lang][k]:(T.en[k]!=null?T.en[k]:k);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function clip(s,n){s=String(s==null?'':s);return s.length>n?s.slice(0,n-1)+'…':s;}
+function arr(x){return Array.isArray(x)?x:[];}
+/* Text shown to people: pick bilingual {zh,en} or string; hide anything that looks like a raw internal id. */
+function pick(v){if(v==null)return '';if(typeof v==='object'&&!Array.isArray(v))return v[lang]||v.zh||v.en||'';return String(v);}
+function looksId(s){return /^[A-Za-z]{2,}[-_:]?\d{3,}$/.test(s)||/^[a-z0-9]+(?:[-_][a-z0-9]+){2,}$/i.test(s)&&/\d/.test(s)&&!/\s/.test(s)||/^[0-9a-f]{8,}$/i.test(s);}
+function human(v){var s=pick(v).replace(/\b(?:INC|CHG|TASK|REQ|SIG|sig|inc)[-_]?[0-9a-f]{3,}\b/g,'').replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]{12,}\b/gi,'').replace(/\s{2,}/g,' ').trim();return looksId(s)?'':s;}
+var SVC={teams:'Teams',outlook:'Outlook',exchange:'Exchange',meraki:'Meraki',webex:'Webex',other:''};
+var ACTION={zh:{'password reset':'批量重置密码','Office reinstall':'重装 Office','read-only health checks':'只读健康检查','vendor status recheck':'复查厂商状态','ticket grouping':'合并重复工单'},en:{'password reset':'Password reset','Office reinstall':'Office reinstall','read-only health checks':'Read-only health checks','vendor status recheck':'Vendor status recheck','ticket grouping':'Ticket grouping'}};
+function actionName(s){return ACTION[lang][s]||s;}
+function actionList(v){return arr(v).map(function(x){return actionName(human(x));}).filter(Boolean);}
+function sourceLabel(s){return {internal:lang==='zh'?'内部故障':'Internal failures',vendor_mcp:lang==='zh'?'厂商服务':'Vendor MCP',official_status:lang==='zh'?'官方状态':'Official status',trusted_web:lang==='zh'?'可信互联网':'Trusted internet',public_report:lang==='zh'?'公众报告':'Public reports'}[s]||s;}
+function signalSummary(s){if(!s)return'';var svc=svcName(s.service),status=t('s_'+s.status);if(lang==='en')return sourceLabel(s.source)+' · '+svc+' · '+status+': '+human(s.summary);if(s.source==='internal'){if(s.status==='healthy'||s.status==='resolved')return (s.site||'内部用户')+' 的 '+svc+' 已恢复正常';return (s.site||'多个站点')+' 的 '+svc+' 用户出现登录或连接问题';}if(s.source==='public_report')return '公众报告发现 '+svc+' 相关异常';if(s.source==='trusted_web')return '可信互联网来源发现 '+svc+' 相关异常';return sourceLabel(s.source)+' 显示 '+svc+' 状态：'+status;}
+function evidenceList(v){return arr(v).map(function(x){return signalSummary(x);}).filter(Boolean);}
+function noticePart(n,part){if(!n)return'';var block=n[lang]||n.zh||n.en||{};return human(block[part]||n[part]||'');}
+function channelList(n){return arr(n&&n.channels).map(function(x){if(x==='IT on-call')return t('channelIT');if(x==='Service desk')return t('channelDesk');return human(x);}).filter(Boolean);}
+function fmtTime(v){v=String(v||'');return v.endsWith('Z')?v.replace('T',' ').replace(/Z$/,' UTC'):v.replace('T',' ');}
+function svcName(s){s=String(s||'').toLowerCase();return SVC[s]!=null?SVC[s]:s.replace(/^./,function(c){return c.toUpperCase();});}
+function norm(c){c=Number(c);if(!isFinite(c))return null;if(c>0&&c<=1)c=c*100;return Math.max(0,Math.min(100,Math.round(c)));}
+var DEC=['vendor_incident_confirmed','global_outage_likely','local_issue_likely','investigating','resolved'];
+var GROUP={internal:'internal',vendor_mcp:'vendor',official_status:'official',trusted_web:'web',public_report:'web'};
+var RANK={outage:5,degraded:4,investigating:3,report:2,resolved:1,healthy:0};
+
+function pickDecision(c){var ds=arr(c.decisions);if(!ds.length)return null;var d=ds[ds.length-1];return typeof d==='string'?{decision:d}:d;}
+function decKey(d){var k=d&&(d.decision||d.verdict||d.kind);return DEC.indexOf(k)>=0?k:'investigating';}
+function serviceCards(c){var wanted=['teams','outlook','meraki'],rows=[];wanted.forEach(function(service){var d=arr(c.decisions).find(function(x){return x&&x.service===service;});if(!d)return;var k=decKey(d),cls=(k==='vendor_incident_confirmed'||k==='global_outage_likely')?'vendor':k==='local_issue_likely'?'local':k==='resolved'?'resolved':'',conf=norm(d.confidence),scope=t('people').replace('%u',d.users||0).replace('%s',arr(d.sites).length);rows.push('<div class="svc '+cls+'"><b>'+esc(svcName(service))+' · '+esc(conf==null?'—':conf+'%')+'</b><span>'+esc(t('t_'+k))+'</span><span>'+esc(scope)+'</span></div>');});return rows.length?'<div class="services" aria-label="'+esc(t('serviceSummary'))+'">'+rows.join('')+'</div>':'';}
+
+function mapSection(c,d){
+  var groups={internal:[],vendor:[],official:[],web:[]},seen={};
+  arr(c.signals).concat(arr(d&&d.support),arr(d&&d.conflicts)).forEach(function(s){var item=Object.assign({service:d&&d.service,provider:d&&d.provider},s||{});if(item.provider!==d.provider||item.service!==d.service)return;var g=GROUP[item.source],key=g&&[g,item.status,item.site,item.summary].join('|');if(g&&!seen[key]){seen[key]=true;groups[g].push(item);}});
+  var order=[['internal','n_internal'],['vendor','n_vendor'],['official','n_official'],['web','n_web']];
+  var h='<div class="map">';
+  order.forEach(function(o){
+    var list=groups[o[0]],worst=null;
+    list.forEach(function(s){if(!worst||(RANK[s.status]||0)>(RANK[worst.status]||0))worst=s;});
+    var cls=!worst?'':(RANK[worst.status]>=3?'hit':(worst.status==='healthy'||worst.status==='resolved'?'ok':''));
+    h+='<div class="node '+cls+'"><h3>'+esc(t(o[1]))+'</h3>';
+    if(worst){h+='<span class="st chip '+(cls==='hit'?'c-bad':cls==='ok'?'c-ok':'c-info')+'">'+esc(t('s_'+worst.status)||worst.status)+' · '+list.length+esc(t('signals'))+'</span><p>'+esc(clip(signalSummary(worst),120))+'</p>';}
+    else h+='<p>'+esc(t('noSig'))+'</p>';
+    h+='</div>';
+  });
+  return h+'</div><div class="hub">'+esc(t('hub'))+'</div>';
+}
+
+function listOf(v){return arr(v).map(function(x){return human(x);}).filter(Boolean);}
+function ul(items,emptyKey){return items.length?'<ul class="l">'+items.map(function(i){return '<li>'+esc(i)+'</li>';}).join('')+'</ul>':'<p class="mute" style="color:var(--muted);margin:0">'+esc(t(emptyKey))+'</p>';}
+
+function vendorCard(prov,name,descKey,data,c){
+  var cfg=arr(data&&data.connectors).filter(function(x){return x&&x.provider===prov;});
+  var on=cfg.some(function(x){return x.authenticated===true&&x.status==='live';});
+  var sigs=arr(c&&c.signals).filter(function(s){return s&&s.provider===prov;});
+  var last=sigs.length?sigs[sigs.length-1]:null;
+  var ds=arr(c&&c.decisions).filter(function(d){return d&&d.provider===prov;}),vd=ds.length?ds[ds.length-1]:null;
+  var h='<div class="vc"><h3>'+esc(name)+' <span class="chip '+(on?'c-ok':'c-warn')+'">'+esc(on?t('connected'):t('notConn'))+'</span> <span class="chip c-warn">'+esc(t('simSig'))+': '+sigs.length+'</span></h3>';
+  h+='<div style="font-size:12px;color:var(--muted)">'+esc(t(descKey))+'</div>';
+  h+='<p>'+esc(on?t('connD'):t('notConnD'))+'</p>';
+  if(vd)h+='<p><b>'+(lang==='zh'?'本轮判断：':'Cycle verdict: ')+'</b>'+esc(t('t_'+decKey(vd)))+'</p>';
+  if(last)h+='<p><b>'+esc(t('lastSig'))+'：</b>'+esc(clip(signalSummary(last),140))+'</p>';
+  return h+'</div>';
+}
+
+function events(c){
+  var ev=[],ts=c.ts||'',d=pickDecision(c),k=d?decKey(d):null;
+  if(arr(c.signals).some(function(s){return s&&s.status&&s.status!=='healthy'&&s.status!=='resolved';}))ev.push({k:'detected',ts:ts});
+  if(k==='vendor_incident_confirmed'||k==='global_outage_likely')ev.push({k:'confirmed',ts:ts,sub:t('t_'+k)});
+  arr(c.notices).forEach(function(n){ev.push({k:'notified',ts:ts,sub:noticePart(n,'title')});});
+  if(k==='resolved')ev.push({k:'resolved',ts:ts});
+  return ev;
+}
+
+function render(){
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.getAttribute('data-i18n'));});
+  document.querySelectorAll('#langSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-lang')===lang));});
+  if(window.Theme)window.Theme.relabel();
+  var data=window.GLOBAL_INTELLIGENCE_V3,root=document.getElementById('root'),bar=document.getElementById('cyclebar');
+  var cycles=data&&typeof data==='object'?arr(data.cycles):[];
+  if(!data||typeof data!=='object'){bar.innerHTML='';root.innerHTML='<div class="empty"><b>'+esc(t('emptyT'))+'</b>'+esc(t('emptyD'))+'<br><code>demo/data/global-intelligence-v3.js</code></div>';return;}
+  if(!cycles.length){bar.innerHTML='';root.innerHTML='<div class="empty"><b>'+esc(t('emptyT'))+'</b>'+esc(t('emptyCycleD'))+'</div>';return;}
+  if(cycIdx<0){cycIdx=cycles.findIndex(function(c){return arr(c.decisions).some(function(d){return decKey(d)==='vendor_incident_confirmed'||decKey(d)==='global_outage_likely';});});if(cycIdx<0)cycIdx=cycles.length-1;}else if(cycIdx>=cycles.length)cycIdx=cycles.length-1;
+  bar.innerHTML='<span class="label">'+esc(t('cycles'))+'</span>'+cycles.map(function(c,i){return '<button type="button" class="cycle" data-i="'+i+'" aria-pressed="'+(i===cycIdx)+'">'+esc(c.ts?(c.ts+' UTC'):('#'+(i+1)))+'</button>';}).join('');
+  var c=cycles[cycIdx],d=pickDecision(c);
+  if(!d&&!arr(c.signals).length){root.innerHTML='<div class="empty"><b>'+esc(t('emptyCycle'))+'</b>'+esc(t('emptyCycleD'))+'</div>';return;}
+  var k=decKey(d),cls=(k==='vendor_incident_confirmed'||k==='global_outage_likely')?'vendor':k==='resolved'?'resolved':k==='local_issue_likely'?'local':'';
+  var conf=norm(d&&(d.confidence!=null?d.confidence:(data.summary&&data.summary.confidence)));
+  var svcs=[];arr(d&&d.services).concat(d&&d.service?[d.service]:[]).forEach(function(s){var n=svcName(s);if(n&&svcs.indexOf(n)<0)svcs.push(n);});
+  if(!svcs.length)arr(c.signals).forEach(function(s){var n=svcName(s&&s.service);if(n&&svcs.indexOf(n)<0&&s.status!=='healthy')svcs.push(n);});
+  var rec=d&&d.recommendation||{},held=actionList(rec.hold||d&&d.held_actions||d&&d.hold),running=actionList(rec.keep_running||d&&d.still_running||d&&d.running);
+  if(!running.length)running=t('defRun');
+  var next=fmtTime(human(d&&(d.next_check_i18n||d.next_check)))||t('none');
+  var why=human(d&&d.reason_i18n)||t('y_'+k);
+  var support=evidenceList(d&&(d.support||d.supporting||d.supporting_evidence)),conflict=evidenceList(d&&(d.conflicts||d.conflicting||d.conflicting_evidence));
+  var h='';
+  h+='<section class="hero '+cls+'" aria-labelledby="hl"><div class="eyebrow">'+esc(t('updated'))+' '+esc(fmtTime(data.generated_at)||'—')+' · '+esc(t('ver'))+' '+esc(data.version||'3.0')+'</div>';
+  h+='<h1 id="hl" tabindex="-1">'+esc(t('t_'+k))+'</h1><p class="lead">'+esc(t('w_'+k))+'</p><div class="qa">';
+  h+='<div class="q"><span>'+esc(t('qWhy'))+'</span><strong>'+esc(why)+'</strong></div>';
+  h+='<div class="q conf"><div class="ring" style="--v:'+(conf==null?0:conf)+'" role="img" aria-label="'+esc(t('conf'))+' '+(conf==null?'—':conf+'%')+'"><b>'+(conf==null?'—':conf+'%')+'</b></div><div><span>'+esc(t('qConf'))+'</span><strong>'+esc(t('conf'))+' '+(conf==null?'—':conf+'%')+'</strong></div></div>';
+  h+='<div class="q"><span>'+esc(t('qImpact'))+'</span><strong>'+esc(svcs.length?svcs.join(' / '):t('unknownSvc'))+'</strong></div>';
+  h+='<div class="q"><span>'+esc(t('qHold'))+'</span><strong>'+esc(held.length?held.join('、'):t('none'))+'</strong></div>';
+  h+='<div class="q"><span>'+esc(t('qNext'))+'</span><strong>'+esc(next)+'</strong></div>';
+  h+='<div class="q"><span>'+esc(t('qWhat'))+'</span><strong>'+esc(t('people').replace('%u',d&&d.users||0).replace('%s',arr(d&&d.sites).length))+'</strong></div></div>'+serviceCards(c)+'<div class="recipients"><span>'+esc(t('channel'))+'</span><strong>'+esc(t('channelIT'))+' · '+esc(t('channelDesk'))+' · '+esc(t('notSent'))+'</strong></div></section>';
+  h+='<div class="grid">';
+  h+='<section class="card wide" aria-labelledby="m1"><h2 id="m1">'+esc(t('mapT'))+'<span class="meta">'+esc(t('mapMeta'))+'</span></h2><div class="body">'+mapSection(c,d)+'</div></section>';
+  h+='<section class="card" aria-labelledby="m2"><h2 id="m2">'+esc(t('whyT'))+'</h2><div class="body"><div class="two"><div><h3>'+esc(t('support'))+'</h3>'+ul(support,'noSupport')+'</div><div><h3>'+esc(t('conflict'))+'</h3>'+ul(conflict,'noConflict')+'</div></div></div></section>';
+  h+='<section class="card" aria-labelledby="m3"><h2 id="m3">'+esc(t('actT'))+'<span class="meta">'+esc(t('actMeta'))+'</span></h2><div class="body"><div class="hold"><h3 style="margin:0 0 6px;font-size:12.5px;color:var(--amber)">'+esc(t('held'))+'</h3>'+(held.length?ul(held,'noHeld'):'<span>'+esc(t('noHeld'))+'</span>')+'</div><div class="sec"><h3>'+esc(t('running'))+'</h3>'+ul(running,'noRun')+'</div></div></section>';
+  h+='<section class="card wide" aria-labelledby="m4"><h2 id="m4">'+esc(t('venT'))+'<span class="meta">'+esc(t('venMeta'))+'</span></h2><div class="body"><div class="vendors">'+vendorCard('microsoft','Microsoft','msD',data,c)+vendorCard('cisco','Cisco','ciD',data,c)+'</div></div></section>';
+  var evs=events(c),have={};evs.forEach(function(e){have[e.k]=e;});
+  h+='<section class="card wide" aria-labelledby="m5"><h2 id="m5">'+esc(t('tlT'))+'<span class="meta">'+esc(t('tlMeta'))+'</span></h2><div class="body"><div class="stages">';
+  ['detected','confirmed','notified','resolved'].forEach(function(s){h+='<div class="stg'+(have[s]?' done':'')+'"><b>'+esc(t('st_'+s))+'</b><small>'+esc(have[s]?(have[s].ts||'✓'):t('pending'))+'</small></div>';});
+  h+='</div>';
+  var all=[];cycles.forEach(function(cc,i){events(cc).forEach(function(e){e.cur=i===cycIdx;all.push(e);});});
+  h+=all.length?'<ol class="tl">'+all.map(function(e){return '<li class="k-'+e.k+'"><time>'+esc(e.ts)+'</time><b>'+esc(t('e_'+e.k))+'</b>'+(e.sub?'<span class="sub">'+esc(e.sub)+'</span>':'')+'</li>';}).join('')+'</ol>':'<div class="empty"><b>'+esc(t('emptyCycle'))+'</b>'+esc(t('emptyCycleD'))+'</div>';
+  h+='<h3 style="margin:14px 0 6px;font-size:12.5px;color:var(--muted)">'+esc(t('noteT'))+'</h3>';
+  var notes=arr(c.notices).map(function(n){var body=noticePart(n,'body'),ti=noticePart(n,'title'),channels=channelList(n);return '<div class="hold" style="border-color:var(--sky)"><span class="chip c-warn">DRY RUN</span> <b>'+esc(ti)+'</b>'+(body?'<div style="color:var(--muted);font-size:12.5px;margin-top:4px">'+esc(body)+'</div>':'')+(channels.length?'<div style="color:var(--muted);font-size:12px;margin-top:5px"><b>'+esc(t('channel'))+'：</b>'+esc(channels.join('、'))+'</div>':'')+'</div>';});
+  h+=notes.length?notes.join(''):'<p style="color:var(--muted);margin:0">'+esc(t('noNotice'))+'</p>';
+  h+='</div></section></div>';
+  root.innerHTML=h;
+}
+document.addEventListener('click',function(e){
+  var l=e.target.closest&&e.target.closest('#langSeg button');
+  if(l){lang=l.getAttribute('data-lang');try{localStorage.setItem('gi3-lang',lang);}catch(x){}render();return;}
+  var b=e.target.closest&&e.target.closest('.cycle');
+  if(b){cycIdx=Number(b.getAttribute('data-i'));render();var n=document.querySelector('.cycle[aria-pressed=true]');if(n)n.focus();}
+});
+document.addEventListener('keydown',function(e){
+  var b=e.target.closest&&e.target.closest('.cycle');if(!b)return;
+  var all=[].slice.call(document.querySelectorAll('.cycle')),i=all.indexOf(b),j=-1;
+  if(e.key==='ArrowRight')j=Math.min(all.length-1,i+1);else if(e.key==='ArrowLeft')j=Math.max(0,i-1);else if(e.key==='Home')j=0;else if(e.key==='End')j=all.length-1;
+  if(j>=0){e.preventDefault();all[j].focus();}
+});
+render();
+})();
+</script>
+</body>
+</html>

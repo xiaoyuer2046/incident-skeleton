@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Audit incident postmortems",
+      "description": "After any tool runs, append one audit line when an incident postmortem was written. Never blocks a tool.",
+      "trigger": "PostToolUse",
+      "matcher": "*",
+      "action": {
+        "type": "command",
+        "command": "python3 skill/hooks/audit_incident.py"
+      },
+      "timeout": 30
+    }
+  ]
+}

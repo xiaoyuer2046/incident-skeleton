@@ -1,0 +1,28 @@
+# Incident Skeleton v4 — Tasks
+
+- [x] 1. Shared runtime `skill/skeleton_v4/skeleton.py` (Req 1, 3, 5)
+  - [x] 1.1 Six fixed steps, three slots, adapter protocol
+  - [x] 1.2 Safety → gate → known link → crew order in TRIAGE
+  - [x] 1.3 Skipped steps keep six-step records
+  - [x] 1.4 Assert narrowed allow-list is a subset of the original
+- [x] 2. App adapters (Req 2)
+  - [x] 2.1 `app_devices.py` reusing `remediate.py`
+  - [x] 2.2 `app_servicedesk.py` reusing `desk.py` checks and the repair loop, with Teams/Outlook detection
+  - [x] 2.3 Tiny third adapter in tests proves the runtime does not change
+- [x] 3. Learning engine `learning.py` (Req 4)
+  - [x] 3.1 Tier order A → B → C → D
+  - [x] 3.2 Vendor MCP known issues create candidates for both apps
+  - [x] 3.3 Corroboration for Tier C and D
+  - [x] 3.4 Harmful advisory pauses a method
+  - [x] 3.5 Injection, unknown action, wrong device rejected
+  - [x] 3.6 `4.0.N` immutable versions, bilingual dry-run notices, dedupe
+- [x] 4. Plug-ins `plugins.py` (Req 5, 6)
+  - [x] 4.1 `triage_gate` from v3
+  - [x] 4.2 `mitigate_rank` hints and in-memory narrowing
+  - [x] 4.3 `log_learn` confirmed re-checks only
+- [x] 5. Demo `run.py`, `simulate.py`, `demo/data/skeleton-v4.js` (design §6, §7)
+- [x] 6. Tests `test_skeleton_v4.py`, `test_learning_v4.py`; all earlier tests still pass
+- [x] 7. Pages `demo/skeleton-v4.html`, `demo/guide-v4.html` (design §8)
+- [x] 8. Docs `DEVPOST-v4.md`, `VERSIONS.md`, `docs/v4-收尾说明.md`, `skill/SKILL-v4.md`
+- [x] 9. Cross-platform hook `skill/hooks/audit_incident.py`
+- [x] 10. `README.md` points reviewers to v4
