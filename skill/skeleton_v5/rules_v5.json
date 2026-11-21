@@ -1,0 +1,36 @@
+{
+  "_comment": "The owner's rules for v5. Code reads them and never edits them, policy.json or actions.json. All values are for the dry run.",
+  "news_consensus": {
+    "_comment": "Many independent public reports = likely vendor outage, even with no official word. Official status or vendor MCP = confirmed.",
+    "min_independent_sources": 3,
+    "window_minutes": 60,
+    "likely_holds": [],
+    "notify_employees": true
+  },
+  "merge": {
+    "_comment": "Tickets from different systems about the same service, or about the same device, become one parent.",
+    "window_minutes": 30,
+    "min_systems": 2
+  },
+  "permission_evolution": {
+    "_comment": "Learning narrows by itself. Widening is only ever a proposal: one step (approval -> standing approval), one action, one symptom, a person decides, and it expires.",
+    "min_successes": 4,
+    "min_rate": 0.9,
+    "grant_days": 30,
+    "never_widen": ["reset-mfa", "add-vpn-group"],
+    "approvers": {"servicedesk": {"*": ["liuyan"]}}
+  },
+  "meeting_window": {
+    "_comment": "While a room is in a meeting that still works, risky actions wait until it ends.",
+    "defer_risks": ["medium", "high"]
+  },
+  "metrics": {
+    "_comment": "Estimates for the demo, not measurements.",
+    "minutes_per_duplicate_ticket": 10,
+    "minutes_per_avoided_fix": 15
+  },
+  "sites": {
+    "HQ": {"en": "HQ", "zh": "总部"},
+    "BR": {"en": "Branch", "zh": "分部"}
+  }
+}

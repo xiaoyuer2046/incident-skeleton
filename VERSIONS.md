@@ -1,9 +1,22 @@
 # Versions / 版本清单
 
-v4.1 is the only version in this branch. Older docs and demo pages were removed; they remain in the Git history.
-本分支只保留 v4.1。旧文档和旧网页已删除，在 Git 历史里仍可找回。
+v5 is current. It adds `skill/skeleton_v5/` and reuses the v4 runtime and adapters unchanged. Older docs and demo pages were removed; they remain in the Git history.
+当前是 v5。它新增 `skill/skeleton_v5/`，原样复用 v4 骨架和适配器。旧文档和旧网页已删除，在 Git 历史里仍可找回。
 
-## Files / 文件
+## v5 files / v5 文件
+
+| Purpose / 用途 | File / 文件 |
+|---|---|
+| Owner's rules / 规则 | `skill/skeleton_v5/rules_v5.json` |
+| Access layer / 接入层 | `skill/skeleton_v5/connectors.py`, `connectors_v5.json` |
+| News check / 新闻核查 | `skill/skeleton_v5/news.py`, `news_v5.json` |
+| Permission growth / 权限进化 | `skill/skeleton_v5/permissions.py` |
+| Plug-ins and adapters / 插件与适配器 | `skill/skeleton_v5/plugins_v5.py`, `adapters_v5.py` |
+| Dry-run morning / 演练 | `skill/skeleton_v5/run.py` |
+| Spec / 规格 | `.kiro/specs/incident-skeleton-v5/` |
+| Tests / 测试 | `skill/tests/test_skeleton_v5.py` |
+
+## v4 files / v4 文件
 
 | Purpose / 用途 | File / 文件 |
 |---|---|

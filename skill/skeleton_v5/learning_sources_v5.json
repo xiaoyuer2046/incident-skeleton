@@ -1,0 +1,8 @@
+[
+ {"source": "servicenow_kb", "ref": "KB0012345", "updated_at": "2026-11-21T08:33:00Z", "app": "servicedesk", "device": "email", "symptom": "full",
+  "action": "raise-mailbox-quota", "text": "Mailbox full: confirm the archive policy ran, then raise the quota one step.",
+  "source_label": {"en": "ServiceNow KB · mailbox full", "zh": "ServiceNow 知识库 · 邮箱已满"}},
+ {"source": "servicenow_kb", "ref": "KB0012399", "updated_at": "2026-11-21T08:34:00Z", "app": "servicedesk", "device": "account", "symptom": "mfa",
+  "action": "reset-mfa", "text": "Lost MFA device: after the identity check, reset MFA so the user can enrol a new device.",
+  "source_label": {"en": "ServiceNow KB · lost MFA device", "zh": "ServiceNow 知识库 · MFA 设备丢失"}}
+]
