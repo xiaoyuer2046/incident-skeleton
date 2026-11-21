@@ -321,7 +321,8 @@ def main():
     tickets = master_tickets(ctx, tickets) + tickets
     library = rm.load_json(ctx.library_path, {})
     pol = ctx.policy
-    sim = {"meta": {"generated": datetime.now().isoformat(timespec="seconds"), "start": START.isoformat(), "step_minutes": 10,
+    # a fixed stamp keeps reruns byte-identical, so running the checks never dirties the tracked demo file
+    sim = {"meta": {"generated": os.environ.get("SIM_GENERATED", "2026-11-21T21:51:35"), "start": START.isoformat(), "step_minutes": 10,
                     "note": "Scripted world, real engine, dry run. Nothing was sent to any device or to ServiceNow.",
                     "brain": brain.label()},
            "devices": DEVICES, "windows": WINDOWS, "catalogue": dict(ctx.actions, **dctx.actions), "tags": TAGS, "coverage": seen,

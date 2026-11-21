@@ -377,10 +377,10 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
           <li><span class="en">Text that gives orders, runs commands or asks for permissions is blocked and recorded.</span><span class="zh">下指令、要执行命令或要权限的文字会被拦截并记录。</span></li>
           <li><span class="en">Fixes the catalogue does not know, or that belong to another device type, are refused.</span><span class="zh">目录里没有的修法，或属于别的设备类型的修法，一律拒绝。</span></li>
         </ul></div>
-      <div class="card rv"><h3><span class="en">Learning only tightens</span><span class="zh">学习只会收紧</span></h3>
+      <div class="card rv"><h3><span class="en">Learning tightens on its own</span><span class="zh">学习自己只会收紧</span></h3>
         <ul>
           <li><span class="en">If a vendor says a fix is harmful, that fix is paused and people are told.</span><span class="zh">厂商说某个修法有害，就暂停它并通知人。</span></li>
-          <li><span class="en">Learning never adds a permission. policy.json stays the only source.</span><span class="zh">学习从不增加权限，policy.json 仍然是唯一来源。</span></li>
+          <li><span class="en">Learning never adds a permission by itself. policy.json stays the only source. In v5 it may propose a standing approval; only a listed approver grants it, and it expires.</span><span class="zh">学习自己从不增加权限，policy.json 仍然是唯一来源。v5 起它可以提议长期授权，只有名单上的审批人能批准，到期失效。</span></li>
           <li><span class="en">Every change is a new version and one bilingual dry-run notice.</span><span class="zh">每次变化都是一个新版本，并生成一条中英文演练通知。</span></li>
           <li><span class="en">Unchanged sources create no new notice.</span><span class="zh">没有变化的来源不会产生新通知。</span></li>
         </ul></div>
@@ -557,7 +557,7 @@ footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
         <tr><td><b><span class="en">Shared six-step runtime, both apps run through it</span><span class="zh">共用的六步运行时，两个应用都从它跑</span></b></td><td><span class="tag t-ok"><span class="en">real, tested</span><span class="zh">可用，有测试</span></span> <span class="en">dry run</span><span class="zh">演练模式</span></td></tr>
         <tr><td><b><span class="en">Three plug-in slots: triage, mitigate, log</span><span class="zh">三个插件插槽：初判、处置、记录</span></b></td><td><span class="tag t-ok"><span class="en">real logic, tested</span><span class="zh">逻辑可用，有测试</span></span> <span class="en">simulated signals</span><span class="zh">模拟信号</span></td></tr>
         <tr><td><b><span class="en">Learning ladder A to D, corroboration, pause on harm</span><span class="zh">学习梯子 A 到 D、佐证、有害即暂停</span></b></td><td><span class="tag t-ok"><span class="en">real logic, tested</span><span class="zh">逻辑可用，有测试</span></span> <span class="en">sample sources</span><span class="zh">示例来源</span></td></tr>
-        <tr><td><b><span class="en">Injection blocking, permission only narrows</span><span class="zh">注入拦截、权限只会收紧</span></b></td><td><span class="tag t-ok"><span class="en">real, tested</span><span class="zh">可用，有测试</span></span></td></tr>
+        <tr><td><b><span class="en">Injection blocking; learning narrows on its own, widening only with an approver (v5)</span><span class="zh">注入拦截；学习自己只收紧，放宽要审批人批准（v5）</span></b></td><td><span class="tag t-ok"><span class="en">real, tested</span><span class="zh">可用，有测试</span></span></td></tr>
         <tr><td><b><span class="en">Global outage gate, Teams shared parent ticket</span><span class="zh">全局故障闸门、Teams 共用总单</span></b></td><td><span class="tag t-ok"><span class="en">real logic, tested</span><span class="zh">逻辑可用，有测试</span></span> <span class="en">simulated signals</span><span class="zh">模拟信号</span></td></tr>
         <tr><td><b><span class="en">Microsoft MCP, Cisco MCP, live internet</span><span class="zh">微软 MCP、思科 MCP、实时互联网</span></b></td><td><span class="tag t-bad"><span class="en">not signed in</span><span class="zh">未登录</span></span> <span class="en">sample data only</span><span class="zh">只有示例数据</span></td></tr>
         <tr><td><b><span class="en">Patrol, repair loop, permissions, brakes, kill switch</span><span class="zh">巡检、修复闭环、权限、刹车、紧急开关</span></b></td><td><span class="tag t-ok"><span class="en">real, tested (v1)</span><span class="zh">可用，有测试（v1）</span></span></td></tr>

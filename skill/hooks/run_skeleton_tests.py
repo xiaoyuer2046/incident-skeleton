@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""run_v4_tests.py: run the v4 runtime and learning tests for the Kiro "tests on save" hook.
+"""run_skeleton_tests.py: run the skeleton tests (v4 runtime, v4 learning, v5) for the Kiro "Skeleton tests on save" hook.
 
 One Python call, so the hook command works the same on macOS, Linux and Windows.
-Exit code is 0 only when both test files pass.
+Exit code is 0 only when every test file passes.
 """
 import os
 import subprocess
@@ -19,7 +19,7 @@ def main() -> int:
         code = subprocess.call([sys.executable, os.path.join(ROOT, rel)], cwd=ROOT, env=env)
         print("[hook] %s -> %s" % (rel, "pass" if code == 0 else "FAIL (exit %d)" % code))
         failed += code != 0
-    print("[hook] v4/v5 tests: %d/%d passed" % (len(TESTS) - failed, len(TESTS)))
+    print("[hook] skeleton tests: %d/%d passed" % (len(TESTS) - failed, len(TESTS)))
     return 1 if failed else 0
 
 

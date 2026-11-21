@@ -156,6 +156,21 @@ class News(unittest.TestCase):
         other = [rep("a", "a.example", "Outlook down", service="outlook") for _ in range(3)]
         self.assertEqual(N.consensus(other, "microsoft", "teams", self.now, RULES)["count"], 0)
 
+    def test_subdomain_is_the_same_site(self):
+        sub = [rep("a", "a.example", "Teams down"), rep("b", "news.a.example", "Teams sign-in broken"), rep("c", "m.a.example", "Teams outage")]
+        c = N.consensus(sub, "microsoft", "teams", self.now, RULES)
+        self.assertEqual((c["count"], c["level"]), (1, "watch"))
+
+    def test_malformed_reports_are_dropped_not_raised(self):
+        bad = [{"id": "x", "provider": "microsoft", "service": "teams", "title": "Teams down"},
+               rep("y", "", "Teams down"), rep("z", "z.example", "Teams down", ts="not a time"), rep("w", "w.example", None)]
+        c = N.consensus(bad, "microsoft", "teams", self.now, RULES)
+        self.assertEqual((c["count"], [d["why"] for d in c["dropped"]]), (0, ["malformed"] * 4))
+
+    def test_time_without_zone_is_utc(self):
+        c = N.consensus([rep("a", "a.example", "Teams down", ts="2026-11-21T09:00:00")], "microsoft", "teams", self.now, RULES)
+        self.assertEqual(c["count"], 1)
+
 
 class Connectors(unittest.TestCase):
     def test_new_system_is_config_only(self):
@@ -222,11 +237,32 @@ class Permissions(unittest.TestCase):
     def test_revoke(self):
         b, _ = self.book()
         pid = next(x["id"] for x in b.propose() if x["action"] == "raise-mailbox-quota")
+        self.assertEqual(b.revoke(pid, "liuyan")["why"], "not_active")   # nothing to revoke yet
         b.decide(pid, "liuyan")
         self.assertFalse(b.revoke(pid, "ext")["ok"])
         self.assertTrue(b.revoke(pid, "liuyan")["ok"])
+        self.assertEqual(b.revoke(pid, "liuyan")["why"], "not_active")   # no second version
         self.assertEqual(b.standing("servicedesk", "email", "full"), {})
-        self.assertEqual(b.versions[-1]["change"], "revoked")
+        self.assertEqual([v["change"] for v in b.versions].count("revoked"), 1)
+        self.assertEqual([p for p in b.propose() if p["action"] == "raise-mailbox-quota"], [])  # a person's no is not asked again
+
+    def test_expired_grant_can_be_proposed_again(self):
+        b, clock = self.book()
+        pid = next(x["id"] for x in b.propose() if x["action"] == "raise-mailbox-quota")
+        b.decide(pid, "liuyan")
+        self.assertEqual(b.propose(), [])
+        clock["now"] = "2026-12-22T09:06:00Z"
+        again = [p for p in b.propose() if p["action"] == "raise-mailbox-quota"]
+        self.assertEqual(b.proposals[pid]["state"], "expired")
+        self.assertEqual((len(again), again[0]["state"], again[0]["renews"]), (1, "pending", pid))
+        self.assertEqual(b.standing("servicedesk", "email", "full"), {})  # needs a person again
+        self.assertTrue(b.decide(again[0]["id"], "liuyan")["ok"])
+        self.assertEqual(list(b.standing("servicedesk", "email", "full")), ["raise-mailbox-quota"])
+
+    def test_unknown_proposal_is_refused_not_raised(self):
+        b, _ = self.book()
+        self.assertEqual(b.decide("PG-nope", "liuyan")["why"], "unknown_proposal")
+        self.assertEqual(b.revoke("PG-nope", "liuyan")["why"], "unknown_proposal")
 
     def test_policy_files_not_touched(self):
         before = digest(GUARDED)

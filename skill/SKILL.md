@@ -55,7 +55,7 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 
 ## 权限不变量
 
-- 学习只能收紧权限，不能放宽。
+- 学习自己只能收紧权限，不能自己放宽。v5 起可以**提议**长期授权，只有名单上的审批人能批准，到期失效。
 - 不写入 `policy.json`、`actions.json`、`app.json`。
 - 物理动作不会变成自动执行。
 - 暂停的动作只是建议暂缓，真正的动作仍由人和策略决定。
@@ -75,5 +75,5 @@ Microsoft Teams 出现厂商故障时，服务台的登录请求和会议室 Tea
 - 评委入口：`demo/guide-v4.html`
 - 演示：`demo/skeleton-v4.html`
 - 规格：`.kiro/specs/incident-skeleton-v4/`
-- 提交：`DEVPOST-v4.md`
+- 提交：`DEVPOST.md`
 - 版本清单：`VERSIONS.md`

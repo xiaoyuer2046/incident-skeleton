@@ -45,6 +45,7 @@ These rules apply to the crew lead, every device crew, the service desk agent, a
 ```
 python3 skill/remediation/simulate.py       # must print "scenarios covered: N/N   missing: none"
 python3 skill/skeleton_v4/simulate.py       # regenerates demo/data/skeleton-v4.js
+python3 skill/skeleton_v5/simulate.py       # regenerates demo/data/skeleton-v5.js
 for f in skill/tests/test_*.py; do python3 "$f"; done   # includes test_skeleton_v4.py and test_learning_v4.py
 ```
 
