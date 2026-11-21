@@ -1,0 +1,43 @@
+{
+  "_comment": "SIMULATED managed systems. A new system is one more entry here. secret_env names an environment variable; the dry run never reads it.",
+  "systems": [
+    {
+      "id": "servicenow", "kind": "itsm", "label": {"en": "ServiceNow", "zh": "ServiceNow"},
+      "scopes": ["tickets:read", "tickets:write"], "secret_env": "SN_TOKEN", "health": "ok",
+      "open": [
+        {"id": "INC0040001", "site": "HQ", "opened_at": "2026-11-21T09:01:00Z", "text": "Teams sign-in fails for Amy", "text_zh": "Amy 的 Teams 登录失败"},
+        {"id": "INC0040002", "site": "BR", "opened_at": "2026-11-21T09:02:00Z", "text": "Teams 登录失败，一直转圈", "text_zh": "Teams 登录失败，一直转圈"},
+        {"id": "INC0040003", "site": "HQ", "opened_at": "2026-11-21T09:03:00Z", "ci": "PRN-2F-01", "text": "Printer 2F-01 shows a paper jam", "text_zh": "2F-01 打印机显示卡纸"}
+      ]
+    },
+    {
+      "id": "ap_controller", "kind": "wifiap", "label": {"en": "AP controller", "zh": "AP 管理系统"},
+      "scopes": ["status:read", "ap:reboot"], "secret_env": "AP_CONTROLLER_KEY", "health": "ok",
+      "open": [
+        {"id": "AP-ALERT-77", "site": "HQ", "opened_at": "2026-11-21T09:00:00Z", "ci": "AP-4F-07", "text": "Access point AP-4F-07 offline", "text_zh": "接入点 AP-4F-07 离线"}
+      ]
+    },
+    {
+      "id": "room_manager", "kind": "av", "label": {"en": "Meeting-room manager", "zh": "会议室音视频管理系统"},
+      "scopes": ["status:read", "room:restart"], "secret_env": "ROOM_MANAGER_TOKEN", "health": "ok",
+      "open": [
+        {"id": "AV-ALERT-502", "site": "HQ", "opened_at": "2026-11-21T09:04:00Z", "ci": "AV-5F-502", "text": "Room 5F-502: Teams Rooms cannot sign in", "text_zh": "5F-502：Teams Rooms 登录不了"},
+        {"id": "AV-ALERT-301", "site": "HQ", "opened_at": "2026-11-21T09:04:30Z", "ci": "AV-3F-301", "text": "Room 3F-301: camera image flickers", "text_zh": "3F-301：摄像头画面闪烁"}
+      ]
+    },
+    {
+      "id": "signage_cms", "kind": "signage", "label": {"en": "Signage CMS", "zh": "数字标牌系统"},
+      "scopes": ["status:read", "content:push"], "secret_env": "SIGNAGE_CMS_TOKEN", "health": "timeout",
+      "open": [
+        {"id": "SIG-ALERT-9", "site": "BR", "opened_at": "2026-11-21T09:02:00Z", "ci": "SIG-BR-LOBBY", "text": "Lobby screen is blank", "text_zh": "大堂屏幕黑屏"}
+      ]
+    },
+    {
+      "id": "print_manager", "kind": "printer", "label": {"en": "Print manager", "zh": "打印机管理系统"},
+      "scopes": ["status:read", "queue:manage"], "secret_env": "PRINT_MANAGER_TOKEN", "health": "ok",
+      "open": [
+        {"id": "PRN-ALERT-12", "site": "HQ", "opened_at": "2026-11-21T09:02:30Z", "ci": "PRN-2F-01", "text": "PRN-2F-01 paper jam in tray 2", "text_zh": "PRN-2F-01 纸盒 2 卡纸"}
+      ]
+    }
+  ]
+}

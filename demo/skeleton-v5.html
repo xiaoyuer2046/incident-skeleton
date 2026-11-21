@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Skeleton v5 · Connect, warn early, grow with approval</title>
+<script src="theme.js"></script>
+<style>
+:root{--ink:#0b0812;--panel:#161022;--panel2:#1d1530;--line:rgba(190,170,255,.14);--line2:rgba(190,170,255,.28);--text:#eee9df;--muted:#a79dbb;--dim:#8a81a0;--ember:#ff7a1a;--violet:#8b5cf6;--ghost:#4ee6a0;--blood:#ff4d64;--amber:#ffc24a;--sky:#6cb6ff;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+html[data-theme=day]{color-scheme:light;--ink:#f5f3f8;--panel:#fff;--panel2:#f7f5fa;--line:rgba(55,36,92,.12);--line2:rgba(55,36,92,.28);--text:#211c2c;--muted:#5a5269;--dim:#7a7289;--ember:#c04c00;--violet:#6941d9;--ghost:#137f50;--blood:#ca2941;--amber:#8a5700;--sky:#1d68bf}
+html[data-theme=night]{color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 460px at 80% -8%,rgba(139,92,246,.18),transparent 62%),var(--ink);color:var(--text);font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+button{font:inherit;color:inherit}
+a{color:var(--sky)}
+.skip{position:fixed;left:12px;top:-60px;z-index:100;padding:8px 12px;background:var(--panel);color:var(--text);border:2px solid var(--violet);border-radius:8px}.skip:focus{top:12px}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px clamp(16px,3vw,34px);background:color-mix(in srgb,var(--ink) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font:600 18px ui-serif,Georgia,serif;white-space:nowrap}.brand em{font-style:italic;color:var(--ember)}.brand small{display:block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--amber);border-radius:999px;color:var(--amber);font:700 11px var(--mono);letter-spacing:.06em}.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ctrl{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden}.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font:600 12px var(--mono);color:var(--muted)}.seg button[aria-pressed=true]{background:rgba(255,122,26,.16);color:var(--ember)}.seg button:hover{color:var(--text)}
+.shell{width:min(1360px,100%);margin:auto;padding:clamp(16px,3vw,32px)}
+.banner{margin-bottom:14px;padding:9px 14px;border:1px dashed var(--amber);border-radius:12px;color:var(--amber);font-size:12.5px}
+.eyebrow{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hero{border:1px solid var(--line);border-left:5px solid var(--violet);border-radius:20px;background:var(--panel);padding:22px clamp(16px,2.4vw,28px);margin-bottom:16px}
+.hero h1{margin:6px 0 10px;font:650 clamp(22px,3.4vw,38px)/1.2 ui-serif,Georgia,"Songti SC",serif}
+.hero .lead{margin:0 0 14px;color:var(--muted);max-width:900px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font:750 22px var(--mono)}
+.stat.hot{border-color:var(--ember)}.stat.hot strong{color:var(--ember)}
+.panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:16px clamp(14px,2vw,22px);margin-bottom:16px}
+.panel>h2{margin:0 0 4px;font-size:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.panel>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--violet);color:var(--violet);font:800 12px var(--mono)}
+.timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.tl{padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2)}.tl b{font:750 15px var(--mono);color:var(--ember)}.tl span{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.sys{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);min-width:0}.sys b{display:block;font-size:13px}.sys small{display:block;color:var(--muted);font:500 11px var(--mono);overflow-wrap:anywhere;margin-top:3px}
+.sys.down{border-color:var(--blood)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:10px 12px;min-width:0}
+.box h3{margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.box ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}.box li{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.box li b{color:var(--text);font-weight:600}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border:1px solid var(--line2);border-radius:999px;font:650 11.5px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.c-ok{color:var(--ghost);border-color:var(--ghost)}.c-bad{color:var(--blood);border-color:var(--blood)}.c-warn{color:var(--amber);border-color:var(--amber)}.c-info{color:var(--sky);border-color:var(--sky)}.c-v{color:var(--violet);border-color:var(--violet)}
+.meter{display:flex;gap:6px;align-items:center;margin:4px 0 10px}.meter i{display:block;width:34px;height:12px;border-radius:4px;border:1px solid var(--line2)}.meter i.on{background:var(--ember);border-color:var(--ember)}.meter i.need{outline:2px dashed var(--amber);outline-offset:2px}
+.notice{margin:8px 0 0;padding:10px 12px;border:1px solid var(--sky);border-radius:12px;font-size:13px}
+.notice.down{border-color:var(--blood)}
+.item{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:12px 14px;min-width:0;margin-bottom:12px}
+.item header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.item h3{margin:0;font-size:14px;flex:1 1 220px;overflow-wrap:anywhere}
+.six{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;list-style:none;margin:0;padding:0}
+.six li{padding:8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--panel);min-width:0}
+.six li b{display:block;font-size:12px}.six li span{display:block;margin-top:3px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.six li.slot{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 14%,var(--panel))}.six li.slot span{color:var(--text)}
+.six li.skipped{opacity:.55;border-style:dashed;background:transparent}
+.notes{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.held{margin:8px 0 0;font-size:12.5px;color:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--muted);font:650 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.links a{display:block;padding:12px 14px;border:1px solid var(--line2);border-radius:14px;background:var(--panel);text-decoration:none;color:var(--text)}.links a:hover{border-color:var(--violet)}.links a b{display:block}.links a span{color:var(--muted);font-size:12.5px}
+.foot{margin-top:16px;padding:12px 2px;color:var(--dim);font-size:12px}.foot strong{color:var(--amber)}
+@media(max-width:1100px){.six{grid-template-columns:repeat(3,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.top{position:relative}.ctrl{width:100%;margin-left:0}.two,.timeline,.links{grid-template-columns:1fr}.six,.grid5{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.six,.stats,.grid5{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip"></a>
+<header class="top">
+  <div class="brand">Incident <em>Skeleton</em><small data-i18n="product"></small></div>
+  <span class="badge" data-i18n="dry"></span>
+  <div class="ctrl">
+    <div class="seg" id="themeSeg"></div>
+    <div class="seg" id="langSeg" role="group" aria-label="Language / 语言">
+      <button type="button" data-lang="zh">中文</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+<main class="shell" id="main" tabindex="-1">
+  <div class="banner" role="note" data-i18n="banner"></div>
+  <div id="root" aria-live="polite"></div>
+  <footer class="foot"><span data-i18n="footer"></span> <strong data-i18n="dryFoot"></strong></footer>
+</main>
+<script src="data/skeleton-v5.js"></script>
+<script>
+var T={
+zh:{skip:'跳到正文',product:'v5 · 接入 · 早提醒 · 授权进化',dry:'演练 · 模拟数据',
+banner:'这一页全是模拟数据的演练结果。没有连接真实系统，没有发出任何消息，也没有执行任何修复。',
+eyebrow:'Kiroween 2026 · Skeleton Crew · v5',h1:'接上各个管理系统，比官方更早提醒，在人批准下变聪明',
+lead:'v5 没有改骨架：所有单子仍走 v4 的同一个六步流程（{rt}，{n} 行）。v5 只加了接入层、新闻核查和权限进化三块插件。',
+tl:'时间线',t1:'接入 5 个系统，合并单子；4 个网站报道 Teams 故障，大概率是微软的问题，马上通知员工',t2:'AI 提议长期授权，审批人批准；下一个同类问题自动修好',t3:'微软官方确认，后来的单子挂到厂商故障下，暂停无用修复',
+s1:'接入层',s1p:'每个系统就是一条配置：声明权限范围，只写密钥的环境变量名，演练不读取。',down:'没响应：本轮跳过，已通知管理员',
+s2:'合并单子',s2p:'同一服务出现在两个以上系统里，或者同一台设备，就合成一张总单。',kidS:'同一服务',kidD:'同一设备',
+s3:'新闻核查',s3p:'每个网站只算一票，转载只算一次，太旧的不算，下命令的文本直接丢掉。',need:'需要',counted:'算数的报道',dropped:'去掉的报道',later:'09:20 再查',
+s4:'六步处理',s4p:'每张单子都走同一个六步。紫色是插件格子，虚线是跳过的步骤。',held:'暂停：',
+s5:'权限进化',s5p:'AI 只能提议。只有名单上的审批人能批准，30 天到期，可以撤回。身份和现场类操作规则不允许。',
+th1:'提议',th2:'操作',th3:'变化',th4:'证据',th5:'状态',refused:'被拒绝的批准',
+s6:'数字',s6p:'演练估算，不是实测。',
+devices:'设备',servicedesk:'服务台',links:'更多',l1:'v4 演示',l1s:'同一骨架的两个应用',l2:'产品指南',l2s:'评委入口',l3:'v5 规格',l3s:'.kiro/specs/incident-skeleton-v5/',
+footer:'同一个骨架，接更多系统，更早发现，更少人工。',dryFoot:'所有通知和修复都是演练。',
+out:{resolved:'已解决',local_repair:'本地修好',on_hold:'等待中',linked_vendor:'挂到厂商故障',escalated:'交给人',rejected:'已拒绝',linked_known:'挂到已知故障'}},
+en:{skip:'Skip to content',product:'v5 · connect · warn early · grow with approval',dry:'DRY RUN · SIMULATED',
+banner:'Everything on this page is a dry run on simulated data. No real system was called, no message was sent and no repair ran.',
+eyebrow:'Kiroween 2026 · Skeleton Crew · v5',h1:'Connect every management system, warn before the vendor does, and get smarter with a person\'s approval',
+lead:'v5 does not touch the skeleton: every item still walks the same v4 six steps ({rt}, {n} lines). v5 adds an access layer, a news check and permission growth as plug-ins.',
+tl:'Timeline',t1:'Five systems connected, items merged; four sites report Teams down, so a Microsoft outage is likely, and people are told at once',t2:'AI proposes a standing approval, the approver grants it; the next case is fixed alone',t3:'Microsoft confirms; later items link to the vendor incident and useless fixes are held',
+s1:'Access layer',s1p:'Each system is one config entry: declared scopes and the NAME of its secret variable, never read in the dry run.',down:'not answering: skipped this round, admin told',
+s2:'Merged items',s2p:'The same service in two or more systems, or the same device, becomes one parent.',kidS:'same service',kidD:'same device',
+s3:'News check',s3p:'One vote per site, reposts count once, old reports do not count, text that gives orders is dropped.',need:'need',counted:'Counted',dropped:'Dropped',later:'Checked again at 09:20',
+s4:'Six steps',s4p:'Every item walks the same six steps. Violet marks a plug-in slot; dashed means skipped.',held:'Held: ',
+s5:'Permission growth',s5p:'AI only proposes. Only a listed approver grants; grants expire in 30 days and can be revoked. Identity and on-site actions are refused by rule.',
+th1:'Proposal',th2:'Action',th3:'Change',th4:'Evidence',th5:'State',refused:'Refused approvals',
+s6:'Numbers',s6p:'Dry-run estimates, not measurements.',
+devices:'devices',servicedesk:'service desk',links:'More',l1:'v4 demo',l1s:'two apps on one skeleton',l2:'Product guide',l2s:'judge entry',l3:'v5 spec',l3s:'.kiro/specs/incident-skeleton-v5/',
+footer:'One skeleton, more systems, earlier warnings, fewer people in the loop.',dryFoot:'Every notice and repair is a rehearsal.',
+out:{resolved:'resolved',local_repair:'fixed locally',on_hold:'waiting',linked_vendor:'linked to vendor',escalated:'sent to a person',rejected:'rejected',linked_known:'linked to known incident'}}};
+var D=window.SKELETON_V5,lang='zh';
+try{var sl=localStorage.getItem('lang');if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
+function t(k){return T[lang][k]}
+function L(o){if(o==null)return '';if(typeof o==='string')return o;return o[lang]||o.en||''}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function hm(ts){return (ts||'').slice(11,16)}
+var OUTC={resolved:'c-ok',local_repair:'c-ok',on_hold:'c-warn',linked_vendor:'c-info',escalated:'c-bad',rejected:'c-bad',linked_known:'c-info'};
+function render(){
+ if(!D){document.getElementById('root').innerHTML='<div class="panel">data/skeleton-v5.js missing: run python skill/skeleton_v5/simulate.py</div>';return}
+ var m=D.metrics,ML=D.metric_labels,h='';
+ h+='<section class="hero"><div class="eyebrow">'+esc(t('eyebrow'))+'</div><h1>'+esc(t('h1'))+'</h1><p class="lead">'+esc(t('lead').replace('{rt}',D.runtime_file).replace('{n}',D.runtime_lines))+'</p><div class="stats">';
+ [['alert_minutes_before_official',1],['duplicates_avoided',0],['done_by_ai',0],['minutes_saved_estimate',1]].forEach(function(k){h+='<div class="stat'+(k[1]?' hot':'')+'"><span>'+esc(L(ML[k[0]]))+'</span><strong>'+esc(m[k[0]])+'</strong></div>'});
+ h+='</div></section>';
+ h+='<section class="panel"><h2>'+esc(t('tl'))+'</h2><ol class="timeline"><li class="tl"><b>09:05</b><span>'+esc(t('t1'))+'</span></li><li class="tl"><b>09:06</b><span>'+esc(t('t2'))+'</span></li><li class="tl"><b>09:20</b><span>'+esc(t('t3'))+'</span></li></ol></section>';
+ h+='<section class="panel"><h2><span class="num">1</span>'+esc(t('s1'))+'</h2><p>'+esc(t('s1p'))+'</p><div class="grid5">';
+ D.systems.forEach(function(s){var dn=s.status!=='ok';h+='<div class="sys'+(dn?' down':'')+'"><b>'+esc(L(s.label))+'</b><span class="chip '+(dn?'c-bad':'c-ok')+'">'+esc(L(s.text))+'</span><small>'+esc(s.scopes.join(' · '))+'</small><small>secret: $'+esc(s.secret_env)+'</small></div>'});
+ h+='</div>';
+ D.notices.filter(function(n){return n.kind==='connector_down'}).forEach(function(n){h+='<div class="notice down">'+esc(L(n))+'</div>'});
+ h+='</section>';
+ h+='<section class="panel"><h2><span class="num">2</span>'+esc(t('s2'))+'</h2><p>'+esc(t('s2p'))+'</p><div class="two">';
+ D.groups.forEach(function(g){h+='<div class="box"><h3>'+esc(L(g.label))+' <span class="chip c-v">'+esc(g.kind==='service'?t('kidS'):t('kidD'))+'</span><span class="chip">'+esc(g.parent)+'</span></h3><ul>';
+  g.children.forEach(function(id){var s=D.synced.filter(function(x){return x.id===id})[0]||{};h+='<li><b>'+esc(id)+'</b> · '+esc(s.system)+' · '+esc(s.site)+' · '+esc(lang==='zh'?s.text_zh:s.text)+'</li>'});
+  h+='</ul></div>'});
+ h+='</div></section>';
+ var N=D.news;
+ h+='<section class="panel"><h2><span class="num">3</span>'+esc(t('s3'))+' <span class="chip c-warn">'+esc(hm(N.at))+' · '+esc(L(N.label))+'</span><span class="chip c-info">'+esc(t('later'))+' · '+esc(L(N.later.label))+'</span></h2><p>'+esc(t('s3p'))+'</p>';
+ h+='<div class="meter" aria-label="'+N.count+'/'+N.need+'">';for(var i=0;i<Math.max(N.count,N.need);i++){h+='<i class="'+(i<N.count?'on':'')+(i===N.need-1?' need':'')+'"></i>'}h+='<span class="chip">'+N.count+' / '+esc(t('need'))+' '+N.need+'</span></div>';
+ h+='<div class="two"><div class="box"><h3>'+esc(t('counted'))+'</h3><ul>';N.sources.forEach(function(s){h+='<li><b>'+esc(s.domain)+'</b> · '+esc(hm(s.published_at))+' · '+esc(s.title)+'</li>'});
+ h+='</ul></div><div class="box"><h3>'+esc(t('dropped'))+'</h3><ul>';N.dropped.forEach(function(s){h+='<li><b>'+esc(s.domain)+'</b> · '+esc(L(s.why_label))+'</li>'});h+='</ul></div></div>';
+ D.notices.filter(function(n){return n.kind==='likely_outage'}).forEach(function(n){h+='<div class="notice">'+esc(L(n))+'</div>'});
+ h+='</section>';
+ h+='<section class="panel"><h2><span class="num">4</span>'+esc(t('s4'))+'</h2><p>'+esc(t('s4p'))+'</p>';
+ D.items.forEach(function(it){h+='<article class="item"><header><span class="chip">'+esc(it.phase)+'</span><span class="chip c-v">'+esc(t(it.app))+'</span><h3>'+esc(L(it.label))+'</h3><span class="chip '+(OUTC[it.outcome]||'')+'">'+esc(T[lang].out[it.outcome]||it.outcome)+'</span></header><ol class="six">';
+  it.steps.forEach(function(s){h+='<li class="'+(s.slot?'slot ':'')+(s.status==='skipped'?'skipped':'')+'"><b>'+esc(s.name)+(s.slot?' · '+esc(s.slot):'')+'</b><span>'+esc(L(s))+'</span></li>'});
+  h+='</ol>';if(it.held&&it.held.length)h+='<p class="held">'+esc(t('held'))+esc(it.held.map(L).join(lang==='zh'?'、':', '))+'</p>';
+  if(it.notes.length){h+='<ul class="notes">';it.notes.forEach(function(n){h+='<li>'+esc(L(n))+'</li>'});h+='</ul>'}
+  h+='</article>'});
+ h+='</section>';
+ h+='<section class="panel"><h2><span class="num">5</span>'+esc(t('s5'))+'</h2><p>'+esc(t('s5p'))+'</p><table><thead><tr><th>'+esc(t('th1'))+'</th><th>'+esc(t('th2'))+'</th><th>'+esc(t('th3'))+'</th><th>'+esc(t('th4'))+'</th><th>'+esc(t('th5'))+'</th></tr></thead><tbody>';
+ D.proposals.forEach(function(p){var cls={approved:'c-ok',refused:'c-bad',pending:'c-warn',declined:'c-bad',revoked:'c-warn'}[p.state];
+  h+='<tr><td>'+esc(p.id)+'</td><td>'+esc(L(p.label))+'</td><td>'+esc(L(p.from))+' → '+esc(L(p.to))+'</td><td>'+esc(p.evidence.successes+'/'+p.evidence.attempts)+'</td><td><span class="chip '+cls+'">'+esc(L(p.state_label))+'</span> '+esc(p.approver||'')+(p.why?'<br><small>'+esc(L(p.why))+'</small>':'')+'</td></tr>'});
+ h+='</tbody></table>';
+ if(D.refused.length){h+='<div class="box" style="margin-top:10px"><h3>'+esc(t('refused'))+'</h3><ul>';D.refused.forEach(function(r){h+='<li><b>'+esc(r.by)+'</b> → '+esc(r.action)+' · '+esc(L(r.why))+'</li>'});h+='</ul></div>'}
+ h+='</section>';
+ h+='<section class="panel"><h2><span class="num">6</span>'+esc(t('s6'))+'</h2><p>'+esc(t('s6p'))+'</p><table><tbody>';
+ Object.keys(m).forEach(function(k){var v=m[k];if(typeof v==='object')v=Object.keys(v).map(function(s){return s+' '+v[s]}).join(' · ');h+='<tr><td>'+esc(L(ML[k]))+'</td><td><b>'+esc(v)+'</b></td></tr>'});
+ h+='</tbody></table></section>';
+ h+='<nav class="links" aria-label="'+esc(t('links'))+'"><a href="skeleton-v4.html"><b>'+esc(t('l1'))+'</b><span>'+esc(t('l1s'))+'</span></a><a href="guide-v4.html"><b>'+esc(t('l2'))+'</b><span>'+esc(t('l2s'))+'</span></a><a href="https://github.com/xiaoyuer2046/incident-skeleton/tree/main/.kiro/specs/incident-skeleton-v5"><b>'+esc(t('l3'))+'</b><span>'+esc(t('l3s'))+'</span></a></nav>';
+ document.getElementById('root').innerHTML=h;
+ document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'))});
+ document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+ document.querySelectorAll('#langSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-lang')===lang)});
+ if(window.Theme)Theme.relabel();
+}
+function setLang(l){lang=l;try{localStorage.setItem('lang',l)}catch(e){}render()}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#langSeg button');if(b)setLang(b.getAttribute('data-lang'))});
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.key==='l'||e.key==='L')setLang(lang==='zh'?'en':'zh')});
+render();
+</script>
+</body>
+</html>

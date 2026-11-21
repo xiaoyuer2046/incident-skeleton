@@ -5,7 +5,7 @@
       "name": "Skeleton v4 tests on save",
       "description": "After the agent saves a file in the shared runtime or its plug-ins, run the v4 tests so a change cannot break the six steps or widen a permission.",
       "trigger": "PostFileSave",
-      "matcher": "skill[\\\\/]skeleton_v4[\\\\/].*\\.py$",
+      "matcher": "skill[\\\\/]skeleton_v[45][\\\\/].*\\.py$",
       "action": {
         "type": "command",
         "command": "python3 skill/hooks/run_v4_tests.py || python skill/hooks/run_v4_tests.py"

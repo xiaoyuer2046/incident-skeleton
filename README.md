@@ -1,8 +1,10 @@
 # 💀 Incident Skeleton
 
-> Kiroween 2026 · **Skeleton Crew** · v4.1 · English / 中文 · MIT
+> Kiroween 2026 · **Skeleton Crew** · v5 · English / 中文 · MIT
 
 **One shared six-step runtime. Two very different apps. Three plug-in slots. An AI that learns from vendors first.**
+
+> **v5** keeps `skeleton.py` unchanged and adds an access layer for five managed systems, a news check that warns of a *likely* vendor outage before the vendor says so, and permission growth that a person approves. See [v5 below](#v5-connect-warn-early-grow-with-approval).
 
 ```
 RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG      skill/skeleton_v4/skeleton.py (102 lines)
@@ -22,7 +24,8 @@ Both adapters call the same `skeleton.run()`. A third app is one more adapter; `
 
 1. Open **`demo/guide-v4.html`**: the product guide (EN / 中文, Day / Night / Auto).
 2. Open **`demo/skeleton-v4.html`**: both apps running through the one runtime, step by step.
-3. Read the four files below. You can ignore the rest of `skill/` on a first look.
+3. Open **`demo/skeleton-v5.html`**: v5 on the same runtime: connected systems, the news check, permission growth, numbers.
+4. Read the four files below. You can ignore the rest of `skill/` on a first look.
 
 | Read | File | Lines | What you will see |
 |---|---|---|---|
@@ -48,7 +51,23 @@ Many staff cannot sign in to Teams, and a meeting room's Teams Rooms cannot join
 | C | trusted web | needs backing from A or B |
 | D | public reports | needs backing; never promotes or demotes |
 
-Text that gives orders is blocked. A vendor advisory that calls a fix harmful pauses it. **Learning can only narrow permission, never widen it.** `policy.json` is the only permission source.
+Text that gives orders is blocked. A vendor advisory that calls a fix harmful pauses it. **In v4, learning can only narrow permission.** `policy.json` is the only permission source. v5 adds one way up, and only a person can take it (below).
+
+## v5: connect, warn early, grow with approval
+
+`python skill/skeleton_v5/run.py --lang en` (or `--lang zh`) runs one simulated morning. Nothing is sent.
+
+| Part | What it does | File |
+|---|---|---|
+| Access layer | ServiceNow, AP controller, meeting-room manager, signage CMS, print manager as connectors with scopes. A new system is one JSON entry. Secrets are named, never read. A system that does not answer is skipped and the admin is told. | `skill/skeleton_v5/connectors.py`, `connectors_v5.json` |
+| Merge | Items about the same service in two or more systems, or the same device, become one parent. | `connectors.py` |
+| News check | 3+ independent sites reporting the same outage = **likely vendor outage**, even with no official word. One vote per site, reposts once, old reports ignored, text that gives orders dropped. Official status = confirmed. | `skill/skeleton_v5/news.py` |
+| Tell people | On "likely", affected people get the sources at once. Local work continues. | `run.py` |
+| Permission growth | After enough confirmed successes, learning **proposes** a standing approval for one action, crew and symptom. Only a listed approver grants it; it expires in 30 days and can be revoked. Identity and on-site actions are refused by rule. No permission file is written. | `skill/skeleton_v5/permissions.py` |
+| Meeting window | A room in a meeting that still works: risky steps wait until it ends. | `plugins_v5.py`, `adapters_v5.py` |
+| Numbers | Merged items, minutes warned before the official notice, work done by AI, useless fixes held, an estimate of minutes saved. | `run.py` |
+
+In the simulated morning: four independent sites report Teams sign-in failing at 09:05, five minutes before Microsoft's status page. Three items from two systems merge into one parent. A full mailbox waits for approval; after a person approves the standing grant, the next one is fixed alone. Rules live in `skill/skeleton_v5/rules_v5.json`; the spec is `.kiro/specs/incident-skeleton-v5/`.
 
 ## Built with Kiro
 
@@ -81,6 +100,7 @@ macOS / Linux:
 
 ```bash
 python3 skill/skeleton_v4/run.py --lang en          # one dry-run cycle of both apps
+python3 skill/skeleton_v5/run.py --lang en          # v5: access layer, news check, permission growth
 python3 skill/skeleton_v4/simulate.py               # regenerate demo/data/skeleton-v4.js
 for f in skill/tests/test_*.py; do python3 "$f"; done
 ```
@@ -90,6 +110,7 @@ Windows (PowerShell):
 ```powershell
 $env:PYTHONIOENCODING = "utf-8"
 python skill\skeleton_v4\run.py --lang en
+python skill\skeleton_v5\run.py --lang en
 python skill\skeleton_v4\simulate.py
 Get-ChildItem skill\tests\test_*.py | ForEach-Object { python $_.FullName }
 ```
