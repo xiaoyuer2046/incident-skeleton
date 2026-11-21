@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "incident-skeleton",
+  "version": "4.1.0",
+  "description": "Run office-device and service-desk incidents through one six-step skeleton, in dry run: crew status, ranked fixes, support groups, and the safety rules that keep approvals with people.",
+  "author": {
+    "name": "xiaoyuer2046",
+    "url": "https://github.com/xiaoyuer2046"
+  },
+  "keywords": [
+    "incident",
+    "on-call",
+    "printer",
+    "digital signage",
+    "meeting room",
+    "teams rooms",
+    "wireless ap",
+    "service desk",
+    "outage",
+    "servicenow",
+    "skeleton crew"
+  ],
+  "homepage": "https://github.com/xiaoyuer2046/incident-skeleton",
+  "repository": "https://github.com/xiaoyuer2046/incident-skeleton",
+  "license": "MIT"
+}

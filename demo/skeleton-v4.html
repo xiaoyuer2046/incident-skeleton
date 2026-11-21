@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Skeleton v4 · One skeleton, two apps, three plug-in slots</title>
+<script src="theme.js"></script>
+<style>
+:root{--ink:#0b0812;--panel:#161022;--panel2:#1d1530;--line:rgba(190,170,255,.14);--line2:rgba(190,170,255,.28);--text:#eee9df;--muted:#a79dbb;--dim:#8a81a0;--ember:#ff7a1a;--violet:#8b5cf6;--ghost:#4ee6a0;--blood:#ff4d64;--amber:#ffc24a;--sky:#6cb6ff;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+html[data-theme=day]{color-scheme:light;--ink:#f5f3f8;--panel:#fff;--panel2:#f7f5fa;--line:rgba(55,36,92,.12);--line2:rgba(55,36,92,.28);--text:#211c2c;--muted:#5a5269;--dim:#7a7289;--ember:#c04c00;--violet:#6941d9;--ghost:#137f50;--blood:#ca2941;--amber:#8a5700;--sky:#1d68bf}
+html[data-theme=night]{color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 460px at 80% -8%,rgba(139,92,246,.18),transparent 62%),var(--ink);color:var(--text);font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif}
+button{font:inherit;color:inherit}
+a{color:var(--sky)}
+.skip{position:fixed;left:12px;top:-60px;z-index:100;padding:8px 12px;background:var(--panel);color:var(--text);border:2px solid var(--violet);border-radius:8px}.skip:focus{top:12px}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px clamp(16px,3vw,34px);background:color-mix(in srgb,var(--ink) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font:600 18px ui-serif,Georgia,serif;white-space:nowrap}.brand em{font-style:italic;color:var(--ember)}.brand small{display:block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--amber);border-radius:999px;color:var(--amber);font:700 11px var(--mono);letter-spacing:.06em}.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ctrl{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden}.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font:600 12px var(--mono);color:var(--muted)}.seg button[aria-pressed=true]{background:rgba(255,122,26,.16);color:var(--ember)}.seg button:hover{color:var(--text)}
+.shell{width:min(1360px,100%);margin:auto;padding:clamp(16px,3vw,32px)}
+.banner{margin-bottom:14px;padding:9px 14px;border:1px dashed var(--amber);border-radius:12px;color:var(--amber);font-size:12.5px}
+.eyebrow{font:650 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hero{border:1px solid var(--line);border-left:5px solid var(--violet);border-radius:20px;background:var(--panel);padding:22px clamp(16px,2.4vw,28px);margin-bottom:16px}
+.hero h1{margin:6px 0 10px;font:650 clamp(22px,3.4vw,38px)/1.2 ui-serif,Georgia,"Songti SC",serif}
+.hero .lead{margin:0 0 14px;color:var(--muted);max-width:880px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:6px}
+.stat{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font:750 22px var(--mono)}
+.panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:16px clamp(14px,2vw,22px);margin-bottom:16px}
+.panel>h2{margin:0 0 4px;font-size:16px}.panel>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.rtfile{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 12px;font:600 12.5px var(--mono)}
+.rtfile .f{padding:3px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);overflow-wrap:anywhere}
+.rtfile .n{color:var(--ghost)}
+.spine{margin:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;list-style:none;padding:0}
+.sp{position:relative;padding:12px 10px 10px;border:1px solid var(--line2);border-radius:14px;background:var(--panel2);text-align:center;min-width:0}
+.sp:not(:last-child)::after{content:"›";position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:var(--muted);z-index:2}
+.sp b{display:block;font-size:14px}.sp small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.sp.slot{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset}
+.slotmark{display:inline-flex;margin-top:6px;padding:1px 8px;border-radius:999px;font:700 11px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;border:1px solid var(--violet);color:var(--violet)}
+.legend{margin:10px 0 0;color:var(--muted);font-size:12.5px}
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;list-style:none;margin:0 0 14px;padding:0}
+.rung{padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2);min-width:0}
+.rung b{display:flex;gap:8px;align-items:center;font-size:13px}.rung .lt{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid currentColor;font:800 12px var(--mono)}
+.rung small{display:block;color:var(--muted);font-size:12px;margin-top:4px;overflow-wrap:anywhere}
+.tA{color:var(--ghost)}.tB{color:var(--sky)}.tC{color:var(--amber)}.tD{color:var(--blood)}
+.lgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.lcol{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:10px 12px;min-width:0}
+.lcol h3{margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:center}
+.lcol ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.lcol li{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}.lcol li .lt2{font:800 11px var(--mono);margin-right:5px}
+.lcol .none{color:var(--dim);font-style:italic}
+.callouts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 16px}
+.call{padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.call h2{margin:0 0 6px;font-size:14px}.call p{margin:4px 0;color:var(--muted);font-size:13px}
+.call.teams{border-color:var(--sky)}.call.safe{border-color:var(--ghost)}
+.call ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+.lane{border:1px solid var(--line);border-radius:18px;background:var(--panel);margin-bottom:16px;overflow:hidden}
+.lane>h2{margin:0;padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:15px}
+.lane>h2 .meta{margin-left:auto;font:500 11px var(--mono);color:var(--muted)}
+.items{padding:12px 14px;display:grid;gap:12px}
+.item{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:12px 14px;min-width:0}
+.item:focus{border-color:var(--violet)}
+.item header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.item h3{margin:0;font-size:14px;flex:1 1 220px;overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border:1px solid var(--line2);border-radius:999px;font:650 11.5px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.c-ok{color:var(--ghost);border-color:var(--ghost)}.c-bad{color:var(--blood);border-color:var(--blood)}.c-warn{color:var(--amber);border-color:var(--amber)}.c-info{color:var(--sky);border-color:var(--sky)}
+.parent{font-size:12.5px;color:var(--muted);margin:0 0 8px;overflow-wrap:anywhere}
+.six{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;list-style:none;margin:0;padding:0}
+.six li{padding:8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--panel);min-width:0}
+.six li b{display:block;font-size:12px}.six li span{display:block;margin-top:3px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.six li.slot{border-color:var(--violet);background:color-mix(in srgb,var(--violet) 14%,var(--panel))}
+.six li.slot>span:last-child{color:var(--text)}
+.six li.skipped{opacity:.55;border-style:dashed;background:transparent}
+.six li.skipped b::after{content:" · " attr(data-skip);font-weight:500;color:var(--dim)}
+.six li .slotmark{margin:0 0 3px;font-size:10.5px}
+.held,.used{margin:8px 0 0;font-size:12.5px}.held{color:var(--amber)}.used{color:var(--muted)}
+.closure{padding:8px 10px;border:1px solid var(--ghost);border-radius:10px;font-size:12.5px}
+.empty{padding:26px 18px;text-align:center;border:1px dashed var(--line2);border-radius:12px;color:var(--muted)}.empty b{display:block;margin-bottom:4px;color:var(--text)}
+.links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.links a{display:block;padding:12px 14px;border:1px solid var(--line2);border-radius:14px;background:var(--panel);text-decoration:none;color:var(--text)}.links a:hover{border-color:var(--violet)}.links a b{display:block}.links a span{color:var(--muted);font-size:12.5px}
+.foot{margin-top:16px;padding:12px 2px;color:var(--dim);font-size:12px}.foot strong{color:var(--amber)}
+@media(max-width:1100px){.six{grid-template-columns:repeat(3,minmax(0,1fr))}.spine{grid-template-columns:repeat(3,minmax(0,1fr))}.sp:nth-child(3)::after{display:none}.stats,.ladder,.lgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.top{position:relative}.ctrl{width:100%;margin-left:0}.callouts,.links{grid-template-columns:1fr}.six{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.six,.spine,.stats,.ladder,.lgrid{grid-template-columns:1fr}.sp::after{display:none!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip"></a>
+<header class="top">
+  <div class="brand">Incident <em>Skeleton</em><small data-i18n="product"></small></div>
+  <span class="badge" data-i18n="dry"></span>
+  <div class="ctrl">
+    <div class="seg" id="themeSeg"></div>
+    <div class="seg" id="langSeg" role="group" aria-label="Language / 语言">
+      <button type="button" data-lang="zh">中文</button><button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+<main class="shell" id="main" tabindex="-1">
+  <div class="banner" role="note" data-i18n="banner"></div>
+  <div id="root" aria-live="polite"></div>
+  <footer class="foot"><span data-i18n="footer"></span> <strong data-i18n="dryFoot"></strong> <span data-i18n="keys"></span></footer>
+</main>
+<script src="data/skeleton-v4.js"></script>
+<script>
+(function(){
+'use strict';
+var T={
+zh:{skip:'跳到主要内容',product:'骨架 v4',dry:'DRY RUN · 模拟演示',
+banner:'这是模拟数据的演示页面（dry run）：不会连接真实的 Microsoft 或 Cisco 账号，也没有连接实时互联网，不会发送真实通知，也不会执行任何真实修复。',
+footer:'一套骨架，两个应用，三个插件插槽。',dryFoot:'所有通知和修复均为演练，未真正发出或执行。',keys:'快捷键：1 办公设备，2 服务台，L 切换语言。',
+h1:'一套骨架 · 两个应用 · 三个插件插槽',
+lead:'办公设备和服务台都从同一个共用文件里跑六步流程。插件只能接在三个插槽上，不能增加、删除或调换步骤。系统会先学习，再处理。',
+stItems:'处理事项',stVendor:'转给厂商总单',stHeld:'暂停的动作',stLearned:'学到的方法',stPaused:'暂停的方法',stRej:'拦截的来源',stHold:'待佐证',
+rtT:'共用运行时（只画一次）',rtP:'两个应用都通过这同一个文件，每件事都走同样的六步。',rtFile:'文件',rtLines:'行',rtLinesNone:'行数未知',
+n_RECEIVE:'接收',n_TRIAGE:'初判',n_INVESTIGATE:'排查',n_MITIGATE:'处置',n_RESOLVE:'解决',n_LOG:'记录',
+d_RECEIVE:'收到请求',d_TRIAGE:'先查安全，再看是否厂商故障',d_INVESTIGATE:'专业小组排查',d_MITIGATE:'按策略执行修复',d_RESOLVE:'确认恢复',d_LOG:'留痕并学习',
+slotTriage:'插槽 1 · 故障闸门',slotMitigate:'插槽 2 · 修法排序',slotLog:'插槽 3 · 从结果学习',
+slotNote:'紫色边框的是插件插槽。灰色步骤不允许插件改动。',
+shared:'共用',crew:'专业小组',
+learnT:'先学习',learnP:'每一轮先读来源，顺序是：A 厂商 → B 公司内部 → C 可信互联网 → D 公众报告。',
+tA:'厂商与官方',tB:'公司内部',tC:'可信互联网',tD:'公众报告',
+tAd:'最先读，分量最重',tBd:'知识库、工单、群聊',tCd:'需要 A 或 B 佐证',tDd:'需要佐证，且不能升降级',
+weight:'分量',
+colLearned:'学到',colPaused:'暂停',colHold:'待佐证',colBlocked:'拦截',
+noneLearned:'这一轮没有学到新方法',nonePaused:'没有暂停的方法',noneHold:'没有等待佐证的方法',noneBlocked:'没有被拦截的来源',
+rulesT:'规则：C、D 要有 A、B 佐证；公众报告不能让方法升级或降级；危险内容一律拦截；学习只会收紧权限，不会放宽。',
+callTeams:'同一件事，两个应用，一张 Microsoft 总单',
+teamsP:'同一次 Teams 故障下，服务台的员工请求和办公设备里的会议室请求，共用同一张 Microsoft 总单，不会各开各的单，也不会各自重复修复。',
+teamsCount:'当前演示中，挂在同一张总单下的事项：服务台 %a 项，办公设备 %b 项。',
+teamsNone:'当前数据里还没有两个应用共用总单的事项。',
+callSafe:'安全提示',
+safe1:'拒绝先于一切：越权或可疑请求先被拒绝，全球情报不能推翻安全检查。',
+safe2:'学习只缩小、不扩大权限：学习只会暂停某个方法，不会让策略之外的方法变成允许。',
+safe3:'外部文字只当数据：要求执行命令、给权限的内容会被拦截并记录。',
+safe4:'需要到现场的动作永远不自动执行。',
+lane1:'应用 1 · 办公设备',lane2:'应用 2 · 服务台',laneN:'%n 项',
+emptyT:'还没有 v4 数据',emptyD:'没有找到 window.SKELETON_V4。请先生成 demo/data/skeleton-v4.js（运行 skill/skeleton_v4/simulate.py），然后刷新本页。上面的骨架图是固定说明，不依赖数据。',
+emptyLane:'这条泳道暂时没有事项',emptyLaneD:'数据里没有属于这个应用的记录。',
+emptyLearn:'学习面板暂无数据',
+o_linked_vendor:'已转给厂商总单',o_linked_known:'已关联已知故障',o_resolved:'已解决',o_escalated:'已转人工',o_rejected:'已拒绝',o_on_hold:'暂时搁置',o_local_repair:'本地修复',o_other:'处理中',
+parent:'关联总单：',heldN:'暂停了 %n 个动作，等厂商恢复后再处理。',usedT:'用到的学习：',skipped:'跳过',noText:'—',
+closT:'厂商恢复后的收尾',linksT:'相关页面',
+lk0:'说明书 v4',lk0d:'项目说明与学习顺序',lk1:'运维控制台',lk1d:'完整的事件处理演示',lk2:'模拟 ServiceNow',lk2d:'工单系统的模拟画面',lk3:'历史版本',lk3d:'旧页面，原样保留',
+sim:'模拟',gen:'生成于'},
+en:{skip:'Skip to main content',product:'Skeleton v4',dry:'DRY RUN · SIMULATED',
+banner:'Simulated demo page (dry run): it connects to no real Microsoft or Cisco account, no live internet, sends no real notice, and runs no real repair.',
+footer:'One skeleton, two apps, three plug-in slots.',dryFoot:'All notices and repairs are rehearsals; nothing was sent or executed.',keys:'Keys: 1 office devices, 2 service desk, L switches language.',
+h1:'One skeleton · Two apps · Three plug-in slots',
+lead:'Office devices and the service desk both run the six-step flow from one shared file. Plug-ins attach only to three slots and cannot add, remove or reorder steps. The system learns first, then acts.',
+stItems:'Items handled',stVendor:'Linked to vendor',stHeld:'Actions held',stLearned:'Methods learned',stPaused:'Methods paused',stRej:'Sources blocked',stHold:'Waiting for backing',
+rtT:'The shared runtime (drawn once)',rtP:'Both apps run through this one file, so every item takes the same six steps.',rtFile:'File',rtLines:'lines',rtLinesNone:'line count unknown',
+n_RECEIVE:'Receive',n_TRIAGE:'Triage',n_INVESTIGATE:'Investigate',n_MITIGATE:'Mitigate',n_RESOLVE:'Resolve',n_LOG:'Log',
+d_RECEIVE:'Request arrives',d_TRIAGE:'Safety first, then vendor check',d_INVESTIGATE:'Specialist crew looks',d_MITIGATE:'Repair within policy',d_RESOLVE:'Confirm recovery',d_LOG:'Record and learn',
+slotTriage:'Slot 1 · Outage gate',slotMitigate:'Slot 2 · Fix ranking',slotLog:'Slot 3 · Learn from results',
+slotNote:'Purple borders are plug-in slots. Plug-ins cannot change the other steps.',
+shared:'shared',crew:'specialist crew',
+learnT:'Learn first',learnP:'Each cycle reads sources in this order: A vendor → B company internal → C trusted internet → D public reports.',
+tA:'Vendor and official',tB:'Company internal',tC:'Trusted internet',tD:'Public reports',
+tAd:'Read first, counts most',tBd:'KB, tickets, chats',tCd:'Needs backing from A or B',tDd:'Needs backing; cannot promote or demote',
+weight:'weight',
+colLearned:'Learned',colPaused:'Paused',colHold:'Waiting for backing',colBlocked:'Blocked',
+noneLearned:'Nothing new learned this cycle',nonePaused:'No method paused',noneHold:'Nothing waiting for backing',noneBlocked:'No source blocked',
+rulesT:'Rules: C and D need backing from A or B. Public reports never promote or demote a method. Dangerous text is blocked. Learning only tightens permission.',
+callTeams:'Same incident, both apps, one Microsoft parent ticket',
+teamsP:'During one Teams outage, staff requests at the service desk and meeting-room requests in office devices share one Microsoft parent ticket. They are not opened or repaired separately.',
+teamsCount:'In this demo, items under the same parent: %a at the service desk, %b in office devices.',
+teamsNone:'No item in the current data shares a parent ticket across both apps.',
+callSafe:'Safety notes',
+safe1:'Rejection comes first: risky or over-privileged requests are refused before anything else, and global intelligence cannot override that.',
+safe2:'Learning only narrows permission, never widens it: it can pause a method, but never allow one that policy does not already allow.',
+safe3:'Outside text is data only: text that asks to run commands or grant permissions is blocked and recorded.',
+safe4:'Actions that need someone on site are never automatic.',
+lane1:'App 1 · Office devices',lane2:'App 2 · Service desk',laneN:'%n items',
+emptyT:'No v4 data yet',emptyD:'window.SKELETON_V4 was not found. Generate demo/data/skeleton-v4.js (run skill/skeleton_v4/simulate.py), then reload this page. The skeleton drawing above is fixed and does not depend on the data.',
+emptyLane:'No items in this lane yet',emptyLaneD:'The data has no records for this application.',
+emptyLearn:'No learning data yet',
+o_linked_vendor:'Linked to vendor parent',o_linked_known:'Linked to known incident',o_resolved:'Resolved',o_escalated:'Sent to a person',o_rejected:'Rejected',o_on_hold:'On hold',o_local_repair:'Local repair',o_other:'In progress',
+parent:'Parent ticket: ',heldN:'%n action(s) held until the vendor recovers.',usedT:'Learning used: ',skipped:'skipped',noText:'—',
+closT:'Wrap-up after vendor recovery',linksT:'Related pages',
+lk0:'Guide v4',lk0d:'Project guide and learning order',lk1:'Operations console',lk1d:'The whole incident flow',lk2:'Simulated ServiceNow',lk2d:'A mock ticketing screen',lk3:'History',lk3d:'Older pages, kept as they were',
+sim:'Simulated',gen:'Generated'}
+};
+var lang='zh';
+try{var sl=localStorage.getItem('lang');if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
+var SK=['RECEIVE','TRIAGE','INVESTIGATE','MITIGATE','RESOLVE','LOG'];
+var SLOTAT={TRIAGE:'slotTriage',MITIGATE:'slotMitigate',LOG:'slotLog'};
+var SLOTKEY={triage_gate:'slotTriage',mitigate_rank:'slotMitigate',log_learn:'slotLog'};
+function t(k){return (T[lang]&&T[lang][k]!=null)?T[lang][k]:(T.zh[k]||'')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function loc(o){if(o==null)return '';if(typeof o==='string')return o;return o[lang]||o.zh||o.en||''}
+function fmt(s,m){return s.replace(/%(\w)/g,function(a,k){return m[k]!=null?m[k]:a})}
+function oclass(o){return o==='rejected'?'c-bad':(o==='resolved'||o==='local_repair')?'c-ok':(o==='linked_vendor'||o==='linked_known')?'c-info':'c-warn'}
+function arr(x){return Array.isArray(x)?x:[]}
+function runtime(D){
+  var R=(D&&D.runtime)||{};
+  var h='<section class="panel" id="runtime"><h2>'+esc(t('rtT'))+'</h2><p>'+esc(t('rtP'))+'</p><div class="rtfile">';
+  h+='<span>'+esc(t('rtFile'))+'</span><span class="f">'+esc(R.file||'skill/skeleton_v4/skeleton.py')+'</span>';
+  h+='<span class="n">'+(R.lines!=null?esc(R.lines+' '+t('rtLines')):esc(t('rtLinesNone')))+'</span></div>';
+  h+='<ol class="spine" aria-label="'+esc(t('rtT'))+'">';
+  SK.forEach(function(n){var sl=SLOTAT[n];
+    h+='<li class="sp'+(sl?' slot':'')+'"><b>'+esc(t('n_'+n))+'</b><small>'+esc(t('d_'+n))+'</small>'+(sl?'<span class="slotmark">'+esc(t(sl))+'</span>':'')+'</li>';});
+  return h+'</ol><p class="legend">'+esc(t('slotNote'))+'</p></section>';
+}
+function learnPanel(D){
+  var L=D&&D.learning,h='<section class="panel" id="learn" tabindex="-1"><h2>'+esc(t('learnT'))+'</h2><p>'+esc(t('learnP'))+'</p>';
+  var order=(L&&arr(L.order).length)?L.order:['A','B','C','D'];
+  var tiers={};if(L)arr(L.tiers).forEach(function(x){tiers[x.tier]=x});
+  h+='<ol class="ladder" aria-label="'+esc(t('learnT'))+'">';
+  order.forEach(function(k){var x=tiers[k]||{};
+    var name=x.label?loc(x.label):t('t'+k);
+    var w=x.weight!=null?' · '+t('weight')+' '+x.weight:'';
+    var srcs=arr(x.sources).map(loc).join(' / ');
+    h+='<li class="rung t'+esc(k)+'"><b><span class="lt">'+esc(k)+'</span><span style="color:var(--text)">'+esc(name)+'</span></b><small>'+esc(t('t'+k+'d')+w)+'</small>'+(srcs?'<small>'+esc(srcs)+'</small>':'')+'</li>';});
+  h+='</ol>';
+  if(!L){return h+'<div class="empty"><b>'+esc(t('emptyLearn'))+'</b>'+esc(t('emptyD'))+'</div></section>';}
+  var learned=[],paused=[],byMethod={};
+  arr(L.events).forEach(function(e){
+    var to=String((e&&e.to&&e.to.en)||(e&&e.to_state)||(e&&e.to)||'').toLowerCase();
+    var key=loc(e.method_label)||'';
+    if(/block|reject/.test(to)||!key)return;
+    if(/pause/.test(to)){paused.push(e);return;}
+    if(byMethod[key]==null){byMethod[key]=learned.length;learned.push(e);}else{learned[byMethod[key]]=e;}
+  });
+  function col(title,cls,list,none,fn){
+    var c='<div class="lcol"><h3>'+esc(title)+' <span class="chip '+cls+'">'+list.length+'</span></h3>';
+    if(!list.length)c+='<p class="none" style="margin:0;color:var(--dim)">'+esc(none)+'</p>';
+    else{c+='<ul>';list.forEach(function(e){c+='<li>'+fn(e)+'</li>'});c+='</ul>';}
+    return c+'</div>';
+  }
+  function ev(e){var tt=e.tier?'<span class="lt2 t'+esc(e.tier)+'">'+esc(e.tier)+'</span>':'';
+    var m=[loc(e.source_label),loc(e.method_label),loc(e.to)].filter(Boolean).join(' · ')||loc(e);
+    return tt+esc(m)}
+  function meta(e){var tt=e.tier?'<span class="lt2 t'+esc(e.tier)+'">'+esc(e.tier)+'</span>':'';
+    return tt+esc([loc(e.source_label),loc(e.method_label),loc(e.reason_label)].filter(Boolean).join(' · '))}
+  h+='<div class="lgrid">'+
+    col(t('colLearned'),'c-ok',learned,t('noneLearned'),ev)+
+    col(t('colPaused'),'c-warn',paused,t('nonePaused'),ev)+
+    col(t('colHold'),'c-info',arr(L.held_back),t('noneHold'),meta)+
+    col(t('colBlocked'),'c-bad',arr(L.rejected),t('noneBlocked'),meta)+'</div>';
+  return h+'<p class="legend">'+esc(t('rulesT'))+'</p></section>';
+}
+function item(it){
+  var o=it.outcome||'other';
+  var oname=T.zh['o_'+o]!=null?t('o_'+o):t('o_other');
+  var h='<article class="item" tabindex="0" aria-label="'+esc(loc(it.label))+'"><header><h3>'+esc(loc(it.label))+'</h3>';
+  h+='<span class="chip '+oclass(o)+'">'+esc(oname)+'</span>';
+  if(it.dry_run!==false)h+='<span class="chip c-warn">DRY RUN</span>';
+  h+='</header>';
+  if(it.parent)h+='<p class="parent">'+esc(t('parent'))+esc(loc(it.parent))+'</p>';
+  var by={};arr(it.steps).forEach(function(s){by[s.name]=s});
+  h+='<ol class="six">';
+  SK.forEach(function(n){
+    var s=by[n]||{};var sk=s.status==='skipped';var sl=(!sk&&s.slot)?s.slot:'';
+    var cls=(sk?'skipped':'')+(sl?(sk?' ':'')+'slot':'');
+    h+='<li'+(cls?' class="'+cls+'"':'')+(sk?' data-skip="'+esc(t('skipped'))+'"':'')+'><b'+(sk?' data-skip="'+esc(t('skipped'))+'"':'')+'>'+esc(t('n_'+n))+'</b>'+
+      (sl&&SLOTKEY[sl]?'<span class="slotmark">'+esc(t(SLOTKEY[sl]))+'</span>':'')+
+      '<span>'+esc(s[lang]||s.zh||s.en||t('noText'))+'</span></li>';
+  });
+  h+='</ol>';
+  var hn=arr(it.held_actions).length;
+  if(hn)h+='<p class="held">⏸ '+esc(fmt(t('heldN'),{n:hn}))+'</p>';
+  var lu=arr(it.learning_used);
+  if(lu.length)h+='<p class="used">'+esc(t('usedT'))+lu.map(function(x){return esc((x.tier?x.tier+': ':'')+loc(x))}).join('; ')+'</p>';
+  return h+'</article>';
+}
+function lane(title,items,num){
+  var h='<section class="lane" id="lane'+num+'" tabindex="-1" aria-label="'+esc(title)+'"><h2>'+esc(title)+'<span class="meta">'+esc(fmt(t('laneN'),{n:items.length}))+'</span></h2><div class="items">';
+  if(!items.length)h+='<div class="empty"><b>'+esc(t('emptyLane'))+'</b>'+esc(t('emptyLaneD'))+'</div>';
+  else items.forEach(function(it){h+=item(it)});
+  return h+'</div></section>';
+}
+function render(){
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.getAttribute('data-i18n'))});
+  document.querySelectorAll('#langSeg button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-lang')===lang)});
+  if(window.Theme)Theme.relabel();
+  var D=window.SKELETON_V4,h='';
+  h+='<section class="hero"><div class="eyebrow">v4 · '+esc(t('sim'))+'</div><h1>'+esc(t('h1'))+'</h1><p class="lead">'+esc(t('lead'))+'</p>';
+  if(D&&D.summary){
+    var S=D.summary;
+    h+='<div class="stats">';
+    [['stItems','items'],['stVendor','vendor_linked'],['stHeld','held_actions'],['stLearned','learned'],['stPaused','paused'],['stRej','rejected'],['stHold','held_back']].forEach(function(p){
+      h+='<div class="stat"><span>'+esc(t(p[0]))+'</span><strong>'+esc(S[p[1]]!=null?S[p[1]]:'—')+'</strong></div>';});
+    h+='</div>';
+  }
+  if(D&&D.generated_at)h+='<div class="eyebrow">'+esc(t('gen'))+' '+esc(String(D.generated_at).replace('T',' ').replace(/Z$/,' UTC'))+'</div>';
+  h+='</section>';
+  h+=runtime(D);
+  h+=learnPanel(D);
+  if(!D||!Array.isArray(D.items)){
+    h+='<div class="empty"><b>'+esc(t('emptyT'))+'</b>'+esc(t('emptyD'))+'</div>';
+  }else{
+    var A1=D.items.filter(function(i){return i.app==='devices'}),A2=D.items.filter(function(i){return i.app==='servicedesk'});
+    var teams=D.items.filter(function(i){var p=i.parent;return p&&/teams/i.test(typeof p==='string'?p:(p.en||'')+' '+(p.zh||''))});
+    var ta=teams.filter(function(i){return i.app==='servicedesk'}).length,tb=teams.filter(function(i){return i.app==='devices'}).length;
+    h+='<div class="callouts"><section class="call teams"><h2>'+esc(t('callTeams'))+'</h2><p>'+esc(t('teamsP'))+'</p><p><strong>'+esc((ta&&tb)?fmt(t('teamsCount'),{a:ta,b:tb}):t('teamsNone'))+'</strong></p></section>';
+    h+='<section class="call safe"><h2>🛡 '+esc(t('callSafe'))+'</h2><ul><li>'+esc(t('safe1'))+'</li><li>'+esc(t('safe2'))+'</li><li>'+esc(t('safe3'))+'</li><li>'+esc(t('safe4'))+'</li></ul></section></div>';
+    h+=lane(t('lane1'),A1,1)+lane(t('lane2'),A2,2);
+    var C=arr(D.closures);
+    if(C.length){
+      h+='<section class="lane"><h2>'+esc(t('closT'))+'</h2><div class="items">';
+      C.forEach(function(c){var x=(typeof c==='string')?c:(loc(c)||loc(c.label)||'');h+='<div class="closure">'+esc(x)+'</div>'});
+      h+='</div></section>';
+    }
+  }
+  h+='<h2 class="eyebrow">'+esc(t('linksT'))+'</h2><nav class="links" aria-label="'+esc(t('linksT'))+'">'+
+    '<a href="guide-v4.html"><b>'+esc(t('lk0'))+'</b><span>'+esc(t('lk0d'))+'</span></a>'+
+    '<a href="console.html"><b>'+esc(t('lk1'))+'</b><span>'+esc(t('lk1d'))+'</span></a>'+
+    '<a href="servicenow.html"><b>'+esc(t('lk2'))+'</b><span>'+esc(t('lk2d'))+'</span></a>'+
+    '<a href="guide-v4.html#history"><b>'+esc(t('lk3'))+'</b><span>'+esc(t('lk3d'))+'</span></a></nav>';
+  document.getElementById('root').innerHTML=h;
+}
+function setLang(l){lang=l;try{localStorage.setItem('lang',l)}catch(e){}render()}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#langSeg button');if(b)setLang(b.getAttribute('data-lang'))});
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  var tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;
+  if(e.key==='l'||e.key==='L')setLang(lang==='zh'?'en':'zh');
+  else if(e.key==='1'||e.key==='2'){var el=document.getElementById('lane'+e.key);if(el){el.focus();el.scrollIntoView({block:'start'})}}
+});
+render();
+})();
+</script>
+</body>
+</html>

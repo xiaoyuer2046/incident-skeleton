@@ -1,0 +1,167 @@
+{
+ "_comment": "Normalized adapter CONTRACTS and SAMPLE payloads only. No connector here is installed, signed in, or authenticated. A real connector needs explicit user sign-in, least privilege, and separate verification.",
+ "version": "3.0",
+ "trust_weights": {
+  "vendor_mcp": 0.45,
+  "official_status": 0.35,
+  "internal": 0.25,
+  "trusted_web": 0.10,
+  "public_report": 0.04
+ },
+ "thresholds": {
+  "min_users": 5,
+  "min_sites": 2,
+  "recheck_minutes": 10
+ },
+ "providers": {
+  "microsoft": {
+   "display": "Microsoft",
+   "held_actions": ["password reset", "Office reinstall"]
+  },
+  "cisco": {
+   "display": "Cisco",
+   "held_actions": []
+  }
+ },
+ "connectors": [
+  {
+   "id": "microsoft_graph_service_health",
+   "provider": "microsoft",
+   "label": "Microsoft Graph service health / Microsoft MCP",
+   "status": "contract_only",
+   "authenticated": false,
+   "required_scope": "ServiceHealth.Read.All (read-only, least privilege)",
+   "mapping": {
+    "id_field": "id",
+    "time_field": "lastModifiedDateTime",
+    "service_field": "service",
+    "status_field": "status",
+    "summary_field": "title",
+    "impact_field": "affectedTenantUsers",
+    "service_map": {"Microsoft Teams": "teams", "Exchange Online": "outlook"},
+    "status_map": {
+     "serviceOperational": "healthy",
+     "investigating": "investigating",
+     "serviceDegradation": "degraded",
+     "serviceInterruption": "outage",
+     "serviceRestored": "resolved"
+    }
+   },
+   "sample": {
+    "id": "MS-SAMPLE-1",
+    "lastModifiedDateTime": "2026-11-21T09:10:00Z",
+    "service": "Microsoft Teams",
+    "status": "serviceDegradation",
+    "title": "SAMPLE: users may be unable to sign in to Microsoft Teams",
+    "affectedTenantUsers": 0
+   }
+  },
+  {
+   "id": "cisco_meraki",
+   "provider": "cisco",
+   "label": "Cisco Meraki MCP",
+   "status": "contract_only",
+   "authenticated": false,
+   "required_scope": "read-only organization and network status",
+   "mapping": {
+    "id_field": "networkId",
+    "time_field": "lastReportedAt",
+    "service_field": "product",
+    "status_field": "status",
+    "summary_field": "message",
+    "impact_field": "affectedClients",
+    "site_field": "site",
+    "service_map": {"wireless": "meraki"},
+    "status_map": {"online": "healthy", "alerting": "degraded", "offline": "outage"}
+   },
+   "sample": {
+    "networkId": "N_SAMPLE_1",
+    "lastReportedAt": "2026-11-21T09:00:00Z",
+    "product": "wireless",
+    "status": "online",
+    "message": "SAMPLE: Meraki cloud and wireless service healthy",
+    "affectedClients": 0
+   }
+  },
+  {
+   "id": "cisco_catalyst_center",
+   "provider": "cisco",
+   "label": "Cisco Catalyst Center MCP",
+   "status": "contract_only",
+   "authenticated": false,
+   "required_scope": "read-only assurance health",
+   "mapping": {
+    "id_field": "issueId",
+    "time_field": "lastOccurrenceTime",
+    "service_field": "category",
+    "status_field": "status",
+    "summary_field": "name",
+    "impact_field": "deviceCount",
+    "site_field": "siteName",
+    "service_map": {"network": "catalyst"},
+    "status_map": {"ACTIVE": "degraded", "RESOLVED": "resolved"}
+   },
+   "sample": {
+    "issueId": "CC-SAMPLE-1",
+    "lastOccurrenceTime": "2026-11-21T09:00:00Z",
+    "category": "network",
+    "status": "RESOLVED",
+    "name": "SAMPLE: assurance issue closed",
+    "deviceCount": 0,
+    "siteName": "HQ-3"
+   }
+  },
+  {
+   "id": "cisco_scc",
+   "provider": "cisco",
+   "label": "Cisco Security Cloud Control MCP",
+   "status": "contract_only",
+   "authenticated": false,
+   "required_scope": "read-only security service health",
+   "mapping": {
+    "id_field": "id",
+    "time_field": "updatedAt",
+    "service_field": "service",
+    "status_field": "state",
+    "summary_field": "description",
+    "impact_field": "impacted",
+    "service_map": {"scc": "scc"},
+    "status_map": {"ok": "healthy", "degraded": "degraded", "down": "outage"}
+   },
+   "sample": {
+    "id": "SCC-SAMPLE-1",
+    "updatedAt": "2026-11-21T09:00:00Z",
+    "service": "scc",
+    "state": "ok",
+    "description": "SAMPLE: security cloud healthy",
+    "impacted": 0
+   }
+  },
+  {
+   "id": "cisco_psirt_openvuln",
+   "provider": "cisco",
+   "label": "Cisco PSIRT OpenVuln MCP",
+   "status": "contract_only",
+   "authenticated": false,
+   "required_scope": "public advisory read",
+   "mapping": {
+    "id_field": "advisoryId",
+    "time_field": "lastUpdated",
+    "service_field": "product",
+    "status_field": "status",
+    "summary_field": "title",
+    "impact_field": "affected",
+    "service_map": {"ios-xe": "psirt"},
+    "status_map": {"Final": "report", "Interim": "investigating"}
+   },
+   "sample": {
+    "advisoryId": "cisco-sa-sample",
+    "lastUpdated": "2026-11-21T09:00:00Z",
+    "product": "ios-xe",
+    "status": "Final",
+    "title": "SAMPLE: advisory metadata only",
+    "affected": 0
+   }
+  }
+ ]
+}
