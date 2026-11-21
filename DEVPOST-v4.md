@@ -76,8 +76,8 @@ One cause, one parent, two applications.
 - **Steering:** `.kiro/steering/incident-skeleton.md` keeps the safety order and the "narrow only" rule in every session.
 - **Six agents:** `incident-crew-lead`, `printer-crew`, `signage-crew`, `av-crew`, `wifiap-crew` and `servicedesk-triage`, defined in `.kiro/agents/`. In a real recorded run (`docs/agent-run-v4.md`), the crew lead read the shared state through MCP and handed a Wi-Fi AP fault to `wifiap-crew` as a sub-agent, which ranked the fixes.
 - **MCP:** a local incident KB server that agents use to recall fixes and look up support groups.
-- **Hooks:** `.kiro/hooks/` runs the v4 tests whenever the runtime is saved, audits postmortems after tool use, and reminds the agent that permission files belong to people.
-- **Power:** `power-incident-skeleton/` packages the MCP server and a triage skill as a Kiro power.
+- **Hooks:** `.kiro/hooks/` is configured to run the v4 tests whenever the runtime is saved, audit postmortems after tool use, and remind the agent that permission files belong to people. These are configuration files in Kiro's documented format; we have not yet recorded them firing.
+- **Power:** `power-incident-skeleton/` packages the MCP server and a triage skill as a Kiro power, in Kiro's documented format. We have not yet recorded an install.
 - **Scheduled jobs:** periodic patrol and learning cycles run as Kiro Crew cron jobs.
 - **Cross-platform hook script:** `skill/hooks/audit_incident.py` runs on Windows, macOS and Linux, next to the older shell hook.
 

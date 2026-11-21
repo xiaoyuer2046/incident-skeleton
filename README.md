@@ -22,9 +22,18 @@ Both adapters call the same `skeleton.run()`. A third app is one more adapter; `
 
 1. Open **`demo/guide-v4.html`**: the product guide (EN / 中文, Day / Night / Auto).
 2. Open **`demo/skeleton-v4.html`**: both apps running through the one runtime, step by step.
-3. Read **`skill/skeleton_v4/skeleton.py`**: the whole skeleton fits on one screen.
+3. Read the four files below. You can ignore the rest of `skill/` on a first look.
+
+| Read | File | Lines | What you will see |
+|---|---|---|---|
+| 1 | `skill/skeleton_v4/skeleton.py` | 102 | the whole skeleton: six fixed steps, three slots, nothing app-specific |
+| 2 | `skill/skeleton_v4/app_devices.py` | 100 | App 1 as an adapter |
+| 3 | `skill/skeleton_v4/app_servicedesk.py` | 181 | App 2 as an adapter |
+| 4 | `skill/skeleton_v4/plugins.py` | 128 | the three plug-ins that fill the slots |
 
 No install. Double-click the HTML files.
+
+**What is independent, and what is shared.** `skeleton.py` imports nothing from either app or from the older code. The two adapters do call a shared repair library (`skill/remediation/`: repair loop, tickets, case library, notifications) that came from v1. That library is a set of parts both apps reuse; it does not contain the six steps.
 
 ## The Teams story
 
@@ -43,14 +52,15 @@ Text that gives orders is blocked. A vendor advisory that calls a fix harmful pa
 
 ## Built with Kiro
 
-| Kiro feature | Where |
-|---|---|
-| Spec | `.kiro/specs/incident-skeleton-v4/` (requirements, design, tasks) |
-| Steering | `.kiro/steering/incident-skeleton.md` |
-| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) |
-| Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews; a real run is in `docs/agent-run-v4.md` |
-| MCP | `skill/mcp/incident_kb_server.py` |
-| Power | `power-incident-skeleton/` |
+| Kiro feature | Where | Evidence |
+|---|---|---|
+| Spec | `.kiro/specs/incident-skeleton-v4/` (requirements, design, tasks) | the v4 code and tests follow it |
+| Steering | `.kiro/steering/incident-skeleton.md` | loaded by every agent in `.kiro/agents/` |
+| Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews | **ran**: `docs/agent-run-v4.md` records the crew lead handing a fault to `wifiap-crew` |
+| MCP | `skill/mcp/incident_kb_server.py` | **ran**: both agents in that record called it |
+| Scheduled job | Kiro Crew cron, every 10 minutes | **ran** on the build machine (dry-run patrol) |
+| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) | configuration in the documented format; not yet shown firing |
+| Power | `power-incident-skeleton/` | configuration in the documented format; not yet shown installed |
 
 ## How the code fits
 
@@ -59,9 +69,15 @@ Text that gives orders is blocked. A vendor advisory that calls a fix harmful pa
 | Runtime | `skill/skeleton_v4/skeleton.py` | the six steps and three slots, nothing else |
 | Adapters | `skill/skeleton_v4/app_*.py` | intake, crew choice, INVESTIGATE, MITIGATE |
 | Plug-ins | `skill/skeleton_v4/plugins.py`, `learning.py` | outage gate, ranking, learning |
-| Shared repair library | `skill/remediation/` | repair loop, tickets, case library, notify (from v1, called by both adapters) |
+| Shared repair library | `skill/remediation/`, `skill/apps/servicedesk/`, `skill/scripts/` | repair loop, tickets, case library, notify, read-only probes (from v1, called by both adapters) |
+| Engines the plug-ins reuse | `skill/evolution_v2/`, `skill/external_intelligence_v3/`, `skill/integration_v31/` | method versions, vendor outage correlation, held-action map |
+| MCP server | `skill/mcp/` | the incident KB the agents query |
+
+Only `skeleton.py` holds the six steps. Every other folder is a library it reaches through an adapter or a plug-in.
 
 ## Run it
+
+macOS / Linux:
 
 ```bash
 python3 skill/skeleton_v4/run.py --lang en          # one dry-run cycle of both apps
@@ -69,7 +85,20 @@ python3 skill/skeleton_v4/simulate.py               # regenerate demo/data/skele
 for f in skill/tests/test_*.py; do python3 "$f"; done
 ```
 
-On Windows use `python`.
+Windows (PowerShell):
+
+```powershell
+$env:PYTHONIOENCODING = "utf-8"
+python skill\skeleton_v4\run.py --lang en
+python skill\skeleton_v4\simulate.py
+Get-ChildItem skill\tests\test_*.py | ForEach-Object { python $_.FullName }
+```
+
+| On Windows | Change |
+|---|---|
+| Agents (`.kiro/agents/`) | run `python skill\agents\build_agents.py --install`; it writes your own Python path into the installed agents |
+| Hooks (`.kiro/hooks/*.json`) | replace `python3` with `python` in the `command` lines |
+| Power (`power-incident-skeleton/mcp.json`) | replace `python3` with `python` |
 
 ## Honest status
 
