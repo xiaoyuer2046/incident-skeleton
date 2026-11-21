@@ -8,7 +8,7 @@
       "matcher": "skill[\\\\/]skeleton_v4[\\\\/].*\\.py$",
       "action": {
         "type": "command",
-        "command": "python3 skill/tests/test_skeleton_v4.py && python3 skill/tests/test_learning_v4.py"
+        "command": "python3 skill/hooks/run_v4_tests.py || python skill/hooks/run_v4_tests.py"
       },
       "timeout": 180
     }

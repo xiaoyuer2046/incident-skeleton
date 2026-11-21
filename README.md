@@ -59,8 +59,8 @@ Text that gives orders is blocked. A vendor advisory that calls a fix harmful pa
 | Agents (Kiro Crew) | `.kiro/agents/`: a crew lead and five crews | **ran**: `docs/agent-run-v4.md` records the crew lead handing a fault to `wifiap-crew` |
 | MCP | `skill/mcp/incident_kb_server.py` | **ran**: both agents in that record called it |
 | Scheduled job | Kiro Crew cron, every 10 minutes | **ran** on the build machine (dry-run patrol) |
-| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) | configuration in the documented format; not yet shown firing |
-| Power | `power-incident-skeleton/` | configuration in the documented format; not yet shown installed |
+| Hooks | `.kiro/hooks/` (tests on save, postmortem audit, permission guard) | **ran** in Kiro IDE 1.5.11: tests on save and postmortem audit fired on an agent file save (`docs/evidence/kiro-ide-hooks-triggered.png`); permission guard not yet shown firing |
+| Power | `power-incident-skeleton/` | **ran** in Kiro IDE 1.5.11: imported from a folder, `incident-kb` connected with 5 tools, and a dry-run chat called `recall_fix` (`docs/evidence/kiro-ide-mcp-connected.png`, `docs/evidence/kiro-ide-power-dryrun-chat.png`) |
 
 ## How the code fits
 
@@ -97,8 +97,8 @@ Get-ChildItem skill\tests\test_*.py | ForEach-Object { python $_.FullName }
 | On Windows | Change |
 |---|---|
 | Agents (`.kiro/agents/`) | run `python skill\agents\build_agents.py --install`; it writes your own Python path into the installed agents |
-| Hooks (`.kiro/hooks/*.json`) | replace `python3` with `python` in the `command` lines |
-| Power (`power-incident-skeleton/mcp.json`) | replace `python3` with `python` |
+| Hooks (`.kiro/hooks/*.json`) | nothing: each command tries `python3`, then `python` |
+| Power (`power-incident-skeleton/mcp.json`) | in a copy of the folder, set `command` to your `python.exe` and replace `${INCIDENT_SKELETON_HOME}` with the repo's absolute path, then import that copy |
 
 ## Honest status
 
