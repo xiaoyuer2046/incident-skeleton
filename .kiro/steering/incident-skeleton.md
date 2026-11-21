@@ -15,7 +15,7 @@ These rules apply to the crew lead, every device crew, the service desk agent, a
 - Learning reads sources in tier order: A vendor MCP and official status, B company sources, C trusted web, D public reports. C and D need backing from A or B. Learning may pause a method in memory; it never widens a permission.
 - The v4 spec in `.kiro/specs/incident-skeleton-v4/` is the source of truth; `SPEC.md` keeps the v1 invariants, which still hold. A change that breaks either is a bug, even if a test passes.
 - Every permission lives in a `policy.json`. Code never grants one. Do not edit `policy.json` to make a fix run; ask the user.
-- Older versions live in `archive/` and in the history pages listed by `VERSIONS.md`. Do not build on them.
+- Older versions were removed from the tree; only libraries v4 calls remain (listed in `VERSIONS.md`). Do not build a second skeleton.
 
 ## Safety (never break these)
 

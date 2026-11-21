@@ -302,10 +302,12 @@ class TestAcceptance(Base):
                                            "held_actions": data["summary"]["held_actions"], "v2_ranked": 2, "rejected": 1})
         self.assertGreater(data["summary"]["held_actions"], 0)
         self.assertEqual(len(data["closures"]), 4)
-        # the written file is what the engines produce now
-        self.assertTrue(os.path.exists(DEMO_JS), "run: python skill/integration_v31/simulate.py")
-        with open(DEMO_JS, encoding="utf-8") as handle:
-            text = handle.read()
+        # the writer produces exactly what the engines produce now
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "integrated-v31.js")
+            simulate.write_demo(data, out)
+            with open(out, encoding="utf-8") as handle:
+                text = handle.read()
         self.assertIn("window.INTEGRATED_V31 = ", text)
         written = json.loads(text.split("window.INTEGRATED_V31 = ", 1)[1].rstrip().rstrip(";"))
         self.assertEqual(written, data)

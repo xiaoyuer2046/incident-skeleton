@@ -22,7 +22,7 @@ demo/data/skeleton-v4.js
 DEVPOST-v4.md
 VERSIONS.md
 docs/v4-收尾说明.md
-skill/SKILL-v4.md
+skill/SKILL.md          # replaces the v1 skill (v4.1)
 ```
 
 Do not edit v1, v2, v3 or v3.1 files. Import and call them.
@@ -166,6 +166,6 @@ All labels shown on pages are plain bilingual text. No raw ids, action ids or st
 - safety callout;
 - links: home, ops console, ServiceNow simulation, history.
 
-`demo/guide-v4.html`: copy of `guide-v3.1.html`, updated to v4. Primary button goes to `skeleton-v4.html`. A "learns first" section explains the tier ladder. Older pages listed only under "History".
+`demo/guide-v4.html`: the judge entry page, updated to v4. Primary button goes to `skeleton-v4.html`. A "learns first" section explains the tier ladder.
 
 Both: Chinese and English, Day / Night / Auto, keyboard, reduced motion, dry-run labels.

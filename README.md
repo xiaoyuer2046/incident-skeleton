@@ -77,4 +77,4 @@ Everything is a **dry run on simulated data**. No Microsoft tenant, Cisco accoun
 
 ## Versions
 
-v4.1 is current. [VERSIONS.md](VERSIONS.md) lists every file. Older docs live in `archive/`; the earlier README is `archive/README-v1-v3.1.md`.
+v4.1 is the only version kept. [VERSIONS.md](VERSIONS.md) lists every file and the libraries v4 calls. Older docs and pages are in the Git history.

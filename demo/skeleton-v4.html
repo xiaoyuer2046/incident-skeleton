@@ -145,7 +145,7 @@ emptyLearn:'学习面板暂无数据',
 o_linked_vendor:'已转给厂商总单',o_linked_known:'已关联已知故障',o_resolved:'已解决',o_escalated:'已转人工',o_rejected:'已拒绝',o_on_hold:'暂时搁置',o_local_repair:'本地修复',o_other:'处理中',
 parent:'关联总单：',heldN:'暂停了 %n 个动作，等厂商恢复后再处理。',usedT:'用到的学习：',skipped:'跳过',noText:'—',
 closT:'厂商恢复后的收尾',linksT:'相关页面',
-lk0:'说明书 v4',lk0d:'项目说明与学习顺序',lk1:'运维控制台',lk1d:'完整的事件处理演示',lk2:'模拟 ServiceNow',lk2d:'工单系统的模拟画面',lk3:'历史版本',lk3d:'旧页面，原样保留',
+lk0:'说明书 v4',lk0d:'项目说明与学习顺序',lk1:'运维控制台',lk1d:'完整的事件处理演示',lk2:'模拟 ServiceNow',lk2d:'工单系统的模拟画面',lk3:'GitHub 源码',lk3d:'全部代码与规格',
 sim:'模拟',gen:'生成于'},
 en:{skip:'Skip to main content',product:'Skeleton v4',dry:'DRY RUN · SIMULATED',
 banner:'Simulated demo page (dry run): it connects to no real Microsoft or Cisco account, no live internet, sends no real notice, and runs no real repair.',
@@ -182,7 +182,7 @@ emptyLearn:'No learning data yet',
 o_linked_vendor:'Linked to vendor parent',o_linked_known:'Linked to known incident',o_resolved:'Resolved',o_escalated:'Sent to a person',o_rejected:'Rejected',o_on_hold:'On hold',o_local_repair:'Local repair',o_other:'In progress',
 parent:'Parent ticket: ',heldN:'%n action(s) held until the vendor recovers.',usedT:'Learning used: ',skipped:'skipped',noText:'—',
 closT:'Wrap-up after vendor recovery',linksT:'Related pages',
-lk0:'Guide v4',lk0d:'Project guide and learning order',lk1:'Operations console',lk1d:'The whole incident flow',lk2:'Simulated ServiceNow',lk2d:'A mock ticketing screen',lk3:'History',lk3d:'Older pages, kept as they were',
+lk0:'Guide v4',lk0d:'Project guide and learning order',lk1:'Operations console',lk1d:'The whole incident flow',lk2:'Simulated ServiceNow',lk2d:'A mock ticketing screen',lk3:'Code on GitHub',lk3d:'All code and specs',
 sim:'Simulated',gen:'Generated'}
 };
 var lang='zh';
@@ -312,7 +312,7 @@ function render(){
     '<a href="guide-v4.html"><b>'+esc(t('lk0'))+'</b><span>'+esc(t('lk0d'))+'</span></a>'+
     '<a href="console.html"><b>'+esc(t('lk1'))+'</b><span>'+esc(t('lk1d'))+'</span></a>'+
     '<a href="servicenow.html"><b>'+esc(t('lk2'))+'</b><span>'+esc(t('lk2d'))+'</span></a>'+
-    '<a href="guide-v4.html#history"><b>'+esc(t('lk3'))+'</b><span>'+esc(t('lk3d'))+'</span></a></nav>';
+    '<a href="https://github.com/xiaoyuer2046/incident-skeleton"><b>'+esc(t('lk3'))+'</b><span>'+esc(t('lk3d'))+'</span></a></nav>';
   document.getElementById('root').innerHTML=h;
 }
 function setLang(l){lang=l;try{localStorage.setItem('lang',l)}catch(e){}render()}
