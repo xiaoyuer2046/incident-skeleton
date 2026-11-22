@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>录屏脚本与 Devpost 提交清单（v5）</title>
+<style>
+  :root { --bg:#f7f7fb; --card:#fff; --text:#1d1d28; --muted:#6b6b80; --line:#e3e3ee; --accent:#6d3fd6; --ok:#1f8a4c; --ok-bg:#e6f5ec; --todo:#a15c00; --todo-bg:#fff3e0; --opt:#3a5bb8; --opt-bg:#e8eefc; --code:#f0eef8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14121c; --card:#1e1b29; --text:#ecebf3; --muted:#a3a0b8; --line:#34304a; --accent:#a98bff; --ok:#5fd394; --ok-bg:#173326; --todo:#ffb85c; --todo-bg:#3a2a12; --opt:#8fb0ff; --opt-bg:#1d2a4a; --code:#2a2639; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:32px 20px 60px; }
+  h1 { font-size:26px; margin:0 0 6px; }
+  h2 { font-size:19px; margin:36px 0 12px; color:var(--accent); }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:12px 0; }
+  .banner { display:flex; gap:12px; flex-wrap:wrap; }
+  .pill { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:14px; }
+  .pill b { color:var(--accent); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th, td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th { background:var(--code); font-size:13px; color:var(--muted); font-weight:600; }
+  tr:last-child td { border-bottom:none; }
+  td.time { white-space:nowrap; font-weight:600; color:var(--accent); }
+  td.en { color:var(--muted); font-size:14px; }
+  code { background:var(--code); padding:1px 6px; border-radius:5px; font-family:Consolas, "Cascadia Mono", monospace; font-size:13px; }
+  pre { background:var(--code); padding:14px; border-radius:10px; overflow-x:auto; font-family:Consolas, "Cascadia Mono", monospace; font-size:13px; margin:0; }
+  .tag { display:inline-block; padding:2px 10px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap; }
+  .done { background:var(--ok-bg); color:var(--ok); }
+  .todo { background:var(--todo-bg); color:var(--todo); }
+  .opt { background:var(--opt-bg); color:var(--opt); }
+  td.chk { width:36px; text-align:center; }
+  input[type=checkbox] { width:18px; height:18px; accent-color:var(--accent); cursor:pointer; }
+  tr.checked td:not(.chk) { opacity:.55; }
+  a { color:var(--accent); }
+  ul { margin:6px 0; padding-left:20px; }
+  .note { color:var(--muted); font-size:14px; }
+  @media print { body { background:#fff; } .card, table { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>录屏脚本与 Devpost 提交清单（v5）</h1>
+  <p class="sub">旧版脚本（v1、v4.1）保存在 Git 历史中。本页以 v5 为准。内容和 <code>docs/提交清单.md</code> 相同。</p>
+
+  <div class="banner">
+    <span class="pill">截止：<b>北京时间 2026-12-05 06:00</b>（2026-12-04 14:00 PT）</span>
+    <span class="pill">类别：<b>Skeleton Crew</b></span>
+    <span class="pill">视频：<b>约 2 分 40 秒</b>（短于 3 分钟）</span>
+  </div>
+
+  <h2>1. 录屏前准备</h2>
+  <div class="card">
+    <ul>
+      <li>浏览器打开：
+        <a href="../demo/guide-v4.html?lang=en">demo/guide-v4.html?lang=en</a>、
+        <a href="../demo/skeleton-v4.html?lang=en">demo/skeleton-v4.html?lang=en</a>、
+        <a href="../demo/skeleton-v5.html?lang=en">demo/skeleton-v5.html?lang=en</a></li>
+      <li>编辑器打开 <code>skill/skeleton_v4/skeleton.py</code></li>
+      <li>录屏 1920×1080，关掉通知</li>
+      <li>中文配音时加英文字幕（用下表英文列）</li>
+    </ul>
+  </div>
+
+  <h2>2. 录屏脚本</h2>
+  <table>
+    <thead><tr><th>时间</th><th>画面</th><th>旁白（中文）</th><th>Narration (English)</th></tr></thead>
+    <tbody>
+      <tr><td class="time">0–10 s</td><td>guide-v4 首屏</td><td>运维处理问题永远是六步：接收、初判、排查、处置、解决、记录。我们把这六步写成一个共用的运行时。</td><td class="en">Every IT incident goes through six steps: receive, triage, investigate, mitigate, resolve, log. We made those six steps one shared runtime.</td></tr>
+      <tr><td class="time">10–25 s</td><td>编辑器里的 <code>skeleton.py</code></td><td>整个骨架只有 102 行。办公设备和服务台两个应用都调用同一个 <code>run()</code>，各自只写一个适配器。插件只能接在三个插槽上。</td><td class="en">The whole skeleton is 102 lines. Two apps, office devices and the service desk, call the same run(). Each app writes one adapter. Plug-ins fit only three slots.</td></tr>
+      <tr><td class="time">25–40 s</td><td>skeleton-v4 顶部和两条泳道</td><td>应用 1 是机器报修，应用 2 是人报修。两个完全不同的应用，走的是同一条六步流程。</td><td class="en">App one is reported by machines, app two by people. Two very different apps, one six-step flow.</td></tr>
+      <tr><td class="time">40–55 s</td><td>skeleton-v4“先学习”面板</td><td>接入哪个系统，AI 就学那个系统的厂商：微软、思科、打印机、标牌、会议室厂商都算。先学厂商，再学公司内部，最后才看互联网。下命令的文本直接拦截。</td><td class="en">For every system we connect, the AI learns from its vendor: Microsoft, Cisco, and the printer, signage and room vendors alike. Vendors first, then company sources, the internet last. Text that gives orders is blocked.</td></tr>
+      <tr><td class="time">55–75 s</td><td>skeleton-v4 的 Teams 事项</td><td>微软确认故障后，两个应用的 Teams 问题挂到同一张微软总单，暂停重置密码这类没用的修复。</td><td class="en">When Microsoft confirms an outage, Teams problems from both apps join one Microsoft parent ticket, and useless fixes like password resets are held.</td></tr>
+      <tr><td class="time">75–95 s</td><td>skeleton-v5 第 1、2 块：接入层、合并</td><td>v5 没改骨架。它接上五个管理系统：ServiceNow、AP、会议室、数字标牌、打印机。加新系统只写一条配置。不同系统里的同一个问题合成一张单。</td><td class="en">Version five does not touch the skeleton. It connects five management systems. A new system is one config entry. The same problem in different systems becomes one ticket.</td></tr>
+      <tr><td class="time">95–120 s</td><td>skeleton-v5 第 3 块：新闻核查</td><td>9 点 05 分，微软还没说话，但四个独立网站都在报 Teams 登录故障。每个网站只算一票，转载和下命令的帖子都去掉。AI 判断大概率是微软的问题，马上告诉员工，比官方早 5 分钟。</td><td class="en">At 9:05 Microsoft has said nothing, but four independent sites report Teams sign-in failing. One vote per site; reposts and posts that give orders are dropped. The AI calls it a likely Microsoft outage and tells people five minutes before the official notice.</td></tr>
+      <tr><td class="time">120–145 s</td><td>skeleton-v5 第 5 块：权限进化</td><td>AI 学会了“提高邮箱配额”，成功 5 次，于是提议长期授权。不是审批人去批，被拒绝；审批人批了，下一个邮箱满的问题自动修好。30 天到期，可以撤回。重置 MFA 这类身份权限永远不放宽。</td><td class="en">The AI fixed full mailboxes five times, so it proposes a standing approval. A non-approver is refused. The approver says yes, and the next full mailbox is fixed alone. The grant expires in 30 days and can be revoked. Identity actions like MFA resets are never widened.</td></tr>
+      <tr><td class="time">145–155 s</td><td><code>.kiro/</code> 目录</td><td>用 Kiro 做：两份规格、steering、三个 hook、一次组长交给小组的真实运行、自建 MCP、一个 Kiro power。</td><td class="en">Built with Kiro: two specs, steering, three hooks, one recorded crew-lead handoff, our own MCP server and a Kiro power.</td></tr>
+      <tr><td class="time">155–160 s</td><td>skeleton-v5 顶部横幅</td><td>全部是演练和模拟数据，没有连接任何真实系统。</td><td class="en">Everything is a dry run on simulated data. No real system is connected.</td></tr>
+    </tbody>
+  </table>
+  <div class="card">
+    结尾字幕：<code>github.com/xiaoyuer2046/incident-skeleton</code> · Skeleton Crew<br>
+    录完上传到 YouTube（公开或不公开列出），把链接填到 Devpost。
+  </div>
+
+  <h2>3. Devpost 提交清单</h2>
+  <p class="note">勾选框只存在这台电脑的浏览器里，刷新后还在。</p>
+  <table id="checklist">
+    <thead><tr><th class="chk">✓</th><th>#</th><th>项目</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td class="chk"><input type="checkbox"></td><td>1</td><td>截止：2026-12-04 14:00 PT = 北京时间 12-05 06:00（来源：kiro.dev/events）。作品须在 10-30 之后开始做</td><td><span class="tag done">✅ 完成</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>2</td><td>类别选 <b>Skeleton Crew</b></td><td><span class="tag todo">待提交</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>3</td><td>公开 GitHub 仓库：<a href="https://github.com/xiaoyuer2046/incident-skeleton">github.com/xiaoyuer2046/incident-skeleton</a></td><td><span class="tag done">✅ 完成</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>4</td><td>仓库根目录有 <code>.kiro/</code>（specs、steering、hooks、agents），没被 .gitignore 忽略</td><td><span class="tag done">✅ 完成</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>5</td><td>开源许可证（MIT，<code>LICENSE</code>）</td><td><span class="tag done">✅ 完成</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>6</td><td>演示视频链接（YouTube/Vimeo）</td><td><span class="tag todo">待录</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>7</td><td>项目描述：复制 <code>DEVPOST.md</code> 各节到 Devpost 表单</td><td><span class="tag done">✅ 文本已写好</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>8</td><td>说明怎么用了 Kiro：<code>DEVPOST.md</code>“How we used Kiro”一节，附 <code>docs/agent-run-v4.md</code></td><td><span class="tag done">✅ 完成</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>9</td><td>可运行的演示：<code>demo/guide-v4.html</code>、<code>demo/skeleton-v5.html</code> 直接双击打开；如要在线链接，可开 GitHub Pages</td><td><span class="tag opt">可选</span></td></tr>
+      <tr><td class="chk"><input type="checkbox"></td><td>10</td><td>截图 3–5 张：guide-v4 首屏、<code>skeleton.py</code> 代码、skeleton-v4 Teams 一张总单、skeleton-v5 新闻核查、skeleton-v5 权限进化</td><td><span class="tag todo">待截</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. 提交前自检</h2>
+<pre>python3 skill/remediation/simulate.py               # scenarios covered: 47/47
+python3 skill/skeleton_v4/simulate.py               # 重新生成 v4 演示数据
+python3 skill/skeleton_v5/simulate.py               # 重新生成 v5 演示数据
+for f in skill/tests/test_*.py; do python3 "$f"; done   # 全部通过</pre>
+  <p class="note">Windows 上把 <code>python3</code> 换成 <code>python</code>。</p>
+</main>
+<script>
+  (function () {
+    var KEY = 'devpost-checklist-v5';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+    document.querySelectorAll('#checklist tbody tr').forEach(function (row, i) {
+      var box = row.querySelector('input');
+      box.checked = !!saved[i];
+      row.classList.toggle('checked', box.checked);
+      box.addEventListener('change', function () {
+        saved[i] = box.checked;
+        row.classList.toggle('checked', box.checked);
+        try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+      });
+    });
+  })();
+</script>
+</body>
+</html>
