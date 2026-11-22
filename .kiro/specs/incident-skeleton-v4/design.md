@@ -19,7 +19,7 @@ skill/hooks/audit_incident.py
 demo/skeleton-v4.html
 demo/guide-v4.html
 demo/data/skeleton-v4.js
-DEVPOST-v4.md
+DEVPOST-v4.md (now DEVPOST.md)
 VERSIONS.md
 docs/v4-收尾说明.md
 skill/SKILL.md          # replaces the v1 skill (v4.1)

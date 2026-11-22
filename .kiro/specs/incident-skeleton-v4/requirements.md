@@ -86,7 +86,7 @@ Acceptance criteria:
 1. `VERSIONS.md` SHALL list the current files and the history files.
 2. One judge entry page: `demo/guide-v4.html`.
 3. One demo page: `demo/skeleton-v4.html`.
-4. One Devpost text: `DEVPOST-v4.md`.
+4. One Devpost text: `DEVPOST-v4.md` (now `DEVPOST.md`).
 5. `README.md` SHALL point reviewers to v4 only.
 
 ## Requirement 8 — Kiro usage

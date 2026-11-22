@@ -23,6 +23,6 @@
 - [x] 5. Demo `run.py`, `simulate.py`, `demo/data/skeleton-v4.js` (design §6, §7)
 - [x] 6. Tests `test_skeleton_v4.py`, `test_learning_v4.py`; all earlier tests still pass
 - [x] 7. Pages `demo/skeleton-v4.html`, `demo/guide-v4.html` (design §8)
-- [x] 8. Docs `DEVPOST-v4.md`, `VERSIONS.md`, `docs/v4-收尾说明.md`, `skill/SKILL.md`
+- [x] 8. Docs `DEVPOST-v4.md` (now `DEVPOST.md`), `VERSIONS.md`, `docs/v4-收尾说明.md`, `skill/SKILL.md`
 - [x] 9. Cross-platform hook `skill/hooks/audit_incident.py`
 - [x] 10. `README.md` points reviewers to v4

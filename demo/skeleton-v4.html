@@ -186,7 +186,7 @@ lk0:'Guide v4',lk0d:'Project guide and learning order',lk1:'Operations console',
 sim:'Simulated',gen:'Generated'}
 };
 var lang='zh';
-try{var sl=localStorage.getItem('lang');if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
+try{var sl=localStorage.getItem('lang'),q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='zh')lang=q;else if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
 var SK=['RECEIVE','TRIAGE','INVESTIGATE','MITIGATE','RESOLVE','LOG'];
 var SLOTAT={TRIAGE:'slotTriage',MITIGATE:'slotMitigate',LOG:'slotLog'};
 var SLOTKEY={triage_gate:'slotTriage',mitigate_rank:'slotMitigate',log_learn:'slotLog'};

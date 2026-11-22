@@ -8,7 +8,7 @@
       "matcher": "*",
       "action": {
         "type": "command",
-        "command": "python3 skill/hooks/audit_incident.py || python skill/hooks/audit_incident.py"
+        "command": "python skill/hooks/audit_incident.py"
       },
       "timeout": 30
     }

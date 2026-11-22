@@ -16,7 +16,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional
 
 STATES = {"pending": {"en": "waiting for a person", "zh": "等人决定"}, "approved": {"en": "approved", "zh": "已批准"},
@@ -75,7 +75,7 @@ class PermissionBook:
             enough = m["successes"] >= self.rule["min_successes"] and (m["success_rate"] or 0) >= self.rule["min_rate"]
             if not (enough or blocked):
                 continue
-            p = {"id": pid, "app": app, "crew": m["device"], "symptom": m["symptom"], "action": aid, "label": {"en": act["en"], "zh": act["zh"]},
+            p = {"id": pid, "method": "%s|%s" % (app, m["key"]), "app": app, "crew": m["device"], "symptom": m["symptom"], "action": aid, "label": {"en": act["en"], "zh": act["zh"]},
                  "from": {"en": "approval each time", "zh": "每次都要批准"}, "to": {"en": "standing approval", "zh": "长期授权"}, "evidence": {"successes": m["successes"], "attempts": m["attempts"], "rate": m["success_rate"]},
                  "sources": [s["label"] for s in m["sources"]], "days": self.rule["grant_days"], "state": "refused" if blocked else "pending",
                  "reason": blocked, "approver": None, "decided_at": None, "expires_at": None, "renews": earlier[-1]["id"] if earlier else None, "dry_run": True}
@@ -116,16 +116,28 @@ class PermissionBook:
 
     def expire(self) -> List[str]:
         """Mark approved grants past their end date as expired (one version each). Learning may then propose again."""
-        now, gone = self._now(), []
+        now, gone = _when(self._now()), []
         for p in self.proposals.values():
-            if p["state"] == "approved" and now >= p["expires_at"]:
+            if p["state"] == "approved" and now >= _when(p["expires_at"]):
                 p["state"] = "expired"
                 self._version(p, "expired")
                 gone.append(p["id"])
         return gone
 
     def standing(self, app: str, crew: str, symptom: str) -> Dict[str, str]:
-        """The approvals map for one repair call: only approved, unexpired grants for exactly this app, crew and symptom."""
+        """The approvals map for one repair call: only approved, unexpired grants for exactly this app, crew and symptom,
+        and only while learning still has the method adopted and allowed. A method paused later (for example by a vendor
+        advisory) silences its grant at once: narrowing stays automatic."""
         self.expire()
         return {p["action"]: "standing approval %s by %s" % (p["id"], p["approver"]) for p in self.proposals.values()
-                if p["state"] == "approved" and (p["app"], p["crew"], p["symptom"]) == (app, crew, symptom)}
+                if p["state"] == "approved" and (p["app"], p["crew"], p["symptom"]) == (app, crew, symptom) and self._still_adopted(p)}
+
+    def _still_adopted(self, p: Dict[str, Any]) -> bool:
+        m = self.learning.methods.get(p.get("method") or "%s|%s|%s|%s" % (p["app"], p["crew"], p["symptom"], p["action"]))
+        return bool(m) and m["state"] == "promoted" and bool(m["policy_effect"]["allowed"])
+
+
+def _when(ts: str) -> datetime:
+    """Parse an ISO time; a time without a zone is read as UTC, so comparisons never depend on string format."""
+    t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
