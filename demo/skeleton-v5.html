@@ -119,7 +119,7 @@ devices:'devices',servicedesk:'service desk',links:'More',l1:'v4 demo',l1s:'two 
 footer:'One skeleton, more systems, earlier warnings, fewer people in the loop.',dryFoot:'Every notice and repair is a rehearsal.',
 out:{resolved:'resolved',local_repair:'fixed locally',on_hold:'waiting',linked_vendor:'linked to vendor',escalated:'sent to a person',rejected:'rejected',linked_known:'linked to known incident'}}};
 var D=window.SKELETON_V5,lang='zh';
-try{var sl=localStorage.getItem('lang');if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
+try{var sl=localStorage.getItem('lang'),q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='zh')lang=q;else if(sl==='en'||sl==='zh')lang=sl;else if((navigator.language||'').toLowerCase().indexOf('zh')!==0)lang='en';}catch(e){}
 function t(k){return T[lang][k]}
 function L(o){if(o==null)return '';if(typeof o==='string')return o;return o[lang]||o.en||''}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}

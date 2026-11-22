@@ -264,6 +264,27 @@ class Permissions(unittest.TestCase):
         self.assertEqual(b.decide("PG-nope", "liuyan")["why"], "unknown_proposal")
         self.assertEqual(b.revoke("PG-nope", "liuyan")["why"], "unknown_proposal")
 
+    def test_grant_goes_silent_when_method_is_paused_later(self):
+        b, _ = self.book()
+        pid = next(x["id"] for x in b.propose() if x["action"] == "raise-mailbox-quota")
+        b.decide(pid, "liuyan")
+        self.assertEqual(list(b.standing("servicedesk", "email", "full")), ["raise-mailbox-quota"])
+        b.learning.methods[b.proposals[pid]["method"]]["state"] = "paused"   # e.g. a vendor advisory
+        self.assertEqual(b.standing("servicedesk", "email", "full"), {})
+        self.assertEqual(b.proposals[pid]["state"], "approved")             # the person's record is kept, not rewritten
+
+    def test_expiry_compares_times_not_strings(self):
+        b, clock = self.book()
+        pid = next(x["id"] for x in b.propose() if x["action"] == "raise-mailbox-quota")
+        b.decide(pid, "liuyan")
+        clock["now"] = "2026-12-21T17:06:00+08:00"   # the exact end time (09:06Z), written in another zone
+        self.assertEqual(b.expire(), [pid])
+        b2, clock2 = self.book()
+        pid2 = next(x["id"] for x in b2.propose() if x["action"] == "raise-mailbox-quota")
+        b2.decide(pid2, "liuyan")
+        clock2["now"] = "2026-12-21T17:05:00+08:00"  # one minute before the end, written in another zone
+        self.assertEqual(b2.expire(), [])
+
     def test_policy_files_not_touched(self):
         before = digest(GUARDED)
         b, _ = self.book()
