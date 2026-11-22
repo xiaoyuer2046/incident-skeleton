@@ -40,7 +40,7 @@ RECEIVE → TRIAGE → INVESTIGATE → MITIGATE → RESOLVE → LOG
 
 读取顺序：
 
-1. A 层：厂商 MCP（如 Microsoft、Cisco）和官方状态
+1. A 层：每个接入系统的厂商 MCP 和官方状态（如 Microsoft、Cisco、打印机、标牌、会议室厂商；演示数据只放了 Microsoft 和 Cisco）
 2. B 层：公司 KB、工单、聊天、邮件、共享文档
 3. C 层：可信互联网
 4. D 层：公众报告

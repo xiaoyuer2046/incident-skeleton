@@ -46,7 +46,7 @@ Many staff cannot sign in to Teams, and a meeting room's Teams Rooms cannot join
 
 | Order | Source | Rule |
 |---|---|---|
-| A | vendor MCP (Microsoft, Cisco) and official status | read first, weighs most |
+| A | vendor MCP and official status, for the vendor of every connected system (Microsoft, Cisco, printer, signage, room vendors; the demo data samples Microsoft and Cisco) | read first, weighs most |
 | B | company KB, tickets, chat, email | read second |
 | C | trusted web | needs backing from A or B |
 | D | public reports | needs backing; never promotes or demotes |
